@@ -1,0 +1,353 @@
+import Peminjaman from '../models/Peminjaman.js';
+import Barang from '../models/Barang.js';
+import Notifikasi from '../models/Notifikasi.js';
+
+// Buat peminjaman baru (user)
+const createPeminjaman = async (req, res) => {
+  try {
+    const { barangId, jumlahPinjam, tanggalPinjam, tanggalKembali, waktuPinjam, alasanPeminjaman } = req.body;
+
+    // Cek ketersediaan barang
+    const barang = await Barang.findById(barangId);
+
+    if (!barang) {
+      return res.status(404).json({
+        success: false,
+        message: 'Barang tidak ditemukan'
+      });
+    }
+
+    if (barang.jumlahTersedia < jumlahPinjam) {
+      return res.status(400).json({
+        success: false,
+        message: `Barang tidak tersedia. Tersisa ${barang.jumlahTersedia} unit`
+      });
+    }
+
+    // Buat peminjaman
+    const peminjaman = await Peminjaman.create({
+      userId: req.user._id,
+      barangId,
+      jumlahPinjam,
+      tanggalPinjam,
+      tanggalKembali,
+      waktuPinjam,
+      alasanPeminjaman
+    });
+
+    // Kurangi jumlah tersedia
+    barang.jumlahTersedia -= jumlahPinjam;
+    await barang.save();
+
+    // Buat notifikasi
+    await Notifikasi.create({
+      userId: req.user._id,
+      peminjamanId: peminjaman._id,
+      judul: 'Peminjaman Berhasil Diajukan',
+      pesan: `Peminjaman ${barang.namaBarang} sebanyak ${jumlahPinjam} unit telah diajukan. Menunggu persetujuan admin.`,
+      tipe: 'info'
+    });
+
+    const peminjamanData = await Peminjaman.findById(peminjaman._id)
+      .populate('userId', 'nama email kelas')
+      .populate('barangId', 'namaBarang kategori foto');
+
+    res.status(201).json({
+      success: true,
+      message: 'Peminjaman berhasil diajukan',
+      data: peminjamanData
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get peminjaman user yang login
+const getPeminjamanUser = async (req, res) => {
+  try {
+    const { status } = req.query;
+    let query = { userId: req.user._id };
+
+    if (status) {
+      query.status = status;
+    }
+
+    const peminjaman = await Peminjaman.find(query)
+      .populate('barangId', 'namaBarang kategori foto')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: peminjaman.length,
+      data: peminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get riwayat peminjaman user
+const getRiwayatPeminjaman = async (req, res) => {
+  try {
+    const peminjaman = await Peminjaman.find({
+      userId: req.user._id,
+      status: { $in: ['disetujui', 'ditolak', 'selesai'] }
+    })
+      .populate('barangId', 'namaBarang kategori foto')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: peminjaman.length,
+      data: peminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get detail peminjaman by ID
+const getPeminjamanById = async (req, res) => {
+  try {
+    const peminjaman = await Peminjaman.findById(req.params.id)
+      .populate('userId', 'nama email kelas noTelepon')
+      .populate('barangId', 'namaBarang kategori foto deskripsi')
+      .populate('disetujuiOleh', 'nama email');
+
+    if (!peminjaman) {
+      return res.status(404).json({
+        success: false,
+        message: 'Peminjaman tidak ditemukan'
+      });
+    }
+
+    // Cek authorization
+    if (req.user.role === 'user' && peminjaman.userId._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Anda tidak memiliki akses ke peminjaman ini'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: peminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Get semua peminjaman (admin)
+const getAllPeminjaman = async (req, res) => {
+  try {
+    const { status, kategori } = req.query;
+    let query = {};
+
+    if (status) {
+      query.status = status;
+    }
+
+    const peminjaman = await Peminjaman.find(query)
+      .populate('userId', 'nama email kelas noTelepon')
+      .populate('barangId', 'namaBarang kategori foto')
+      .sort({ createdAt: -1 });
+
+    // Filter by kategori barang jika ada
+    let filteredPeminjaman = peminjaman;
+    if (kategori) {
+      filteredPeminjaman = peminjaman.filter(p => p.barangId.kategori === kategori);
+    }
+
+    res.json({
+      success: true,
+      count: filteredPeminjaman.length,
+      data: filteredPeminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Approve peminjaman (admin)
+const approvePeminjaman = async (req, res) => {
+  try {
+    const { catatanAdmin } = req.body;
+    const peminjaman = await Peminjaman.findById(req.params.id).populate('barangId userId');
+
+    if (!peminjaman) {
+      return res.status(404).json({
+        success: false,
+        message: 'Peminjaman tidak ditemukan'
+      });
+    }
+
+    if (peminjaman.status !== 'menunggu') {
+      return res.status(400).json({
+        success: false,
+        message: 'Peminjaman sudah diproses sebelumnya'
+      });
+    }
+
+    peminjaman.status = 'disetujui';
+    peminjaman.catatanAdmin = catatanAdmin;
+    peminjaman.disetujuiOleh = req.user._id;
+    peminjaman.tanggalDisetujui = new Date();
+
+    await peminjaman.save();
+
+    // Buat notifikasi untuk user
+    await Notifikasi.create({
+      userId: peminjaman.userId._id,
+      peminjamanId: peminjaman._id,
+      judul: 'Peminjaman Disetujui',
+      pesan: `Peminjaman ${peminjaman.barangId.namaBarang} Anda telah disetujui! ${catatanAdmin ? `Catatan: ${catatanAdmin}` : ''}`,
+      tipe: 'success'
+    });
+
+    res.json({
+      success: true,
+      message: 'Peminjaman berhasil disetujui',
+      data: peminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Reject peminjaman (admin)
+const rejectPeminjaman = async (req, res) => {
+  try {
+    const { alasanPenolakan } = req.body;
+    const peminjaman = await Peminjaman.findById(req.params.id).populate('barangId userId');
+
+    if (!peminjaman) {
+      return res.status(404).json({
+        success: false,
+        message: 'Peminjaman tidak ditemukan'
+      });
+    }
+
+    if (peminjaman.status !== 'menunggu') {
+      return res.status(400).json({
+        success: false,
+        message: 'Peminjaman sudah diproses sebelumnya'
+      });
+    }
+
+    peminjaman.status = 'ditolak';
+    peminjaman.alasanPenolakan = alasanPenolakan;
+    peminjaman.disetujuiOleh = req.user._id;
+
+    await peminjaman.save();
+
+    // Kembalikan jumlah tersedia barang
+    const barang = await Barang.findById(peminjaman.barangId);
+    barang.jumlahTersedia += peminjaman.jumlahPinjam;
+    await barang.save();
+
+    // Buat notifikasi untuk user
+    await Notifikasi.create({
+      userId: peminjaman.userId._id,
+      peminjamanId: peminjaman._id,
+      judul: 'Peminjaman Ditolak',
+      pesan: `Peminjaman ${peminjaman.barangId.namaBarang} Anda ditolak. Alasan: ${alasanPenolakan}`,
+      tipe: 'error'
+    });
+
+    res.json({
+      success: true,
+      message: 'Peminjaman berhasil ditolak',
+      data: peminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Tandai sebagai sudah dikembalikan (admin)
+const markAsReturned = async (req, res) => {
+  try {
+    const peminjaman = await Peminjaman.findById(req.params.id).populate('barangId userId');
+
+    if (!peminjaman) {
+      return res.status(404).json({
+        success: false,
+        message: 'Peminjaman tidak ditemukan'
+      });
+    }
+
+    if (peminjaman.status !== 'disetujui') {
+      return res.status(400).json({
+        success: false,
+        message: 'Hanya peminjaman yang disetujui yang bisa dikembalikan'
+      });
+    }
+
+    const today = new Date();
+    const tanggalKembali = new Date(peminjaman.tanggalKembali);
+
+    peminjaman.status = 'selesai';
+    peminjaman.statusPengembalian = today > tanggalKembali ? 'terlambat' : 'sudah-kembali';
+    peminjaman.tanggalDikembalikan = today;
+
+    await peminjaman.save();
+
+    // Kembalikan jumlah tersedia barang
+    const barang = await Barang.findById(peminjaman.barangId);
+    barang.jumlahTersedia += peminjaman.jumlahPinjam;
+    await barang.save();
+
+    // Buat notifikasi untuk user
+    await Notifikasi.create({
+      userId: peminjaman.userId._id,
+      peminjamanId: peminjaman._id,
+      judul: 'Pengembalian Dikonfirmasi',
+      pesan: `Pengembalian ${peminjaman.barangId.namaBarang} telah dikonfirmasi. ${peminjaman.statusPengembalian === 'terlambat' ? 'Barang dikembalikan terlambat.' : 'Terima kasih!'}`,
+      tipe: peminjaman.statusPengembalian === 'terlambat' ? 'warning' : 'success'
+    });
+
+    res.json({
+      success: true,
+      message: 'Barang berhasil ditandai sebagai sudah dikembalikan',
+      data: peminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export {
+  createPeminjaman,
+  getPeminjamanUser,
+  getRiwayatPeminjaman,
+  getPeminjamanById,
+  getAllPeminjaman,
+  approvePeminjaman,
+  rejectPeminjaman,
+  markAsReturned
+};
