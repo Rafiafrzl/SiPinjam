@@ -10,6 +10,7 @@ import errorHandler from './middleware/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
 import barangRoutes from './routes/barangRoutes.js';
 import peminjamanRoutes from './routes/peminjamanRoutes.js';
+import pengembalianRoutes from './routes/pengembalianRoutes.js';
 import notifikasiRoutes from './routes/notifikasiRoutes.js';
 import statistikRoutes from './routes/statistikRoutes.js';
 
@@ -37,6 +38,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/barang', barangRoutes);
 app.use('/api/peminjaman', peminjamanRoutes);
+app.use('/api/pengembalian', pengembalianRoutes);
 app.use('/api/notifikasi', notifikasiRoutes);
 app.use('/api/statistik', statistikRoutes);
 
@@ -49,6 +51,7 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       barang: '/api/barang',
       peminjaman: '/api/peminjaman',
+      pengembalian: '/api/pengembalian',
       notifikasi: '/api/notifikasi',
       statistik: '/api/statistik'
     }
