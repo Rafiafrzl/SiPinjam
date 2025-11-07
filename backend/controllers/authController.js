@@ -34,6 +34,7 @@ const registerUser = async (req, res) => {
           nama: user.nama,
           email: user.email,
           kelas: user.kelas,
+          noTelepon: user.noTelepon,
           role: user.role,
           token: generateToken(user._id)
         }
@@ -88,6 +89,7 @@ const loginUser = async (req, res) => {
         nama: user.nama,
         email: user.email,
         kelas: user.kelas,
+        noTelepon: user.noTelepon,
         role: user.role,
         token: generateToken(user._id)
       }
@@ -120,20 +122,25 @@ const getProfile = async (req, res) => {
 // Update profile user
 const updateProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    // Find and update user in one operation
+    const updateData = {
+      nama: req.body.nama,
+      kelas: req.body.kelas,
+      noTelepon: req.body.noTelepon
+    };
 
-    if (user) {
-      user.nama = req.body.nama || user.nama;
-      user.kelas = req.body.kelas || user.kelas;
-      user.noTelepon = req.body.noTelepon || user.noTelepon;
+    // Only update password if provided
+    if (req.body.password) {
+      updateData.password = req.body.password;
+    }
 
-      // Update password jika ada
-      if (req.body.password) {
-        user.password = req.body.password;
-      }
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      updateData,
+      { new: true, runValidators: true }
+    );
 
-      const updatedUser = await user.save();
-
+    if (updatedUser) {
       res.json({
         success: true,
         message: 'Profile berhasil diupdate',
