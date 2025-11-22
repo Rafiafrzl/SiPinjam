@@ -142,7 +142,7 @@ const PengembalianUser = () => {
                     {/* Image */}
                     <img
                       src={item.barangId?.foto !== 'default-barang.jpg'
-                        ? `http://localhost:5000/uploads/${item.barangId?.foto}`
+                        ? `http://localhost:5001/uploads/${item.barangId?.foto}`
                         : 'https://via.placeholder.com/150'}
                       alt={item.barangId?.namaBarang}
                       className="w-full md:w-32 h-32 object-cover rounded-lg"
@@ -208,7 +208,7 @@ const PengembalianUser = () => {
                   {/* Image */}
                   <img
                     src={item.peminjamanId?.barangId?.foto !== 'default-barang.jpg'
-                      ? `http://localhost:5000/uploads/${item.peminjamanId?.barangId?.foto}`
+                      ? `http://localhost:5001/uploads/${item.peminjamanId?.barangId?.foto}`
                       : 'https://via.placeholder.com/150'}
                     alt={item.peminjamanId?.barangId?.namaBarang}
                     className="w-full md:w-32 h-32 object-cover rounded-lg"
@@ -272,7 +272,7 @@ const PengembalianUser = () => {
               <div className="flex items-center gap-4">
                 <img
                   src={selectedPeminjaman.barangId?.foto !== 'default-barang.jpg'
-                    ? `http://localhost:5000/uploads/${selectedPeminjaman.barangId?.foto}`
+                    ? `http://localhost:5001/uploads/${selectedPeminjaman.barangId?.foto}`
                     : 'https://via.placeholder.com/100'}
                   alt={selectedPeminjaman.barangId?.namaBarang}
                   className="w-20 h-20 object-cover rounded-lg"

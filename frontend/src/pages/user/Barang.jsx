@@ -1,32 +1,32 @@
-import { useState, useEffect } from 'react';
-import { IoCube, IoSearch, IoFilter } from 'react-icons/io5';
-import { toast } from 'react-toastify';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Badge from '../../components/ui/Badge';
-import Loading from '../../components/ui/Loading';
-import Modal from '../../components/ui/Modal';
-import Select from '../../components/ui/Select';
-import Textarea from '../../components/ui/Textarea';
-import api from '../../utils/api';
+import { useState, useEffect } from "react";
+import { IoGrid, IoSearch, IoFilter } from "react-icons/io5";
+import { toast } from "react-toastify";
+import Card from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Badge from "../../components/ui/Badge";
+import Loading from "../../components/ui/Loading";
+import Modal from "../../components/ui/Modal";
+import Select from "../../components/ui/Select";
+import Textarea from "../../components/ui/Textarea";
+import api from "../../utils/api";
 
 const Barang = () => {
   const [barang, setBarang] = useState([]);
   const [filteredBarang, setFilteredBarang] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [kategoriFilter, setKategoriFilter] = useState('');
+  const [search, setSearch] = useState("");
+  const [kategoriFilter, setKategoriFilter] = useState("");
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
   const [selectedBarang, setSelectedBarang] = useState(null);
   const [formData, setFormData] = useState({
     jumlahPinjam: 1,
-    tanggalPinjam: '',
-    tanggalKembali: '',
-    waktuPinjam: '',
-    alasanPeminjaman: ''
+    tanggalPinjam: "",
+    tanggalKembali: "",
+    waktuPinjam: "",
+    alasanPeminjaman: "",
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -41,11 +41,11 @@ const Barang = () => {
   const fetchBarang = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/barang');
+      const response = await api.get("/barang");
       setBarang(response.data.data);
       setFilteredBarang(response.data.data);
     } catch (err) {
-      toast.error('Gagal memuat daftar barang');
+      toast.error("Gagal memuat daftar barang");
       console.error(err);
     } finally {
       setLoading(false);
@@ -57,14 +57,14 @@ const Barang = () => {
 
     // Filter by search
     if (search) {
-      filtered = filtered.filter(item =>
+      filtered = filtered.filter((item) =>
         item.namaBarang.toLowerCase().includes(search.toLowerCase())
       );
     }
 
     // Filter by kategori
     if (kategoriFilter) {
-      filtered = filtered.filter(item => item.kategori === kategoriFilter);
+      filtered = filtered.filter((item) => item.kategori === kategoriFilter);
     }
 
     setFilteredBarang(filtered);
@@ -74,10 +74,10 @@ const Barang = () => {
     setSelectedBarang(item);
     setFormData({
       jumlahPinjam: 1,
-      tanggalPinjam: '',
-      tanggalKembali: '',
-      waktuPinjam: '',
-      alasanPeminjaman: ''
+      tanggalPinjam: "",
+      tanggalKembali: "",
+      waktuPinjam: "",
+      alasanPeminjaman: "",
     });
     setShowModal(true);
   };
@@ -85,7 +85,7 @@ const Barang = () => {
   const handleFormChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -94,16 +94,18 @@ const Barang = () => {
     setSubmitting(true);
 
     try {
-      await api.post('/peminjaman', {
+      await api.post("/peminjaman", {
         barangId: selectedBarang._id,
-        ...formData
+        ...formData,
       });
 
-      toast.success('Peminjaman berhasil diajukan! Menunggu persetujuan admin.');
+      toast.success(
+        "Peminjaman berhasil diajukan! Menunggu persetujuan admin."
+      );
       setShowModal(false);
       fetchBarang(); // Refresh data
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal mengajukan peminjaman');
+      toast.error(err.response?.data?.message || "Gagal mengajukan peminjaman");
     } finally {
       setSubmitting(false);
     }
@@ -149,9 +151,9 @@ const Barang = () => {
             value={kategoriFilter}
             onChange={(e) => setKategoriFilter(e.target.value)}
             options={[
-              { value: '', label: 'Semua Kategori' },
-              { value: 'elektronik', label: 'Elektronik' },
-              { value: 'olahraga', label: 'Olahraga' }
+              { value: "", label: "Semua Kategori" },
+              { value: "elektronik", label: "Elektronik" },
+              { value: "olahraga", label: "Olahraga" },
             ]}
             placeholder="Pilih Kategori"
           />
@@ -161,25 +163,26 @@ const Barang = () => {
       {/* Kategori Tabs */}
       <div className="flex gap-2 flex-wrap">
         <Button
-          variant={kategoriFilter === '' ? 'primary' : 'outline'}
+          variant={kategoriFilter === "" ? "primary" : "outline"}
           size="sm"
-          onClick={() => setKategoriFilter('')}
+          onClick={() => setKategoriFilter("")}
         >
           Semua ({barang.length})
         </Button>
         <Button
-          variant={kategoriFilter === 'elektronik' ? 'primary' : 'outline'}
+          variant={kategoriFilter === "elektronik" ? "primary" : "outline"}
           size="sm"
-          onClick={() => setKategoriFilter('elektronik')}
+          onClick={() => setKategoriFilter("elektronik")}
         >
-          Elektronik ({barang.filter(b => b.kategori === 'elektronik').length})
+          Elektronik ({barang.filter((b) => b.kategori === "elektronik").length}
+          )
         </Button>
         <Button
-          variant={kategoriFilter === 'olahraga' ? 'primary' : 'outline'}
+          variant={kategoriFilter === "olahraga" ? "primary" : "outline"}
           size="sm"
-          onClick={() => setKategoriFilter('olahraga')}
+          onClick={() => setKategoriFilter("olahraga")}
         >
-          Olahraga ({barang.filter(b => b.kategori === 'olahraga').length})
+          Olahraga ({barang.filter((b) => b.kategori === "olahraga").length})
         </Button>
       </div>
 
@@ -187,8 +190,10 @@ const Barang = () => {
       {filteredBarang.length === 0 ? (
         <Card>
           <div className="text-center py-12 text-gray-500">
-            <IoCube size={64} className="mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-semibold mb-2">Barang tidak ditemukan</h3>
+            <IoGrid size={64} className="mx-auto mb-4 opacity-50" />
+            <h3 className="text-xl font-semibold mb-2">
+              Barang tidak ditemukan
+            </h3>
             <p>Coba ubah kata kunci pencarian atau filter kategori</p>
           </div>
         </Card>
@@ -199,15 +204,19 @@ const Barang = () => {
               {/* Image */}
               <div className="relative -mx-6 -mt-6 mb-4">
                 <img
-                  src={item.foto !== 'default-barang.jpg'
-                    ? `http://localhost:5000/uploads/${item.foto}`
-                    : 'https://via.placeholder.com/400x300?text=No+Image'}
+                  src={
+                    item.foto !== "default-barang.jpg"
+                      ? `http://localhost:5001/uploads/${item.foto}`
+                      : "https://via.placeholder.com/400x300?text=No+Image"
+                  }
                   alt={item.namaBarang}
                   className="w-full h-48 object-cover"
                 />
                 <div className="absolute top-3 right-3">
                   <Badge
-                    variant={item.kategori === 'elektronik' ? 'primary' : 'success'}
+                    variant={
+                      item.kategori === "elektronik" ? "primary" : "success"
+                    }
                     className="text-xs"
                   >
                     {item.kategori.toUpperCase()}
@@ -218,8 +227,12 @@ const Barang = () => {
               {/* Content */}
               <div className="space-y-3">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800">{item.namaBarang}</h3>
-                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">{item.deskripsi}</p>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    {item.namaBarang}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                    {item.deskripsi}
+                  </p>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
@@ -229,7 +242,9 @@ const Barang = () => {
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">Kondisi:</span>
-                  <Badge variant={item.kondisi === 'baik' ? 'success' : 'warning'}>
+                  <Badge
+                    variant={item.kondisi === "baik" ? "success" : "warning"}
+                  >
                     {item.kondisi}
                   </Badge>
                 </div>
@@ -245,7 +260,9 @@ const Barang = () => {
                   disabled={item.jumlahTersedia === 0}
                   onClick={() => handlePinjam(item)}
                 >
-                  {item.jumlahTersedia === 0 ? 'Tidak Tersedia' : 'Ajukan Peminjaman'}
+                  {item.jumlahTersedia === 0
+                    ? "Tidak Tersedia"
+                    : "Ajukan Peminjaman"}
                 </Button>
               </div>
             </Card>
@@ -264,8 +281,12 @@ const Barang = () => {
           <form onSubmit={handleSubmitPeminjaman} className="space-y-4">
             {/* Info Barang */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-gray-800 mb-2">{selectedBarang.namaBarang}</h4>
-              <p className="text-sm text-gray-600">Tersedia: {selectedBarang.jumlahTersedia} unit</p>
+              <h4 className="font-semibold text-gray-800 mb-2">
+                {selectedBarang.namaBarang}
+              </h4>
+              <p className="text-sm text-gray-600">
+                Tersedia: {selectedBarang.jumlahTersedia} unit
+              </p>
             </div>
 
             <Input
@@ -286,7 +307,7 @@ const Barang = () => {
                 name="tanggalPinjam"
                 value={formData.tanggalPinjam}
                 onChange={handleFormChange}
-                min={new Date().toISOString().split('T')[0]}
+                min={new Date().toISOString().split("T")[0]}
                 required
               />
 
@@ -296,7 +317,10 @@ const Barang = () => {
                 name="tanggalKembali"
                 value={formData.tanggalKembali}
                 onChange={handleFormChange}
-                min={formData.tanggalPinjam || new Date().toISOString().split('T')[0]}
+                min={
+                  formData.tanggalPinjam ||
+                  new Date().toISOString().split("T")[0]
+                }
                 required
               />
             </div>

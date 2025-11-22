@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { IoCube, IoList, IoCheckmarkCircle, IoTime, IoArrowForward } from 'react-icons/io5';
+import { IoBusiness, IoList, IoCheckmarkCircle, IoTime, IoArrowForward } from 'react-icons/io5';
 import { toast } from 'react-toastify';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -50,12 +50,12 @@ const Dashboard = () => {
 
   const getStatusBadge = (status) => {
     const variants = {
-      menunggu: 'warning',
-      disetujui: 'success',
-      ditolak: 'danger',
-      selesai: 'info'
+      'Menunggu': 'warning',
+      'Disetujui': 'success',
+      'Ditolak': 'danger',
+      'Selesai': 'info'
     };
-    return <Badge variant={variants[status]}>{status.toUpperCase()}</Badge>;
+    return <Badge variant={variants[status]}>{status}</Badge>;
   };
 
   if (loading) {
@@ -83,15 +83,15 @@ const Dashboard = () => {
               <h3 className="text-3xl font-bold mt-1">{stats?.total || 0}</h3>
             </div>
             <div className="bg-white bg-opacity-20 p-3 rounded-full">
-              <IoCube size={32} />
+              <IoBusiness size={32} />
             </div>
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
+        <Card className="!bg-orange-500 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-yellow-100 text-sm">Menunggu</p>
+              <p className="text-orange-100 text-sm">Menunggu</p>
               <h3 className="text-3xl font-bold mt-1">{stats?.menunggu || 0}</h3>
             </div>
             <div className="bg-white bg-opacity-20 p-3 rounded-full">
@@ -100,10 +100,10 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+        <Card className="!bg-teal-500 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100 text-sm">Sedang Dipinjam</p>
+              <p className="text-teal-100 text-sm">Sedang Dipinjam</p>
               <h3 className="text-3xl font-bold mt-1">{stats?.aktif || 0}</h3>
             </div>
             <div className="bg-white bg-opacity-20 p-3 rounded-full">
@@ -112,10 +112,10 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+        <Card className="!bg-indigo-500 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100 text-sm">Selesai</p>
+              <p className="text-indigo-100 text-sm">Selesai</p>
               <h3 className="text-3xl font-bold mt-1">{stats?.selesai || 0}</h3>
             </div>
             <div className="bg-white bg-opacity-20 p-3 rounded-full">
@@ -128,7 +128,7 @@ const Dashboard = () => {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Link to="/barang">
-          <Card hover className="bg-blue-50 border-2 border-blue-200">
+          <Card hover className="bg-white border-2 border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Lihat Daftar Barang</h3>
@@ -140,13 +140,13 @@ const Dashboard = () => {
         </Link>
 
         <Link to="/peminjaman">
-          <Card hover className="bg-green-50 border-2 border-green-200">
+          <Card hover className="bg-white border-2 border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800">Peminjaman Saya</h3>
                 <p className="text-gray-600 text-sm mt-1">Cek status peminjaman Anda</p>
               </div>
-              <IoArrowForward className="text-green-600" size={24} />
+              <IoArrowForward className="text-blue-600" size={24} />
             </div>
           </Card>
         </Link>
@@ -166,7 +166,7 @@ const Dashboard = () => {
         <Card.Content>
           {recentPeminjaman.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              <IoCube size={48} className="mx-auto mb-2 opacity-50" />
+              <IoBusiness size={48} className="mx-auto mb-2 opacity-50" />
               <p>Belum ada peminjaman</p>
             </div>
           ) : (
@@ -175,7 +175,7 @@ const Dashboard = () => {
                 <div key={item._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-4">
                     <img
-                      src={item.barangId?.foto ? `http://localhost:5000/uploads/${item.barangId.foto}` : '/default-barang.jpg'}
+                      src={item.barangId?.foto ? `http://localhost:5001/uploads/${item.barangId.foto}` : '/default-barang.jpg'}
                       alt={item.barangId?.namaBarang}
                       className="w-12 h-12 object-cover rounded-lg"
                     />

@@ -59,6 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       title: "AKTIVITAS",
       items: [
         { path: "/peminjaman", icon: IoList, label: "Peminjaman Saya" },
+        { path: "/pengembalian", icon: IoCheckmarkCircle, label: "Pengembalian" },
         { path: "/riwayat", icon: IoTime, label: "Riwayat" },
       ],
     },

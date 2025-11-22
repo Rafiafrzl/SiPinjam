@@ -18,6 +18,7 @@ import Register from "./pages/auth/Register";
 import Dashboard from "./pages/user/Dashboard";
 import Barang from "./pages/user/Barang";
 import PeminjamanUser from "./pages/user/PeminjamanUser";
+import PengembalianUser from "./pages/user/PengembalianUser";
 import Riwayat from "./pages/user/Riwayat";
 import Notifikasi from "./pages/user/Notifikasi";
 import Profile from "./pages/user/Profile";
@@ -64,6 +65,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="barang" element={<Barang />} />
             <Route path="peminjaman" element={<PeminjamanUser />} />
+            <Route path="pengembalian" element={<PengembalianUser />} />
             <Route path="riwayat" element={<Riwayat />} />
             <Route path="notifikasi" element={<Notifikasi />} />
             <Route path="profile" element={<Profile />} />
