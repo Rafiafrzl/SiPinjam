@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   IoHome,
-  IoCube,
+  IoLibrary,
   IoList,
   IoTime,
   IoStatsChart,
@@ -52,7 +52,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       title: "MENU UTAMA",
       items: [
         { path: "/dashboard", icon: IoHome, label: "Dashboard" },
-        { path: "/barang", icon: IoCube, label: "Daftar Barang" },
+        { path: "/barang", icon: IoLibrary, label: "Daftar Barang" },
       ],
     },
     {
@@ -86,7 +86,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     {
       title: "KELOLA DATA",
       items: [
-        { path: "/admin/barang", icon: IoCube, label: "Kelola Barang" },
+        { path: "/admin/barang", icon: IoLibrary, label: "Kelola Barang" },
         { path: "/admin/peminjaman", icon: IoList, label: "Permintaan" },
         {
           path: "/admin/pengembalian",
