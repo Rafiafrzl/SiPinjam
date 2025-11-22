@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { IoCube, IoPeople, IoList, IoCheckmarkCircle, IoTime, IoWarning } from 'react-icons/io5';
+import { IoLibrary, IoPeople, IoList, IoCheckmarkCircle, IoTime, IoWarning } from 'react-icons/io5';
 import { toast } from 'react-toastify';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -67,7 +67,7 @@ const AdminDashboard = () => {
               </p>
             </div>
             <div className="bg-white bg-opacity-20 p-3 rounded-full">
-              <IoCube size={32} />
+              <IoLibrary size={32} />
             </div>
           </div>
         </Card>
