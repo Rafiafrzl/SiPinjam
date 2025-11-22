@@ -87,16 +87,7 @@ const createBarang = async (req, res) => {
     const { namaBarang, kategori, deskripsi, jumlahTotal, kondisi, lokasi } =
       req.body;
 
-    console.log("Creating barang with data:", {
-      namaBarang,
-      kategori,
-      deskripsi,
-      jumlahTotal,
-      kondisi,
-      lokasi,
-      hasFile: !!req.file,
-    });
-
+    
     const barang = await Barang.create({
       namaBarang,
       kategori,
@@ -114,8 +105,7 @@ const createBarang = async (req, res) => {
       data: barang,
     });
   } catch (error) {
-    console.error("Error creating barang:", error);
-    res.status(500).json({
+        res.status(500).json({
       success: false,
       message: error.message,
       stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
@@ -217,8 +207,7 @@ const deleteBarang = async (req, res) => {
           fs.unlinkSync(photoPath);
         }
       } catch (fileError) {
-        console.warn("Gagal menghapus foto barang:", fileError.message);
-        // Lanjutkan proses penghapusan meskipun foto gagal dihapus
+                // Lanjutkan proses penghapusan meskipun foto gagal dihapus
       }
     }
 

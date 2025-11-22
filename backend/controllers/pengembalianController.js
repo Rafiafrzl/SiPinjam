@@ -85,8 +85,7 @@ const createPengembalian = async (req, res) => {
       data: pengembalian
     });
   } catch (error) {
-    console.error('Error creating pengembalian:', error);
-    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -152,8 +151,7 @@ const verifikasiPengembalian = async (req, res) => {
       data: pengembalian
     });
   } catch (error) {
-    console.error('Error verifying pengembalian:', error);
-    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -190,8 +188,7 @@ const getAllPengembalian = async (req, res) => {
       total: count
     });
   } catch (error) {
-    console.error('Error getting pengembalian:', error);
-    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -223,8 +220,7 @@ const getPengembalianByUser = async (req, res) => {
       total: count
     });
   } catch (error) {
-    console.error('Error getting user pengembalian:', error);
-    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -256,8 +252,7 @@ const getPengembalianById = async (req, res) => {
 
     res.json({ data: pengembalian });
   } catch (error) {
-    console.error('Error getting pengembalian by ID:', error);
-    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -276,8 +271,7 @@ const getPengembalianByPeminjamanId = async (req, res) => {
 
     res.json({ data: pengembalian });
   } catch (error) {
-    console.error('Error getting pengembalian by peminjaman ID:', error);
-    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 

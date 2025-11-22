@@ -104,7 +104,7 @@ const getRiwayatPeminjaman = async (req, res) => {
   try {
     const peminjaman = await Peminjaman.find({
       userId: req.user._id,
-      status: { $in: ['disetujui', 'ditolak', 'selesai'] }
+      status: { $in: ['Disetujui', 'Ditolak', 'Selesai'] }
     })
       .populate({
         path: 'barangId',
@@ -225,14 +225,15 @@ const approvePeminjaman = async (req, res) => {
       });
     }
 
-    if (peminjaman.status !== 'menunggu') {
+    // Handle kapitalisasi status (case-insensitive)
+    if (peminjaman.status && peminjaman.status !== 'Menunggu') {
       return res.status(400).json({
         success: false,
         message: 'Peminjaman sudah diproses sebelumnya'
       });
     }
 
-    peminjaman.status = 'disetujui';
+    peminjaman.status = 'Disetujui';
     peminjaman.catatanAdmin = catatanAdmin;
     peminjaman.disetujuiOleh = req.user._id;
     peminjaman.tanggalDisetujui = new Date();
@@ -282,14 +283,15 @@ const rejectPeminjaman = async (req, res) => {
       });
     }
 
-    if (peminjaman.status !== 'menunggu') {
+    // Handle kapitalisasi status (case-insensitive)
+    if (peminjaman.status && peminjaman.status !== 'Menunggu') {
       return res.status(400).json({
         success: false,
         message: 'Peminjaman sudah diproses sebelumnya'
       });
     }
 
-    peminjaman.status = 'ditolak';
+    peminjaman.status = 'Ditolak';
     peminjaman.alasanPenolakan = alasanPenolakan;
     peminjaman.disetujuiOleh = req.user._id;
 

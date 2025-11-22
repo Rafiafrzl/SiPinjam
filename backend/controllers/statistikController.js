@@ -20,32 +20,33 @@ const getStatistikAdmin = async (req, res) => {
     const totalPeminjaman = await Peminjaman.countDocuments({ barangId: { $in: activeBarangIds } });
     const peminjamanMenunggu = await Peminjaman.countDocuments({
       barangId: { $in: activeBarangIds },
-      status: 'menunggu'
+      status: 'Menunggu'
     });
     const peminjamanDisetujui = await Peminjaman.countDocuments({
       barangId: { $in: activeBarangIds },
-      status: 'disetujui'
+      status: 'Disetujui'
     });
     const peminjamanDitolak = await Peminjaman.countDocuments({
       barangId: { $in: activeBarangIds },
-      status: 'ditolak'
+      status: 'Ditolak'
     });
     const peminjamanSelesai = await Peminjaman.countDocuments({
       barangId: { $in: activeBarangIds },
-      status: 'selesai'
+      status: 'Selesai'
     });
 
     // Barang sedang dipinjam
     const barangDipinjam = await Peminjaman.countDocuments({
       barangId: { $in: activeBarangIds },
-      status: 'disetujui',
-      statusPengembalian: 'belum-kembali'
+      status: 'Disetujui',
+      statusPengembalian: 'Belum Dikembalikan'
     });
 
-    // Pengembalian terlambat
+    // Pengembalian terlambat - peminjaman yang sudah disetujui tapi melewati tanggal kembali
     const pengembalianTerlambat = await Peminjaman.countDocuments({
       barangId: { $in: activeBarangIds },
-      statusPengembalian: 'terlambat'
+      status: 'Disetujui',
+      tanggalKembali: { $lt: new Date() }
     });
 
     // Peminjaman terbaru (5 terakhir)
@@ -64,7 +65,7 @@ const getStatistikAdmin = async (req, res) => {
 
     // Barang paling sering dipinjam
     const barangPopular = await Peminjaman.aggregate([
-      { $match: { status: { $in: ['disetujui', 'selesai'] } } },
+      { $match: { status: { $in: ['Disetujui', 'Selesai'] } } },
       {
         $group: {
           _id: '$barangId',
@@ -137,30 +138,30 @@ const getStatistikUser = async (req, res) => {
     const peminjamanMenunggu = await Peminjaman.countDocuments({
       userId,
       barangId: { $in: activeBarangIds },
-      status: 'menunggu'
+      status: 'Menunggu'
     });
     const peminjamanDisetujui = await Peminjaman.countDocuments({
       userId,
       barangId: { $in: activeBarangIds },
-      status: 'disetujui'
+      status: 'Disetujui'
     });
     const peminjamanDitolak = await Peminjaman.countDocuments({
       userId,
       barangId: { $in: activeBarangIds },
-      status: 'ditolak'
+      status: 'Ditolak'
     });
     const peminjamanSelesai = await Peminjaman.countDocuments({
       userId,
       barangId: { $in: activeBarangIds },
-      status: 'selesai'
+      status: 'Selesai'
     });
 
     // Peminjaman aktif (sedang dipinjam)
     const peminjamanAktif = await Peminjaman.countDocuments({
       userId,
       barangId: { $in: activeBarangIds },
-      status: 'disetujui',
-      statusPengembalian: 'belum-kembali'
+      status: 'Disetujui',
+      statusPengembalian: 'Belum Dikembalikan'
     });
 
     res.json({

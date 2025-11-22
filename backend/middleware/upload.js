@@ -7,14 +7,10 @@ const uploadDir = "uploads";
 
 try {
   if (!fs.existsSync(uploadDir)) {
-    console.log(`Creating uploads directory: ${uploadDir}`);
     fs.mkdirSync(uploadDir, { recursive: true });
-    console.log(`Uploads directory created successfully`);
-  } else {
-    console.log(`Uploads directory already exists: ${uploadDir}`);
   }
 } catch (error) {
-  console.error(`Error creating uploads directory: ${error.message}`);
+  // Silently continue if directory creation fails
 }
 
 // Konfigurasi storage
@@ -27,7 +23,6 @@ const storage = multer.diskStorage({
       }
       cb(null, uploadDir);
     } catch (error) {
-      console.error('Upload destination error:', error);
       cb(error, uploadDir);
     }
   },
