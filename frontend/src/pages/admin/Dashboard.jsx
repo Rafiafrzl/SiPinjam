@@ -57,7 +57,7 @@ const AdminDashboard = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+        <Card className="!bg-blue-600 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-100 text-sm">Total Barang</p>
@@ -72,7 +72,7 @@ const AdminDashboard = () => {
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+        <Card className="!bg-purple-600 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-100 text-sm">Total User</p>
@@ -85,7 +85,7 @@ const AdminDashboard = () => {
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+        <Card className="!bg-green-600 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-100 text-sm">Sedang Dipinjam</p>
@@ -98,7 +98,7 @@ const AdminDashboard = () => {
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
+        <Card className="!bg-yellow-600 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-yellow-100 text-sm">Menunggu Approval</p>

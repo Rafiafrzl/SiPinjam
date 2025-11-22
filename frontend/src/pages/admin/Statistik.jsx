@@ -40,43 +40,51 @@ const Statistik = () => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+        <Card className="!bg-blue-600 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-100 text-sm">Total Barang</p>
               <h3 className="text-3xl font-bold mt-1">{stats?.barang?.total || 0}</h3>
             </div>
-            <IoArchive size={40} className="opacity-80" />
+            <div className="bg-white bg-opacity-20 p-3 rounded-full">
+              <IoArchive size={32} />
+            </div>
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+        <Card className="!bg-purple-600 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-100 text-sm">Total User</p>
               <h3 className="text-3xl font-bold mt-1">{stats?.user?.total || 0}</h3>
             </div>
-            <IoPeople size={40} className="opacity-80" />
+            <div className="bg-white bg-opacity-20 p-3 rounded-full">
+              <IoPeople size={32} />
+            </div>
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+        <Card className="!bg-green-600 text-white">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-100 text-sm">Total Peminjaman</p>
               <h3 className="text-3xl font-bold mt-1">{stats?.peminjaman?.total || 0}</h3>
             </div>
-            <IoList size={40} className="opacity-80" />
+            <div className="bg-white bg-opacity-20 p-3 rounded-full">
+              <IoList size={32} />
+            </div>
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+        <Card className="!bg-red-600 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-orange-100 text-sm">Sedang Dipinjam</p>
+              <p className="text-red-100 text-sm">Sedang Dipinjam</p>
               <h3 className="text-3xl font-bold mt-1">{stats?.aktivitas?.sedangDipinjam || 0}</h3>
             </div>
-            <IoStatsChart size={40} className="opacity-80" />
+            <div className="bg-white bg-opacity-20 p-3 rounded-full">
+              <IoStatsChart size={32} />
+            </div>
           </div>
         </Card>
       </div>
