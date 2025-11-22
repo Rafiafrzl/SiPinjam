@@ -13,7 +13,9 @@ const barangSchema = new mongoose.Schema({
   },
   deskripsi: {
     type: String,
-    required: [true, 'Deskripsi harus diisi']
+    trim: true,
+    required: false,
+    default: ''
   },
   foto: {
     type: String,

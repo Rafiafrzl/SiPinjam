@@ -76,13 +76,20 @@ const getPeminjamanUser = async (req, res) => {
     }
 
     const peminjaman = await Peminjaman.find(query)
-      .populate('barangId', 'namaBarang kategori foto')
+      .populate({
+        path: 'barangId',
+        match: { isActive: true }, // Hanya populate barang yang masih aktif
+        select: 'namaBarang kategori foto'
+      })
       .sort({ createdAt: -1 });
+
+    // Filter peminjaman yang barang-nya sudah dihapus
+    const filteredPeminjaman = peminjaman.filter(p => p.barangId !== null);
 
     res.json({
       success: true,
-      count: peminjaman.length,
-      data: peminjaman
+      count: filteredPeminjaman.length,
+      data: filteredPeminjaman
     });
   } catch (error) {
     res.status(500).json({
@@ -99,13 +106,20 @@ const getRiwayatPeminjaman = async (req, res) => {
       userId: req.user._id,
       status: { $in: ['disetujui', 'ditolak', 'selesai'] }
     })
-      .populate('barangId', 'namaBarang kategori foto')
+      .populate({
+        path: 'barangId',
+        match: { isActive: true }, // Hanya populate barang yang masih aktif
+        select: 'namaBarang kategori foto'
+      })
       .sort({ createdAt: -1 });
+
+    // Filter peminjaman yang barang-nya sudah dihapus
+    const filteredPeminjaman = peminjaman.filter(p => p.barangId !== null);
 
     res.json({
       success: true,
-      count: peminjaman.length,
-      data: peminjaman
+      count: filteredPeminjaman.length,
+      data: filteredPeminjaman
     });
   } catch (error) {
     res.status(500).json({
@@ -162,13 +176,19 @@ const getAllPeminjaman = async (req, res) => {
 
     const peminjaman = await Peminjaman.find(query)
       .populate('userId', 'nama email kelas noTelepon')
-      .populate('barangId', 'namaBarang kategori foto')
+      .populate({
+        path: 'barangId',
+        match: { isActive: true }, // Hanya populate barang yang masih aktif
+        select: 'namaBarang kategori foto'
+      })
       .sort({ createdAt: -1 });
 
+    // Filter peminjaman yang barang-nya sudah dihapus (null setelah populate dengan match)
+    let filteredPeminjaman = peminjaman.filter(p => p.barangId !== null);
+
     // Filter by kategori barang jika ada
-    let filteredPeminjaman = peminjaman;
     if (kategori) {
-      filteredPeminjaman = peminjaman.filter(p => p.barangId.kategori === kategori);
+      filteredPeminjaman = filteredPeminjaman.filter(p => p.barangId.kategori === kategori);
     }
 
     res.json({
@@ -194,6 +214,14 @@ const approvePeminjaman = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Peminjaman tidak ditemukan'
+      });
+    }
+
+    // Cek apakah barang masih ada dan aktif
+    if (!peminjaman.barangId || !peminjaman.barangId.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: 'Barang telah dihapus dan tidak dapat disetujui'
       });
     }
 
@@ -243,6 +271,14 @@ const rejectPeminjaman = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Peminjaman tidak ditemukan'
+      });
+    }
+
+    // Cek apakah barang masih ada dan aktif
+    if (!peminjaman.barangId || !peminjaman.barangId.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: 'Barang telah dihapus. Peminjaman akan ditolak otomatis.'
       });
     }
 
