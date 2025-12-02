@@ -44,6 +44,17 @@ const Permintaan = () => {
   };
 
   const handleApprove = (item) => {
+    // Debug: Log status untuk troubleshooting
+    console.log('Approve clicked - Item status:', item.status, 'Full item:', item);
+
+    // Cek status yang sudah diproses (sesuai enum di backend)
+    const processedStatuses = ['Disetujui', 'Ditolak', 'Selesai'];
+    if (processedStatuses.includes(item.status)) {
+      toast.error('Peminjaman sudah diproses sebelumnya');
+      fetchPeminjaman(); // Refresh data
+      return;
+    }
+
     setModalType('approve');
     setSelectedItem(item);
     setCatatan('');
@@ -51,6 +62,17 @@ const Permintaan = () => {
   };
 
   const handleReject = (item) => {
+    // Debug: Log status untuk troubleshooting
+    console.log('Reject clicked - Item status:', item.status, 'Full item:', item);
+
+    // Cek status yang sudah diproses (sesuai enum di backend)
+    const processedStatuses = ['Disetujui', 'Ditolak', 'Selesai'];
+    if (processedStatuses.includes(item.status)) {
+      toast.error('Peminjaman sudah diproses sebelumnya');
+      fetchPeminjaman(); // Refresh data
+      return;
+    }
+
     setModalType('reject');
     setSelectedItem(item);
     setCatatan('');
@@ -70,13 +92,29 @@ const Permintaan = () => {
       return;
     }
 
+    // Double check status before submitting - log untuk debugging
+    console.log('Submitting action - Selected item status:', selectedItem.status);
+
+    // Cek status yang sudah diproses (sesuai enum di backend)
+    const processedStatuses = ['Disetujui', 'Ditolak', 'Selesai'];
+    if (processedStatuses.includes(selectedItem.status)) {
+      toast.error('Peminjaman sudah diproses sebelumnya');
+      setShowModal(false);
+      setSelectedItem(null);
+      fetchPeminjaman();
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       if (modalType === 'approve') {
-        await api.put(`/peminjaman/admin/${selectedItem._id}/approve`, {
+        const requestData = {
           catatanAdmin: catatan.trim()
-        });
+        };
+        console.log('Sending approve request:', `/peminjaman/admin/${selectedItem._id}/approve`, requestData);
+
+        await api.put(`/peminjaman/admin/${selectedItem._id}/approve`, requestData);
         toast.success('Peminjaman berhasil disetujui');
       } else {
         if (!catatan.trim()) {
@@ -84,9 +122,12 @@ const Permintaan = () => {
           setSubmitting(false);
           return;
         }
-        await api.put(`/peminjaman/admin/${selectedItem._id}/reject`, {
+        const requestData = {
           alasanPenolakan: catatan.trim()
-        });
+        };
+        console.log('Sending reject request:', `/peminjaman/admin/${selectedItem._id}/reject`, requestData);
+
+        await api.put(`/peminjaman/admin/${selectedItem._id}/reject`, requestData);
         toast.success('Peminjaman berhasil ditolak');
       }
 
@@ -97,15 +138,28 @@ const Permintaan = () => {
       await fetchPeminjaman();
       setTimeout(() => fetchPeminjaman(), 500);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Gagal memproses peminjaman';
-      toast.error(errorMessage);
+      // Debug logging untuk melihat error detail
+      console.error('Error processing peminjaman:', err);
+      console.error('Error response:', err.response?.data);
+      console.error('Error status:', err.response?.status);
 
-      // Force refresh jika ada sync error
-      if (errorMessage.includes('sudah diproses') || errorMessage.includes('tidak ditemukan')) {
-        await fetchPeminjaman();
-        setTimeout(() => fetchPeminjaman(), 500);
+      const errorMessage = err.response?.data?.message || 'Gagal memproses peminjaman';
+
+      // Handle specific error cases
+      if (errorMessage.includes('sudah diproses')) {
+        toast.info('Peminjaman sudah diproses, data akan diperbarui');
         setShowModal(false);
         setSelectedItem(null);
+        await fetchPeminjaman();
+        setTimeout(() => fetchPeminjaman(), 500);
+      } else if (errorMessage.includes('tidak ditemukan')) {
+        toast.error('Peminjaman tidak ditemukan, data akan diperbarui');
+        setShowModal(false);
+        setSelectedItem(null);
+        await fetchPeminjaman();
+        setTimeout(() => fetchPeminjaman(), 500);
+      } else {
+        toast.error(errorMessage);
       }
     } finally {
       setSubmitting(false);

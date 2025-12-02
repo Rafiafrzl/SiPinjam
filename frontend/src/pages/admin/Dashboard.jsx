@@ -31,12 +31,12 @@ const AdminDashboard = () => {
 
   const getStatusBadge = (status) => {
     const variants = {
-      menunggu: 'warning',
-      disetujui: 'success',
-      ditolak: 'danger',
-      selesai: 'info'
+      'Menunggu': 'warning',
+      'Disetujui': 'success',
+      'Ditolak': 'danger',
+      'Selesai': 'info'
     };
-    return <Badge variant={variants[status]}>{status.toUpperCase()}</Badge>;
+    return <Badge variant={variants[status]}>{status}</Badge>;
   };
 
   if (loading) {
