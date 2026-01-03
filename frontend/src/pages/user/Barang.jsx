@@ -206,7 +206,7 @@ const Barang = () => {
                 <img
                   src={
                     item.foto !== "default-barang.jpg"
-                      ? `http://localhost:5001/uploads/${item.foto}`
+                      ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.foto}`
                       : "https://via.placeholder.com/400x300?text=No+Image"
                   }
                   alt={item.namaBarang}

@@ -158,7 +158,6 @@ const PeminjamanUser = () => {
           {peminjaman.map((item) => (
             <Card
               key={item._id}
-              hover
               onClick={() => handleShowDetail(item._id)}
             >
               <div className="flex flex-col md:flex-row gap-4">
@@ -166,7 +165,7 @@ const PeminjamanUser = () => {
                 <img
                   src={
                     item.barangId?.foto !== "default-barang.jpg"
-                      ? `http://localhost:5001/uploads/${item.barangId?.foto}`
+                      ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.barangId?.foto}`
                       : "https://via.placeholder.com/150"
                   }
                   alt={item.barangId?.namaBarang}
@@ -246,7 +245,7 @@ const PeminjamanUser = () => {
                 <img
                   src={
                     selectedPeminjaman.barangId?.foto !== "default-barang.jpg"
-                      ? `http://localhost:5001/uploads/${selectedPeminjaman.barangId?.foto}`
+                      ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${selectedPeminjaman.barangId?.foto}`
                       : "https://via.placeholder.com/100"
                   }
                   alt={selectedPeminjaman.barangId?.namaBarang}

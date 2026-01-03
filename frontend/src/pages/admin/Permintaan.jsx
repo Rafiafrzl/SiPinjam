@@ -205,7 +205,7 @@ const Permintaan = () => {
             <Card key={item._id}>
               <div className="flex flex-col md:flex-row gap-4">
                 <img
-                  src={item.barangId?.foto !== 'default-barang.jpg' ? `http://localhost:5001/uploads/${item.barangId?.foto}` : 'https://via.placeholder.com/150'}
+                  src={item.barangId?.foto !== 'default-barang.jpg' ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.barangId?.foto}` : 'https://via.placeholder.com/150'}
                   alt={item.barangId?.namaBarang}
                   className="w-full md:w-32 h-32 object-cover rounded-lg"
                 />

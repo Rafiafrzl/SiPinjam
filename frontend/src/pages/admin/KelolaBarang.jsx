@@ -111,7 +111,7 @@ const KelolaBarang = () => {
     });
     // Set existing image as preview
     if (item.foto && item.foto !== "default-barang.jpg") {
-      setImagePreview(`http://localhost:5001/uploads/${item.foto}`);
+      setImagePreview(`${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.foto}`);
     } else {
       setImagePreview(null);
     }
@@ -268,7 +268,7 @@ const KelolaBarang = () => {
                     <img
                       src={
                         item.foto !== "default-barang.jpg"
-                          ? `http://localhost:5001/uploads/${item.foto}`
+                          ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.foto}`
                           : "https://via.placeholder.com/50"
                       }
                       alt={item.namaBarang}
