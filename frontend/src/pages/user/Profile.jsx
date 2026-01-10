@@ -1,11 +1,18 @@
-import { useState } from 'react';
-import { IoPerson, IoMail, IoSchool, IoCall, IoLockClosed, IoSave } from 'react-icons/io5';
-import { toast } from 'react-toastify';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import useAuth from '../../hooks/useAuth';
-import api from '../../utils/api';
+import { useState } from "react";
+import {
+  IoPerson,
+  IoMail,
+  IoSchool,
+  IoCall,
+  IoLockClosed,
+  IoSave,
+} from "react-icons/io5";
+import { toast } from "react-toastify";
+import Card from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import useAuth from "../../hooks/useAuth";
+import api from "../../utils/api";
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -14,27 +21,27 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    nama: user?.nama || '',
-    kelas: user?.kelas || '',
-    noTelepon: user?.noTelepon || ''
+    nama: user?.nama || "",
+    kelas: user?.kelas || "",
+    noTelepon: user?.noTelepon || "",
   });
 
   const [passwordData, setPasswordData] = useState({
-    newPassword: '',
-    confirmPassword: ''
+    newPassword: "",
+    confirmPassword: "",
   });
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handlePasswordChange = (e) => {
     setPasswordData({
       ...passwordData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -43,12 +50,12 @@ const Profile = () => {
     setLoading(true);
 
     try {
-      const response = await api.put('/auth/profile', formData);
+      const response = await api.put("/auth/profile", formData);
       updateUser(response.data.data);
-      toast.success('Profile berhasil diupdate');
+      toast.success("Profile berhasil diupdate");
       setEditing(false);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal update profile');
+      toast.error(err.response?.data?.message || "Gagal update profile");
     } finally {
       setLoading(false);
     }
@@ -58,30 +65,33 @@ const Profile = () => {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('Password baru tidak cocok');
+      toast.error("Password baru tidak cocok");
       return;
     }
 
     if (passwordData.newPassword.length < 6) {
-      toast.error('Password minimal 6 karakter');
+      toast.error("Password minimal 6 karakter");
       return;
     }
 
     setLoading(true);
 
     try {
-      await api.put('/auth/profile', {
-        password: passwordData.newPassword
+      await api.put("/auth/change-password", {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
       });
 
-      toast.success('Password berhasil diubah');
+      toast.success("Password berhasil diubah");
       setChangingPassword(false);
       setPasswordData({
-        newPassword: '',
-        confirmPassword: ''
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
       });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal ubah password');
+      console.error("Error changing password:", err);
+      toast.error(err.response?.data?.message || "Gagal ubah password");
     } finally {
       setLoading(false);
     }
@@ -156,19 +166,15 @@ const Profile = () => {
                   onClick={() => {
                     setEditing(false);
                     setFormData({
-                      nama: user?.nama || '',
-                      kelas: user?.kelas || '',
-                      noTelepon: user?.noTelepon || ''
+                      nama: user?.nama || "",
+                      kelas: user?.kelas || "",
+                      noTelepon: user?.noTelepon || "",
                     });
                   }}
                 >
                   Batal
                 </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  loading={loading}
-                >
+                <Button type="submit" variant="primary" loading={loading}>
                   <IoSave size={18} />
                   Simpan Perubahan
                 </Button>
@@ -196,7 +202,9 @@ const Profile = () => {
                 <IoSchool className="text-gray-600" size={24} />
                 <div>
                   <p className="text-sm text-gray-600">Kelas</p>
-                  <p className="font-semibold text-gray-800">{user?.kelas || '-'}</p>
+                  <p className="font-semibold text-gray-800">
+                    {user?.kelas || "-"}
+                  </p>
                 </div>
               </div>
 
@@ -204,7 +212,9 @@ const Profile = () => {
                 <IoCall className="text-gray-600" size={24} />
                 <div>
                   <p className="text-sm text-gray-600">No. Telepon</p>
-                  <p className="font-semibold text-gray-800">{user?.noTelepon || '-'}</p>
+                  <p className="font-semibold text-gray-800">
+                    {user?.noTelepon || "-"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -262,18 +272,14 @@ const Profile = () => {
                   onClick={() => {
                     setChangingPassword(false);
                     setPasswordData({
-                      newPassword: '',
-                      confirmPassword: ''
+                      newPassword: "",
+                      confirmPassword: "",
                     });
                   }}
                 >
                   Batal
                 </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  loading={loading}
-                >
+                <Button type="submit" variant="primary" loading={loading}>
                   <IoSave size={18} />
                   Simpan Password
                 </Button>

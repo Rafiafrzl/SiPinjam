@@ -28,7 +28,6 @@ const ProfileAdmin = () => {
   }, [admin]);
 
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
@@ -89,8 +88,7 @@ const ProfileAdmin = () => {
     setLoading(true);
 
     try {
-      await api.put('/auth/change-password', {
-        currentPassword: passwordData.currentPassword,
+      await api.put('/auth/profile', {
         newPassword: passwordData.newPassword
       });
 
@@ -102,6 +100,7 @@ const ProfileAdmin = () => {
         confirmPassword: ''
       });
     } catch (err) {
+      console.error('Error changing password:', err);
       toast.error(err.response?.data?.message || 'Gagal ubah password');
     } finally {
       setLoading(false);
@@ -237,17 +236,6 @@ const ProfileAdmin = () => {
           <Card.Content>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <Input
-                label="Password Lama"
-                type="password"
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordChange}
-                placeholder="Masukkan password lama"
-                icon={<IoLockClosed size={20} />}
-                required
-              />
-
-              <Input
                 label="Password Baru"
                 type="password"
                 name="newPassword"
@@ -276,7 +264,6 @@ const ProfileAdmin = () => {
                   onClick={() => {
                     setChangingPassword(false);
                     setPasswordData({
-                      currentPassword: '',
                       newPassword: '',
                       confirmPassword: ''
                     });
