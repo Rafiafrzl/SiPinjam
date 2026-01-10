@@ -27,6 +27,7 @@ const Profile = () => {
   });
 
   const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
@@ -243,6 +244,17 @@ const Profile = () => {
         {changingPassword && (
           <Card.Content>
             <form onSubmit={handleChangePassword} className="space-y-4">
+              <Input
+                label="Password Lama"
+                type="password"
+                name="currentPassword"
+                value={passwordData.currentPassword}
+                onChange={handlePasswordChange}
+                placeholder="Masukkan password lama"
+                icon={<IoLockClosed size={20} />}
+                required
+              />
+
               <Input
                 label="Password Baru"
                 type="password"

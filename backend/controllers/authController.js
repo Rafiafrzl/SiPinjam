@@ -1,5 +1,5 @@
-import User from '../models/User.js';
-import generateToken from '../utils/generateToken.js';
+import User from "../models/User.js";
+import generateToken from "../utils/generateToken.js";
 
 // Register user baru
 const registerUser = async (req, res) => {
@@ -11,7 +11,7 @@ const registerUser = async (req, res) => {
     if (userExists) {
       return res.status(400).json({
         success: false,
-        message: 'Email sudah terdaftar'
+        message: "Email sudah terdaftar",
       });
     }
 
@@ -22,13 +22,13 @@ const registerUser = async (req, res) => {
       password,
       kelas,
       noTelepon,
-      role: 'user'
+      role: "user",
     });
 
     if (user) {
       res.status(201).json({
         success: true,
-        message: 'Registrasi berhasil',
+        message: "Registrasi berhasil",
         data: {
           id: user._id,
           nama: user.nama,
@@ -36,14 +36,14 @@ const registerUser = async (req, res) => {
           kelas: user.kelas,
           noTelepon: user.noTelepon,
           role: user.role,
-          token: generateToken(user._id)
-        }
+          token: generateToken(user._id),
+        },
       });
     }
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -59,7 +59,7 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Email atau password salah'
+        message: "Email atau password salah",
       });
     }
 
@@ -69,7 +69,7 @@ const loginUser = async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Email atau password salah'
+        message: "Email atau password salah",
       });
     }
 
@@ -77,13 +77,13 @@ const loginUser = async (req, res) => {
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
-        message: 'Akun Anda tidak aktif. Hubungi admin.'
+        message: "Akun Anda tidak aktif. Hubungi admin.",
       });
     }
 
     res.json({
       success: true,
-      message: 'Login berhasil',
+      message: "Login berhasil",
       data: {
         id: user._id,
         nama: user.nama,
@@ -91,13 +91,13 @@ const loginUser = async (req, res) => {
         kelas: user.kelas,
         noTelepon: user.noTelepon,
         role: user.role,
-        token: generateToken(user._id)
-      }
+        token: generateToken(user._id),
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -105,16 +105,16 @@ const loginUser = async (req, res) => {
 // Get profile user yang sedang login
 const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const user = await User.findById(req.user._id).select("-password");
 
     res.json({
       success: true,
-      data: user
+      data: user,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -126,7 +126,7 @@ const updateProfile = async (req, res) => {
     const updateData = {
       nama: req.body.nama,
       kelas: req.body.kelas,
-      noTelepon: req.body.noTelepon
+      noTelepon: req.body.noTelepon,
     };
 
     // Only update password if provided
@@ -134,37 +134,90 @@ const updateProfile = async (req, res) => {
       updateData.password = req.body.password;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     if (updatedUser) {
       res.json({
         success: true,
-        message: 'Profile berhasil diupdate',
+        message: "Profile berhasil diupdate",
         data: {
           id: updatedUser._id,
           nama: updatedUser.nama,
           email: updatedUser.email,
           kelas: updatedUser.kelas,
           noTelepon: updatedUser.noTelepon,
-          role: updatedUser.role
-        }
+          role: updatedUser.role,
+        },
       });
     } else {
       res.status(404).json({
         success: false,
-        message: 'User tidak ditemukan'
+        message: "User tidak ditemukan",
       });
     }
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
 
-export { registerUser, loginUser, getProfile, updateProfile };
+// Change password user
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    // Validasi input
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Password lama dan password baru harus diisi",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password baru minimal 6 karakter",
+      });
+    }
+
+    // Cari user
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User tidak ditemukan",
+      });
+    }
+
+    // Validasi password lama
+    const isPasswordMatch = await user.comparePassword(currentPassword);
+    if (!isPasswordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Password lama salah",
+      });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password berhasil diubah",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export { registerUser, loginUser, getProfile, updateProfile, changePassword };
