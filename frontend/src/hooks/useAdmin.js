@@ -1,13 +1,14 @@
 import { useAuth } from '../context/AuthContext';
 
 const useAdmin = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUser } = useAuth();
 
   const isAdmin = isAuthenticated && user?.role === 'admin';
 
   return {
     isAdmin,
-    user,
+    admin: user,
+    updateAdmin: updateUser,
     isAuthenticated
   };
 };

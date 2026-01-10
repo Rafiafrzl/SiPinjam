@@ -53,10 +53,20 @@ const ProfileAdmin = () => {
 
     try {
       const response = await api.put('/auth/profile', formData);
-      updateAdmin(response.data.data);
-      toast.success('Profile berhasil diupdate');
+
+      // Pastikan response.data.data berisi informasi user yang lengkap
+      if (response.data.data) {
+        updateAdmin(response.data.data);
+        toast.success('Profile berhasil diupdate');
+      } else {
+        // Jika struktur data berbeda, coba gunakan response.data langsung
+        updateAdmin(response.data);
+        toast.success('Profile berhasil diupdate');
+      }
+
       setEditing(false);
     } catch (err) {
+      console.error('Error updating profile:', err);
       toast.error(err.response?.data?.message || 'Gagal update profile');
     } finally {
       setLoading(false);
@@ -79,8 +89,9 @@ const ProfileAdmin = () => {
     setLoading(true);
 
     try {
-      await api.put('/auth/profile', {
-        password: passwordData.newPassword
+      await api.put('/auth/change-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
       });
 
       toast.success('Password berhasil diubah');
@@ -130,7 +141,7 @@ const ProfileAdmin = () => {
                 name="nama"
                 value={formData.nama}
                 onChange={handleChange}
-                icon={IoPerson}
+                icon={<IoPerson size={20} />}
                 required
               />
 
@@ -138,7 +149,7 @@ const ProfileAdmin = () => {
                 label="Email"
                 type="email"
                 value={admin?.email}
-                icon={IoMail}
+                icon={<IoMail size={20} />}
                 disabled
               />
 
@@ -147,7 +158,7 @@ const ProfileAdmin = () => {
                 name="noTelepon"
                 value={formData.noTelepon}
                 onChange={handleChange}
-                icon={IoCall}
+                icon={<IoCall size={20} />}
               />
 
               <div className="flex gap-3 pt-4">
@@ -226,13 +237,24 @@ const ProfileAdmin = () => {
           <Card.Content>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <Input
+                label="Password Lama"
+                type="password"
+                name="currentPassword"
+                value={passwordData.currentPassword}
+                onChange={handlePasswordChange}
+                placeholder="Masukkan password lama"
+                icon={<IoLockClosed size={20} />}
+                required
+              />
+
+              <Input
                 label="Password Baru"
                 type="password"
                 name="newPassword"
                 value={passwordData.newPassword}
                 onChange={handlePasswordChange}
                 placeholder="Minimal 6 karakter"
-                icon={IoLockClosed}
+                icon={<IoLockClosed size={20} />}
                 required
               />
 
@@ -243,7 +265,7 @@ const ProfileAdmin = () => {
                 value={passwordData.confirmPassword}
                 onChange={handlePasswordChange}
                 placeholder="Ketik ulang password baru"
-                icon={IoLockClosed}
+                icon={<IoLockClosed size={20} />}
                 required
               />
 
