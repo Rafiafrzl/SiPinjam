@@ -80,7 +80,7 @@ const Profile = () => {
     try {
       await api.put("/auth/change-password", {
         currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
+        newPassword: passwordData.newPassword,
       });
 
       toast.success("Password berhasil diubah");
@@ -88,7 +88,7 @@ const Profile = () => {
       setPasswordData({
         currentPassword: "",
         newPassword: "",
-        confirmPassword: ""
+        confirmPassword: "",
       });
     } catch (err) {
       console.error("Error changing password:", err);
