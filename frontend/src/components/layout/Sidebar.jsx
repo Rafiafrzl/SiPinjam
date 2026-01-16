@@ -172,10 +172,9 @@ const Sidebar = ({ isOpen, onClose }) => {
                             className={`
                               flex items-center justify-between gap-3 px-4 py-3 rounded-xl
                               text-sm font-medium transition-all duration-200
-                              ${
-                                isActive
-                                  ? "bg-white text-indigo-600 shadow-lg transform scale-105"
-                                  : "text-white/90 hover:bg-indigo-700 hover:text-white hover:translate-x-1"
+                              ${isActive
+                                ? "bg-white text-indigo-600 shadow-lg transform scale-105"
+                                : "text-white/90 hover:bg-indigo-700 hover:text-white hover:translate-x-1"
                               }
                             `}
                           >
@@ -273,9 +272,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                   </div>
                   <IoChevronUp
                     size={20}
-                    className={`text-white/80 transition-transform duration-200 ${
-                      showUserMenu ? "rotate-180" : ""
-                    }`}
+                    className={`text-white/80 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""
+                      }`}
                   />
                 </div>
               </button>

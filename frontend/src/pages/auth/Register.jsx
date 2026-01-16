@@ -8,10 +8,9 @@ import {
   IoCall,
 } from "react-icons/io5";
 import { toast } from "react-toastify";
-import Button from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
 import api from "../../utils/api";
-import bgsmkn2 from "../../assets/bg-smekda.png";
+import logo from "../../assets/logo/smkn2sby.png";
+import bgImage from "../../assets/bg-smekda.png";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -66,7 +65,6 @@ const Register = () => {
 
       if (response.data.success) {
         toast.success("Registrasi berhasil! Silakan login dengan akun Anda.");
-        // Redirect ke login
         navigate("/login");
       }
     } catch (err) {
@@ -79,128 +77,177 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4">
-      {/* Background Image  */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${bgsmkn2})`,
-          filter: "blur(3px)",
-        }}
-      />
-      <div className="absolute inset-0 bg-black/30" />
+    <div className="min-h-screen flex">
+      {/* Left Panel - Background Image with Blur */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        {/* Background Image with Blur Effect */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${bgImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            filter: "blur(3px)",
+            transform: "scale(1.05)",
+          }}
+        />
 
-      <div className="w-full max-w-2xl relative z-10">
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-block bg-purple-100 p-4 rounded-full mb-4">
-              <svg
-                className="w-12 h-12 text-purple-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Daftar Akun Baru
-            </h1>
-            <p className="text-gray-600">Isi data diri untuk membuat akun</p>
+        {/* Dark Overlay for Text Readability */}
+        <div className="absolute inset-0 bg-black/40" />
+
+        {/* Centered Logo with Opacity */}
+        <div className="relative z-10 flex items-center justify-center w-full h-full">
+          <img
+            src={logo}
+            alt="Logo SMKN 2 Surabaya"
+            className="w-96 h-96"
+            style={{ opacity: 0.7 }}
+          />
+        </div>
+      </div>
+
+      {/* Right Panel - Register Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 overflow-y-auto">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+          {/* Logo for mobile */}
+          <div className="lg:hidden text-center mb-8">
+            <img
+              src={logo}
+              alt="Logo SMKN 2 Surabaya"
+              className="w-16 h-16 mx-auto mb-4"
+            />
           </div>
 
-          {/* Form */}
+          {/* App Name */}
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">SiPinjam</h2>
+
+          {/* Welcome Text */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Buat Akun Baru
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Isi data diri Anda untuk mendaftar.
+            </p>
+          </div>
+
+          {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Input
-                label="Nama Lengkap"
-                type="text"
-                name="nama"
-                value={formData.nama}
-                onChange={handleChange}
-                placeholder="Nama Lengkap"
-                icon={<IoPerson size={20} />}
-                required
-              />
-
-              <Input
-                label="Kelas"
-                type="text"
-                name="kelas"
-                value={formData.kelas}
-                onChange={handleChange}
-                placeholder="X, XI, XII"
-                icon={<IoSchool size={20} />}
-                required
-              />
+            {/* Nama & Kelas */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="nama"
+                    value={formData.nama}
+                    onChange={handleChange}
+                    placeholder="Nama Lengkap"
+                    required
+                    className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    name="kelas"
+                    value={formData.kelas}
+                    onChange={handleChange}
+                    placeholder="Kelas (X, XI, XII)"
+                    required
+                    className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
+                  />
+                </div>
+              </div>
             </div>
 
-            <Input
-              label="Email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="nama@email.com"
-              icon={<IoMail size={20} />}
-              required
-            />
-
-            <Input
-              label="No. Telepon"
-              type="tel"
-              name="noTelepon"
-              value={formData.noTelepon}
-              onChange={handleChange}
-              placeholder="Telepon"
-              icon={<IoCall size={20} />}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Input
-                label="Password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                icon={<IoLockClosed size={20} />}
-                error={errors.password}
-                required
-              />
-
-              <Input
-                label="Konfirmasi Password"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Konfirmasi Password"
-                icon={<IoLockClosed size={20} />}
-                error={errors.confirmPassword}
-                required
-              />
+            {/* Email Input */}
+            <div>
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Email"
+                  required
+                  className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
+                />
+              </div>
             </div>
 
-            <Button type="submit" variant="primary" fullWidth loading={loading}>
-              Daftar Sekarang
-            </Button>
+            {/* No Telepon Input */}
+            <div>
+              <div className="relative">
+                <input
+                  type="tel"
+                  name="noTelepon"
+                  value={formData.noTelepon}
+                  onChange={handleChange}
+                  placeholder="Masukkan No Telpon"
+                  className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
+                />
+              </div>
+            </div>
+
+            {/* Password & Confirm */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="relative">
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Password"
+                    required
+                    className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
+                  />
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                )}
+              </div>
+              <div>
+                <div className="relative">
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Konfirmasi Password"
+                    required
+                    className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
+                  />
+                </div>
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Register Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 bg-blue-600 text-white font-semibold rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Memproses..." : "Daftar Sekarang"}
+            </button>
           </form>
 
-          {/* Footer */}
+          {/* Login Link */}
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-gray-500">
               Sudah punya akun?{" "}
               <Link
                 to="/login"
-                className="text-purple-600 font-semibold hover:underline"
+                className="text-blue-600 hover:underline font-medium"
               >
                 Login di sini
               </Link>

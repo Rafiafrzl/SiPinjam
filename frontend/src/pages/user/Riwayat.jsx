@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
-import { IoTime, IoCheckmarkCircle, IoClose, IoCalendar } from 'react-icons/io5';
+import { IoTime, IoCheckmarkCircle, IoClose, IoCalendar, IoLayers, IoTrendingUp } from 'react-icons/io5';
 import { toast } from 'react-toastify';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
 import Loading from '../../components/ui/Loading';
 import api from '../../utils/api';
 import { format } from 'date-fns';
@@ -11,6 +9,11 @@ import { id } from 'date-fns/locale';
 const Riwayat = () => {
   const [riwayat, setRiwayat] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    disetujui: 0,
+    ditolak: 0
+  });
 
   useEffect(() => {
     fetchRiwayat();
@@ -19,47 +22,39 @@ const Riwayat = () => {
   const fetchRiwayat = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/peminjaman/user/riwayat');
-      setRiwayat(response.data.data);
+      const [riwayatRes, statsRes] = await Promise.all([
+        api.get('/peminjaman/user/my-peminjaman'),
+        api.get('/statistik/user')
+      ]);
+
+      const allData = riwayatRes.data.data || [];
+      setRiwayat(allData);
+
+      const total = allData.length;
+      const disetujui = allData.filter(p => p.status === 'Disetujui' || p.status === 'Selesai').length;
+      const ditolak = allData.filter(p => p.status === 'Ditolak').length;
+
+      setStats({ total, disetujui, ditolak });
     } catch (err) {
-      toast.error('Gagal memuat riwayat peminjaman');
-      console.error(err);
+      toast.error('Gagal memuat riwayat');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusIcon = (status) => {
-    if (status === 'Disetujui' || status === 'Selesai') {
-      return <IoCheckmarkCircle className="text-green-500" size={24} />;
-    }
-    return <IoClose className="text-red-500" size={24} />;
-  };
-
   const getStatusBadge = (status) => {
-    const variants = {
-      'Disetujui': 'success',
-      'Ditolak': 'danger',
-      'Selesai': 'info'
+    const config = {
+      'Menunggu': { bg: 'bg-amber-500', text: 'text-white', icon: IoTime },
+      'Disetujui': { bg: 'bg-emerald-500', text: 'text-white', icon: IoCheckmarkCircle },
+      'Ditolak': { bg: 'bg-red-500', text: 'text-white', icon: IoClose },
+      'Selesai': { bg: 'bg-blue-500', text: 'text-white', icon: IoCheckmarkCircle },
     };
-    const labels = {
-      'Disetujui': 'DISETUJUI',
-      'Ditolak': 'DITOLAK',
-      'Selesai': 'SELESAI'
-    };
-    return <Badge variant={variants[status]}>{labels[status]}</Badge>;
-  };
-
-  const getStatusPengembalianBadge = (status) => {
-    const variants = {
-      'sudah-kembali': 'success',
-      'terlambat': 'danger'
-    };
-    const labels = {
-      'sudah-kembali': 'TEPAT WAKTU',
-      'terlambat': 'TERLAMBAT'
-    };
-    return <Badge variant={variants[status]} size="sm">{labels[status]}</Badge>;
+    const c = config[status] || config['Menunggu'];
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full ${c.bg} ${c.text}`}>
+        {status}
+      </span>
+    );
   };
 
   if (loading) {
@@ -71,148 +66,76 @@ const Riwayat = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-800">Riwayat Peminjaman</h1>
-        <p className="text-gray-600 mt-1">Lihat semua riwayat peminjaman Anda</p>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">Riwayat Peminjaman</h1>
+        <p className="text-sm text-gray-500 mt-1">Semua aktivitas peminjaman Anda</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="!bg-emerald-500 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-emerald-100 text-sm">Total Disetujui</p>
-              <h3 className="text-2xl font-bold text-white">
-                {riwayat.filter(r => r.status === 'Disetujui' || r.status === 'Selesai').length}
-              </h3>
-            </div>
-            <IoCheckmarkCircle className="text-white" size={40} />
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-blue-600 rounded-xl p-3 sm:p-4 text-center">
+          <div className="w-10 h-10 mx-auto mb-2 bg-white/20 rounded-lg flex items-center justify-center">
+            <IoLayers className="text-white" size={20} />
           </div>
-        </Card>
-
-        <Card className="!bg-rose-500 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-rose-100 text-sm">Total Ditolak</p>
-              <h3 className="text-2xl font-bold text-white">
-                {riwayat.filter(r => r.status === 'Ditolak').length}
-              </h3>
-            </div>
-            <IoClose className="text-white" size={40} />
+          <p className="text-xl sm:text-2xl font-bold text-white">{stats.total}</p>
+          <p className="text-[10px] sm:text-xs text-blue-100">Total</p>
+        </div>
+        <div className="bg-emerald-600 rounded-xl p-3 sm:p-4 text-center">
+          <div className="w-10 h-10 mx-auto mb-2 bg-white/20 rounded-lg flex items-center justify-center">
+            <IoCheckmarkCircle className="text-white" size={20} />
           </div>
-        </Card>
-
-        <Card className="!bg-slate-600 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-slate-100 text-sm">Total Riwayat</p>
-              <h3 className="text-2xl font-bold text-white">{riwayat.length}</h3>
-            </div>
-            <IoTime className="text-white" size={40} />
+          <p className="text-xl sm:text-2xl font-bold text-white">{stats.disetujui}</p>
+          <p className="text-[10px] sm:text-xs text-emerald-100">Disetujui</p>
+        </div>
+        <div className="bg-red-600 rounded-xl p-3 sm:p-4 text-center">
+          <div className="w-10 h-10 mx-auto mb-2 bg-white/20 rounded-lg flex items-center justify-center">
+            <IoClose className="text-white" size={20} />
           </div>
-        </Card>
+          <p className="text-xl sm:text-2xl font-bold text-white">{stats.ditolak}</p>
+          <p className="text-[10px] sm:text-xs text-red-100">Ditolak</p>
+        </div>
       </div>
 
-      {/* Riwayat List */}
+      {/* List */}
       {riwayat.length === 0 ? (
-        <Card>
-          <div className="text-center py-12 text-gray-500">
-            <IoTime size={64} className="mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-semibold mb-2">Belum ada riwayat</h3>
-            <p>Riwayat peminjaman Anda akan muncul di sini</p>
-          </div>
-        </Card>
+        <div className="bg-gray-50 rounded-2xl p-8 sm:p-12 text-center">
+          <IoTime className="mx-auto mb-4 text-gray-300" size={48} />
+          <h3 className="text-lg font-bold text-gray-700 mb-1">Belum ada riwayat</h3>
+          <p className="text-sm text-gray-500">Riwayat peminjaman akan muncul di sini</p>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {riwayat.map((item) => (
-            <Card key={item._id}>
-              <div className="flex items-start gap-4">
-                {/* Icon */}
-                <div className="flex-shrink-0 mt-1">
-                  {getStatusIcon(item.status)}
+            <div key={item._id} className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100">
+              <div className="flex gap-3 sm:gap-4">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                  <img
+                    src={
+                      item.barangId?.foto !== 'default-barang.jpg'
+                        ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.barangId?.foto}`
+                        : 'https://via.placeholder.com/80'
+                    }
+                    alt={item.barangId?.namaBarang}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-
-                {/* Content */}
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-800">{item.barangId?.namaBarang}</h3>
-                      <p className="text-sm text-gray-600">
-                        {format(new Date(item.createdAt), 'dd MMMM yyyy, HH:mm', { locale: id })}
-                      </p>
-                    </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="font-semibold text-gray-800 text-sm truncate">
+                      {item.barangId?.namaBarang}
+                    </h3>
                     {getStatusBadge(item.status)}
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Jumlah:</span>
-                        <span className="font-semibold">{item.jumlahPinjam} unit</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Tanggal Pinjam:</span>
-                        <span className="font-semibold">
-                          {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Waktu:</span>
-                        <span className="font-semibold">{item.waktuPinjam}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Tanggal Kembali:</span>
-                        <span className="font-semibold">
-                          {format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}
-                        </span>
-                      </div>
-                    </div>
+                  <p className="text-xs text-gray-500 mb-1">{item.jumlahPinjam} unit</p>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <IoCalendar size={12} />
+                    <span>{format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
                   </div>
-
-                  {/* Status Pengembalian */}
-                  {item.status === 'Selesai' && item.tanggalDikembalikan && (
-                    <div className="bg-gray-50 p-3 rounded mb-3">
-                      <div className="flex items-center justify-between text-sm mb-2">
-                        <span className="text-gray-600">Dikembalikan:</span>
-                        <span className="font-semibold">
-                          {format(new Date(item.tanggalDikembalikan), 'dd MMMM yyyy', { locale: id })}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-600 text-sm">Status Pengembalian:</span>
-                        {getStatusPengembalianBadge(item.statusPengembalian)}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Alasan Peminjaman */}
-                  <div className="bg-blue-50 p-3 rounded mb-3">
-                    <p className="text-xs text-gray-600 mb-1">Alasan Peminjaman:</p>
-                    <p className="text-sm text-gray-800">{item.alasanPeminjaman}</p>
-                  </div>
-
-                  {/* Catatan Admin / Alasan Penolakan */}
-                  {item.catatanAdmin && (
-                    <div className="bg-green-50 border border-green-200 p-3 rounded">
-                      <p className="text-xs text-green-600 mb-1">Catatan Admin:</p>
-                      <p className="text-sm text-green-800">{item.catatanAdmin}</p>
-                    </div>
-                  )}
-
-                  {item.alasanPenolakan && (
-                    <div className="bg-red-50 border border-red-200 p-3 rounded">
-                      <p className="text-xs text-red-600 mb-1">Alasan Ditolak:</p>
-                      <p className="text-sm text-red-800">{item.alasanPenolakan}</p>
-                    </div>
-                  )}
                 </div>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}

@@ -7,6 +7,7 @@ import {
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
+import UserLayout from "./components/layout/UserLayout";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -22,6 +23,7 @@ import PengembalianUser from "./pages/user/PengembalianUser";
 import Riwayat from "./pages/user/Riwayat";
 import Notifikasi from "./pages/user/Notifikasi";
 import Profile from "./pages/user/Profile";
+import Bantuan from "./pages/user/Bantuan";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -57,7 +59,7 @@ function App() {
             path="/"
             element={
               <ProtectedRoute requiredRole="user">
-                <MainLayout />
+                <UserLayout />
               </ProtectedRoute>
             }
           >
@@ -69,6 +71,7 @@ function App() {
             <Route path="riwayat" element={<Riwayat />} />
             <Route path="notifikasi" element={<Notifikasi />} />
             <Route path="profile" element={<Profile />} />
+            <Route path="bantuan" element={<Bantuan />} />
           </Route>
 
           {/* Protected Admin Routes */}

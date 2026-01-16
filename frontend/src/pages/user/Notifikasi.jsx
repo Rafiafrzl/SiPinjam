@@ -1,31 +1,35 @@
 import { useState, useEffect } from 'react';
-import { IoNotifications, IoCheckmark, IoTrash, IoCheckmarkDone } from 'react-icons/io5';
+import {
+  IoNotifications,
+  IoCheckmarkDone,
+  IoCheckmarkCircle,
+  IoTime,
+  IoClose,
+  IoTrash,
+  IoAlert
+} from 'react-icons/io5';
 import { toast } from 'react-toastify';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
 import Loading from '../../components/ui/Loading';
 import api from '../../utils/api';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
 const Notifikasi = () => {
-  const [notifikasi, setNotifikasi] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, unread, read
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    fetchNotifikasi();
+    fetchNotifications();
   }, []);
 
-  const fetchNotifikasi = async () => {
+  const fetchNotifications = async () => {
     try {
       setLoading(true);
       const response = await api.get('/notifikasi');
-      setNotifikasi(response.data.data);
+      setNotifications(response.data.data);
     } catch (err) {
       toast.error('Gagal memuat notifikasi');
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -34,63 +38,54 @@ const Notifikasi = () => {
   const handleMarkAsRead = async (id) => {
     try {
       await api.put(`/notifikasi/${id}/read`);
-      setNotifikasi(notifikasi.map(n =>
-        n._id === id ? { ...n, isRead: true } : n
-      ));
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
     } catch (err) {
       toast.error('Gagal menandai notifikasi');
     }
   };
 
-  const handleMarkAllAsRead = async () => {
+  const handleMarkAllRead = async () => {
     try {
-      await api.put('/notifikasi/read-all');
-      setNotifikasi(notifikasi.map(n => ({ ...n, isRead: true })));
+      await api.put('/notifikasi/mark-all-read');
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       toast.success('Semua notifikasi ditandai sudah dibaca');
     } catch (err) {
-      toast.error('Gagal menandai semua notifikasi');
+      toast.error('Gagal menandai notifikasi');
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Hapus notifikasi ini?')) return;
-
     try {
       await api.delete(`/notifikasi/${id}`);
-      setNotifikasi(notifikasi.filter(n => n._id !== id));
-      toast.success('Notifikasi berhasil dihapus');
+      setNotifications(prev => prev.filter(n => n._id !== id));
+      toast.success('Notifikasi dihapus');
     } catch (err) {
       toast.error('Gagal menghapus notifikasi');
     }
   };
 
-  const getNotifIcon = (tipe) => {
-    const icons = {
-      success: '✅',
-      error: '❌',
-      warning: '⚠️',
-      info: 'ℹ️'
-    };
-    return icons[tipe] || 'ℹ️';
+  const getIcon = (type) => {
+    switch (type) {
+      case 'approval':
+        return <IoCheckmarkCircle className="text-emerald-500" size={20} />;
+      case 'rejection':
+        return <IoClose className="text-red-500" size={20} />;
+      case 'reminder':
+        return <IoTime className="text-amber-500" size={20} />;
+      case 'warning':
+        return <IoAlert className="text-orange-500" size={20} />;
+      default:
+        return <IoNotifications className="text-blue-500" size={20} />;
+    }
   };
 
-  const getNotifBadge = (tipe) => {
-    const variants = {
-      success: 'success',
-      error: 'danger',
-      warning: 'warning',
-      info: 'info'
-    };
-    return <Badge variant={variants[tipe]} size="sm">{tipe.toUpperCase()}</Badge>;
-  };
-
-  const filteredNotifikasi = notifikasi.filter(n => {
+  const filteredNotifications = notifications.filter(n => {
     if (filter === 'unread') return !n.isRead;
     if (filter === 'read') return n.isRead;
     return true;
   });
 
-  const unreadCount = notifikasi.filter(n => !n.isRead).length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   if (loading) {
     return (
@@ -101,116 +96,103 @@ const Notifikasi = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Notifikasi</h1>
-          <p className="text-gray-600 mt-1">
-            {unreadCount > 0 ? `${unreadCount} notifikasi belum dibaca` : 'Semua notifikasi sudah dibaca'}
-          </p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">Notifikasi</h1>
+          {unreadCount > 0 && (
+            <p className="text-sm text-gray-500">{unreadCount} notifikasi belum dibaca</p>
+          )}
         </div>
-
         {unreadCount > 0 && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleMarkAllAsRead}
+          <button
+            onClick={handleMarkAllRead}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-all"
           >
             <IoCheckmarkDone size={18} />
             Tandai Semua Dibaca
-          </Button>
+          </button>
         )}
       </div>
 
       {/* Filter */}
-      <div className="flex gap-2">
-        <Button
-          variant={filter === 'all' ? 'primary' : 'outline'}
-          size="sm"
-          onClick={() => setFilter('all')}
-        >
-          Semua ({notifikasi.length})
-        </Button>
-        <Button
-          variant={filter === 'unread' ? 'warning' : 'outline'}
-          size="sm"
-          onClick={() => setFilter('unread')}
-        >
-          Belum Dibaca ({unreadCount})
-        </Button>
-        <Button
-          variant={filter === 'read' ? 'secondary' : 'outline'}
-          size="sm"
-          onClick={() => setFilter('read')}
-        >
-          Sudah Dibaca ({notifikasi.length - unreadCount})
-        </Button>
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+        {[
+          { value: 'all', label: 'Semua' },
+          { value: 'unread', label: 'Belum Dibaca' },
+          { value: 'read', label: 'Sudah Dibaca' }
+        ].map((tab) => (
+          <button
+            key={tab.value}
+            onClick={() => setFilter(tab.value)}
+            className={`flex-shrink-0 px-4 py-2 rounded-xl font-medium text-sm transition-all ${filter === tab.value
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'
+              }`}
+          >
+            {tab.label}
+            {tab.value === 'unread' && unreadCount > 0 && (
+              <span className="ml-2 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">{unreadCount}</span>
+            )}
+          </button>
+        ))}
       </div>
 
-      {/* Notifikasi List */}
-      {filteredNotifikasi.length === 0 ? (
-        <Card>
-          <div className="text-center py-12 text-gray-500">
-            <IoNotifications size={64} className="mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-semibold mb-2">Tidak ada notifikasi</h3>
-            <p>Notifikasi Anda akan muncul di sini</p>
-          </div>
-        </Card>
+      {/* List */}
+      {filteredNotifications.length === 0 ? (
+        <div className="bg-gray-50 rounded-2xl p-8 sm:p-12 text-center">
+          <IoNotifications className="mx-auto mb-4 text-gray-300" size={48} />
+          <h3 className="text-lg font-bold text-gray-700 mb-1">Tidak ada notifikasi</h3>
+          <p className="text-sm text-gray-500">
+            {filter === 'unread' ? 'Semua notifikasi sudah dibaca' : 'Belum ada notifikasi'}
+          </p>
+        </div>
       ) : (
-        <div className="space-y-3">
-          {filteredNotifikasi.map((item) => (
-            <Card
+        <div className="space-y-2">
+          {filteredNotifications.map((item) => (
+            <div
               key={item._id}
-              className={`${!item.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
+              className={`bg-white rounded-xl p-3 sm:p-4 border transition-all ${item.isRead ? 'border-gray-100' : 'border-blue-200 bg-blue-50/30'
+                }`}
             >
-              <div className="flex items-start gap-4">
-                {/* Icon */}
-                <div className="text-3xl flex-shrink-0">
-                  {getNotifIcon(item.tipe)}
+              <div className="flex gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${item.isRead ? 'bg-gray-100' : 'bg-white shadow'
+                  }`}>
+                  {getIcon(item.type)}
                 </div>
-
-                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-800 mb-1">{item.judul}</h3>
-                      <p className="text-sm text-gray-600">{item.pesan}</p>
-                    </div>
-                    {getNotifBadge(item.tipe)}
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className={`text-sm ${item.isRead ? 'text-gray-600' : 'font-semibold text-gray-800'}`}>
+                      {item.judul}
+                    </h3>
+                    <span className="text-[10px] sm:text-xs text-gray-400 flex-shrink-0">
+                      {format(new Date(item.createdAt), 'dd MMM', { locale: id })}
+                    </span>
                   </div>
-
-                  <div className="flex items-center justify-between mt-3">
-                    <p className="text-xs text-gray-500">
-                      {format(new Date(item.createdAt), 'dd MMMM yyyy, HH:mm', { locale: id })}
-                    </p>
-
-                    <div className="flex gap-2">
-                      {!item.isRead && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleMarkAsRead(item._id)}
-                          className="text-blue-600 hover:text-blue-700"
-                        >
-                          <IoCheckmark size={18} />
-                          Tandai Dibaca
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(item._id)}
-                        className="text-red-600 hover:text-red-700"
+                  <p className="text-xs sm:text-sm text-gray-500 mt-0.5 line-clamp-2">
+                    {item.pesan}
+                  </p>
+                  <div className="flex gap-2 mt-2">
+                    {!item.isRead && (
+                      <button
+                        onClick={() => handleMarkAsRead(item._id)}
+                        className="text-xs text-blue-600 font-medium hover:underline"
                       >
-                        <IoTrash size={18} />
-                        Hapus
-                      </Button>
-                    </div>
+                        Tandai dibaca
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDelete(item._id)}
+                      className="text-xs text-red-500 font-medium hover:underline flex items-center gap-1"
+                    >
+                      <IoTrash size={12} />
+                      Hapus
+                    </button>
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}
