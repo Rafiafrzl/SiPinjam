@@ -13,6 +13,7 @@ import {
   IoMenu,
   IoChevronUp,
   IoPerson,
+  IoPeople,
 } from "react-icons/io5";
 import useAuth from "../../hooks/useAuth";
 import logoSmkn2 from "../../assets/logo/smkn2sby.png";
@@ -88,6 +89,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       title: "KELOLA DATA",
       items: [
         { path: "/admin/barang", icon: IoLibrary, label: "Kelola Barang" },
+        { path: "/admin/users", icon: IoPeople, label: "Kelola User" },
         { path: "/admin/peminjaman", icon: IoList, label: "Permintaan" },
         {
           path: "/admin/pengembalian",

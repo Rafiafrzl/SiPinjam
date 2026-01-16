@@ -32,6 +32,7 @@ import AdminPeminjaman from "./pages/admin/Permintaan";
 import AdminPengembalian from "./pages/admin/Pengembalian";
 import AdminStatistik from "./pages/admin/Statistik";
 import ProfileAdmin from "./pages/admin/ProfileAdmin";
+import KelolaUser from "./pages/admin/KelolaUser";
 
 function App() {
   return (
@@ -89,6 +90,7 @@ function App() {
             <Route path="peminjaman" element={<AdminPeminjaman />} />
             <Route path="pengembalian" element={<AdminPengembalian />} />
             <Route path="statistik" element={<AdminStatistik />} />
+            <Route path="users" element={<KelolaUser />} />
             <Route path="profile" element={<ProfileAdmin />} />
           </Route>
 

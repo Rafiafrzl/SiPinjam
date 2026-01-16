@@ -115,7 +115,7 @@ const UserLayout = () => {
                   placeholder="Cari barang yang ingin dipinjam..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all text-sm"
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:border-gray-400 focus:bg-white transition-all text-sm"
                 />
                 <button
                   type="submit"

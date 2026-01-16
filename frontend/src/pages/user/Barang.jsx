@@ -7,7 +7,9 @@ import {
   IoApps,
   IoDesktop,
   IoFootball,
-  IoClose
+  IoClose,
+  IoChevronBack,
+  IoChevronForward
 } from 'react-icons/io5';
 import { toast } from 'react-toastify';
 import Loading from '../../components/ui/Loading';
@@ -20,8 +22,11 @@ const Barang = () => {
   const [searchParams] = useSearchParams();
   const [barang, setBarang] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || ''); // Input sementara
+  const [search, setSearch] = useState(searchParams.get('search') || ''); // Nilai yang disubmit
   const [kategori, setKategori] = useState(searchParams.get('kategori') || '');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -35,8 +40,10 @@ const Barang = () => {
   });
   const [submitLoading, setSubmitLoading] = useState(false);
 
+  // Fetch data ketika search atau kategori berubah
   useEffect(() => {
     fetchBarang();
+    setCurrentPage(1);
   }, [search, kategori]);
 
   const fetchBarang = async () => {
@@ -94,6 +101,9 @@ const Barang = () => {
     { value: 'olahraga', label: 'Olahraga', icon: IoFootball, color: 'emerald' },
   ];
 
+  const totalPages = Math.ceil(barang.length / itemsPerPage);
+  const paginatedBarang = barang.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -111,26 +121,43 @@ const Barang = () => {
       </div>
 
       {/* Search & Filter */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          setSearch(searchQuery); // Submit search
+        }}
+        className="flex flex-col gap-3 sm:flex-row sm:items-center"
+      >
         <div className="relative flex-1">
           <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
             placeholder="Cari nama barang..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-20 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-sm"
           />
-          {search && (
+          {searchQuery && (
             <button
-              onClick={() => setSearch('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setSearch('');
+              }}
+              className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
               <IoClose size={18} />
             </button>
           )}
+          <button
+            type="submit"
+            className="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1 text-sm font-medium"
+          >
+            <IoSearch size={16} />
+            Cari
+          </button>
         </div>
-      </div>
+      </form>
 
       {/* Category Filter */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
@@ -158,6 +185,11 @@ const Barang = () => {
         <p className="text-sm text-gray-500">
           Menampilkan <span className="font-semibold text-gray-800">{barang.length}</span> barang
         </p>
+        {totalPages > 1 && (
+          <p className="text-sm text-gray-400">
+            Halaman {currentPage} dari {totalPages}
+          </p>
+        )}
       </div>
 
       {/* Product Grid */}
@@ -168,55 +200,93 @@ const Barang = () => {
           <p className="text-gray-500 text-sm">Coba ubah kata kunci atau filter pencarian</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-          {barang.map((item) => (
-            <div
-              key={item._id}
-              className="bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all group"
-            >
-              <div className="relative aspect-square bg-gray-100 overflow-hidden">
-                <img
-                  src={
-                    item.foto !== 'default-barang.jpg'
-                      ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.foto}`
-                      : 'https://via.placeholder.com/300?text=No+Image'
-                  }
-                  alt={item.namaBarang}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute top-2 left-2">
-                  <span className={`px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full ${item.jumlahTersedia > 0 ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
-                    }`}>
-                    {item.jumlahTersedia > 0 ? 'Tersedia' : 'Habis'}
-                  </span>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+            {paginatedBarang.map((item) => (
+              <div
+                key={item._id}
+                className="bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all group"
+              >
+                <div className="relative aspect-square bg-gray-100 overflow-hidden">
+                  <img
+                    src={
+                      item.foto !== 'default-barang.jpg'
+                        ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.foto}`
+                        : 'https://via.placeholder.com/300?text=No+Image'
+                    }
+                    alt={item.namaBarang}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute top-2 left-2">
+                    <span className={`px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full ${item.jumlahTersedia > 0 ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
+                      }`}>
+                      {item.jumlahTersedia > 0 ? 'Tersedia' : 'Habis'}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-3 sm:p-4">
+                  <h3 className="font-semibold text-gray-800 text-sm truncate mb-1">{item.namaBarang}</h3>
+                  <p className="text-xs text-gray-500 capitalize mb-1">{item.kategori}</p>
+                  {item.lokasi && (
+                    <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
+                      <IoLocation size={12} />
+                      <span className="truncate">{item.lokasi}</span>
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs sm:text-sm font-bold text-blue-600">{item.jumlahTersedia} unit</span>
+                    <button
+                      onClick={() => handleOpenModal(item)}
+                      disabled={item.jumlahTersedia === 0}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${item.jumlahTersedia > 0
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                    >
+                      Pinjam
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="p-3 sm:p-4">
-                <h3 className="font-semibold text-gray-800 text-sm truncate mb-1">{item.namaBarang}</h3>
-                <p className="text-xs text-gray-500 capitalize mb-1">{item.kategori}</p>
-                {item.lokasi && (
-                  <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
-                    <IoLocation size={12} />
-                    <span className="truncate">{item.lokasi}</span>
-                  </p>
-                )}
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs sm:text-sm font-bold text-blue-600">{item.jumlahTersedia} unit</span>
-                  <button
-                    onClick={() => handleOpenModal(item)}
-                    disabled={item.jumlahTersedia === 0}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${item.jumlahTersedia > 0
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      }`}
-                  >
-                    Pinjam
-                  </button>
-                </div>
-              </div>
+            ))}
+          </div>
+
+          {/* Pagination - Versi Sederhana */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-4">
+              {/* Tombol Sebelumnya */}
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentPage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-blue-50 hover:text-blue-600'
+                  }`}
+              >
+                <IoChevronBack size={16} />
+                Sebelumnya
+              </button>
+
+              {/* Info Halaman */}
+              <span className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
+                {currentPage} / {totalPages}
+              </span>
+
+              {/* Tombol Selanjutnya */}
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentPage === totalPages
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-blue-50 hover:text-blue-600'
+                  }`}
+              >
+                Selanjutnya
+                <IoChevronForward size={16} />
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* Modal */}
@@ -252,7 +322,7 @@ const Barang = () => {
                 max={selectedBarang.jumlahTersedia}
                 value={formData.jumlahPinjam}
                 onChange={(e) => setFormData({ ...formData, jumlahPinjam: parseInt(e.target.value) })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400"
                 required
               />
             </div>
@@ -264,7 +334,7 @@ const Barang = () => {
                   type="date"
                   value={formData.tanggalPinjam}
                   onChange={(e) => setFormData({ ...formData, tanggalPinjam: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400"
                   required
                 />
               </div>
@@ -274,7 +344,7 @@ const Barang = () => {
                   type="time"
                   value={formData.waktuPinjam}
                   onChange={(e) => setFormData({ ...formData, waktuPinjam: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400"
                   required
                 />
               </div>
@@ -286,7 +356,7 @@ const Barang = () => {
                 type="date"
                 value={formData.tanggalKembali}
                 onChange={(e) => setFormData({ ...formData, tanggalKembali: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400"
                 required
               />
             </div>

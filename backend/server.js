@@ -13,6 +13,7 @@ import peminjamanRoutes from './routes/peminjamanRoutes.js';
 import pengembalianRoutes from './routes/pengembalianRoutes.js';
 import notifikasiRoutes from './routes/notifikasiRoutes.js';
 import statistikRoutes from './routes/statistikRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 // Config
 dotenv.config();
@@ -41,6 +42,7 @@ app.use('/api/peminjaman', peminjamanRoutes);
 app.use('/api/pengembalian', pengembalianRoutes);
 app.use('/api/notifikasi', notifikasiRoutes);
 app.use('/api/statistik', statistikRoutes);
+app.use('/api/users', userRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
