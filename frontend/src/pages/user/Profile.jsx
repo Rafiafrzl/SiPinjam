@@ -114,7 +114,9 @@ const Profile = () => {
         {editing ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nama Lengkap <span className="text-red-500">*</span>
+              </label>
               <Input
                 value={formData.nama}
                 onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
@@ -123,19 +125,23 @@ const Profile = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kelas</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Kelas <span className="text-gray-400 text-xs">(opsional)</span>
+              </label>
               <Input
                 value={formData.kelas}
                 onChange={(e) => setFormData({ ...formData, kelas: e.target.value })}
-                placeholder="Kelas"
+                placeholder="Masukkan Kelas anda"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">No. Telepon</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                No. Telepon <span className="text-gray-400 text-xs">(opsional)</span>
+              </label>
               <Input
                 value={formData.noTelepon}
                 onChange={(e) => setFormData({ ...formData, noTelepon: e.target.value })}
-                placeholder="No, Telpon"
+                placeholder="Masukkan No. Telepon anda"
               />
             </div>
             <div className="flex gap-3 pt-2">
@@ -239,7 +245,7 @@ const Profile = () => {
                 type="password"
                 value={passwordData.newPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                placeholder="Minimal 6 karakter"
+                placeholder="Password"
                 required
               />
             </div>

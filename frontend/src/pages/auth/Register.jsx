@@ -137,6 +137,9 @@ const Register = () => {
             {/* Nama & Kelas */}
             <div className="grid grid-cols-2 gap-4">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nama Lengkap <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <input
                     type="text"
@@ -150,13 +153,16 @@ const Register = () => {
                 </div>
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Kelas <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <input
                     type="text"
                     name="kelas"
                     value={formData.kelas}
                     onChange={handleChange}
-                    placeholder="Kelas (X, XI, XII)"
+                    placeholder="Masukkan Kelas anda"
                     required
                     className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
                   />
@@ -166,13 +172,16 @@ const Register = () => {
 
             {/* Email Input */}
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email <span className="text-red-500">*</span>
+              </label>
               <div className="relative">
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Email"
+                  placeholder="Masukkan Email anda"
                   required
                   className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
                 />
@@ -181,13 +190,16 @@ const Register = () => {
 
             {/* No Telepon Input */}
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                No. Telepon <span className="text-gray-400 text-xs">(opsional)</span>
+              </label>
               <div className="relative">
                 <input
                   type="tel"
                   name="noTelepon"
                   value={formData.noTelepon}
                   onChange={handleChange}
-                  placeholder="Masukkan No Telpon"
+                  placeholder="Masukkan No. Telepon anda"
                   className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
                 />
               </div>
@@ -196,6 +208,9 @@ const Register = () => {
             {/* Password & Confirm */}
             <div className="grid grid-cols-2 gap-4">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <input
                     type="password"
@@ -212,13 +227,16 @@ const Register = () => {
                 )}
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Konfirmasi <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <input
                     type="password"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    placeholder="Konfirmasi Password"
+                    placeholder="Ulangi password"
                     required
                     className="w-full px-4 py-3 border-b-2 border-gray-200 focus:border-gray-900 focus:outline-none transition-colors bg-transparent text-gray-900 placeholder-gray-400"
                   />

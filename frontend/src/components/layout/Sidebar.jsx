@@ -96,6 +96,7 @@ const Sidebar = ({ isOpen, onClose }) => {
           icon: IoCheckmarkCircle,
           label: "Pengembalian",
         },
+        { path: "/admin/riwayat", icon: IoTime, label: "Riwayat" },
       ],
     },
   ];
@@ -173,10 +174,10 @@ const Sidebar = ({ isOpen, onClose }) => {
                             onClick={onClose}
                             className={`
                               flex items-center justify-between gap-3 px-4 py-3 rounded-xl
-                              text-sm font-medium transition-all duration-200
+                              text-sm font-medium transition-colors duration-200
                               ${isActive
-                                ? "bg-white text-indigo-600 shadow-lg transform scale-105"
-                                : "text-white/90 hover:bg-indigo-700 hover:text-white hover:translate-x-1"
+                                ? "bg-white text-indigo-600 shadow-lg"
+                                : "text-white/90 hover:bg-indigo-700 hover:text-white"
                               }
                             `}
                           >
