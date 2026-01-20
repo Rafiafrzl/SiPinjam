@@ -16,7 +16,7 @@ import {
   IoPeople,
 } from "react-icons/io5";
 import useAuth from "../../hooks/useAuth";
-import logoSmkn2 from "../../assets/logo/smkn2sby.png";
+import logoSiPinjam from "../../assets/logo/sipinjam.png";
 import api from "../../utils/api";
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -28,7 +28,14 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (user?.role === "user") {
-      fetchNotifCount();
+      const handleNotifUpdate = () => {
+        fetchNotifCount();
+      };
+      window.addEventListener('notificationUpdated', handleNotifUpdate);
+
+      return () => {
+        window.removeEventListener('notificationUpdated', handleNotifUpdate);
+      };
     }
   }, [user]);
 
@@ -60,7 +67,11 @@ const Sidebar = ({ isOpen, onClose }) => {
       title: "AKTIVITAS",
       items: [
         { path: "/peminjaman", icon: IoList, label: "Peminjaman Saya" },
-        { path: "/pengembalian", icon: IoCheckmarkCircle, label: "Pengembalian" },
+        {
+          path: "/pengembalian",
+          icon: IoCheckmarkCircle,
+          label: "Pengembalian",
+        },
         { path: "/riwayat", icon: IoTime, label: "Riwayat" },
       ],
     },
@@ -129,15 +140,13 @@ const Sidebar = ({ isOpen, onClose }) => {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10">
                 <img
-                  src={logoSmkn2}
-                  alt="Logo SMKN 2"
+                  src={logoSiPinjam}
+                  alt="Logo SiPinjam"
                   className="w-full h-full object-contain"
                 />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-white">
-                  SMKN 2 Surabaya
-                </h2>
+                <h2 className="text-sm font-bold text-white">SiPinjam</h2>
                 <p className="text-xs text-white/70">
                   {user?.role === "admin" ? "Admin" : "Dashboard"}
                 </p>

@@ -203,10 +203,18 @@ const deleteBarang = async (req, res) => {
       });
     }
 
-    // Cek apakah ada peminjaman yang masih aktif (Menunggu/Disetujui)
+    // Cek apakah ada peminjaman yang masih aktif
+    // - Status 'Menunggu' (belum diproses)
+    // - Status 'Disetujui' DAN belum dikembalikan
     const activePeminjaman = await Peminjaman.find({
       barangId: req.params.id,
-      status: { $in: ['Menunggu', 'Disetujui'] }
+      $or: [
+        { status: 'Menunggu' },
+        {
+          status: 'Disetujui',
+          statusPengembalian: { $ne: 'Sudah Dikembalikan' }
+        }
+      ]
     });
 
     if (activePeminjaman.length > 0) {

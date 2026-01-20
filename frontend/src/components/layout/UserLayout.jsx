@@ -16,7 +16,7 @@ import {
   IoHelpCircle,
 } from "react-icons/io5";
 import useAuth from "../../hooks/useAuth";
-import logoSmkn2 from "../../assets/logo/smkn2sby.png";
+import logoSiPinjam from "../../assets/logo/sipinjam.png";
 import api from "../../utils/api";
 
 const UserLayout = () => {
@@ -90,8 +90,8 @@ const UserLayout = () => {
               className="flex items-center gap-3 flex-shrink-0"
             >
               <img
-                src={logoSmkn2}
-                alt="Logo SMKN 2"
+                src={logoSiPinjam}
+                alt="Logo SiPinjam"
                 className="w-12 h-12 object-contain"
               />
               <div className="hidden sm:block">
@@ -386,13 +386,13 @@ const UserLayout = () => {
             <div className="text-center md:text-left">
               <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
                 <img
-                  src={logoSmkn2}
-                  alt="Logo SMKN 2"
+                  src={logoSiPinjam}
+                  alt="Logo SiPinjam"
                   className="w-12 h-12 object-contain"
                 />
                 <div>
                   <h3 className="text-xl font-bold text-white">SiPinjam</h3>
-                  <p className="text-sm text-blue-300">SMKN 2 Surabaya</p>
+                  <p className="text-sm text-blue-300">Sistem Peminjaman</p>
                 </div>
               </div>
               <p className="text-sm text-blue-200 max-w-sm">
