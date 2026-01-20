@@ -1,9 +1,10 @@
+
+
 import Barang from "../models/Barang.js";
 import Peminjaman from "../models/Peminjaman.js";
-import fs from "fs";
-import path from "path";
+import cloudinary from "../config/cloudinary.js";
 
-// Get semua barang (untuk user & admin)
+// Get all barang (untuk user & admin)
 const getAllBarang = async (req, res) => {
   try {
     const { kategori, search } = req.query;
@@ -87,12 +88,12 @@ const createBarang = async (req, res) => {
     const { namaBarang, kategori, deskripsi, jumlahTotal, kondisi, lokasi } =
       req.body;
 
-    
+
     const barang = await Barang.create({
       namaBarang,
       kategori,
       deskripsi: deskripsi || "",
-      foto: req.file ? req.file.filename : "default-barang.jpg",
+      foto: req.file ? req.file.path : "default-barang.jpg",
       jumlahTotal: parseInt(jumlahTotal) || 0,
       jumlahTersedia: parseInt(jumlahTotal) || 0,
       kondisi,
@@ -105,11 +106,25 @@ const createBarang = async (req, res) => {
       data: barang,
     });
   } catch (error) {
-        res.status(500).json({
+    res.status(500).json({
       success: false,
       message: error.message,
       stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
+  }
+};
+
+
+const getPublicIdFromUrl = (url) => {
+  try {
+    if (!url || !url.includes("cloudinary")) return null;
+    const parts = url.split("/");
+    const filename = parts[parts.length - 1];
+    const folder = parts[parts.length - 2];
+    const publicId = `${folder}/${filename.split(".")[0]}`;
+    return publicId;
+  } catch (error) {
+    return null;
   }
 };
 
@@ -125,11 +140,15 @@ const updateBarang = async (req, res) => {
       });
     }
 
-    // Jika ada foto baru, hapus foto lama
+    // Jika ada foto baru, hapus foto lama dari Cloudinary
     if (req.file && barang.foto !== "default-barang.jpg") {
-      const oldPhotoPath = path.join(process.cwd(), "uploads", barang.foto);
-      if (fs.existsSync(oldPhotoPath)) {
-        fs.unlinkSync(oldPhotoPath);
+      const publicId = getPublicIdFromUrl(barang.foto);
+      if (publicId) {
+        try {
+          await cloudinary.uploader.destroy(publicId);
+        } catch (cloudinaryError) {
+          // Lanjutkan meskipun gagal hapus foto lama
+        }
       }
     }
 
@@ -142,8 +161,9 @@ const updateBarang = async (req, res) => {
       lokasi: req.body.lokasi || barang.lokasi,
     };
 
+
     if (req.file) {
-      updateData.foto = req.file.filename;
+      updateData.foto = req.file.path;
     }
 
     // Update jumlah tersedia jika jumlah total berubah
@@ -199,15 +219,15 @@ const deleteBarang = async (req, res) => {
     // Hapus semua peminjaman terkait (yang sudah selesai/ditolak)
     await Peminjaman.deleteMany({ barangId: req.params.id });
 
-    // Hapus foto barang jika bukan default
+    // Hapus foto dari Cloudinary jika bukan default
     if (barang.foto && barang.foto !== "default-barang.jpg") {
-      try {
-        const photoPath = path.join(process.cwd(), "uploads", barang.foto);
-        if (fs.existsSync(photoPath)) {
-          fs.unlinkSync(photoPath);
+      const publicId = getPublicIdFromUrl(barang.foto);
+      if (publicId) {
+        try {
+          await cloudinary.uploader.destroy(publicId);
+        } catch (cloudinaryError) {
+          // Lanjutkan proses penghapusan meskipun foto gagal dihapus
         }
-      } catch (fileError) {
-                // Lanjutkan proses penghapusan meskipun foto gagal dihapus
       }
     }
 

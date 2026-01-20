@@ -1,6 +1,6 @@
-// Error handler middleware
 const errorHandler = (err, req, res, next) => {
-  
+
+
   const statusCode = err.statusCode || 500;
   const message = err.message || 'Terjadi kesalahan pada server';
 
@@ -12,3 +12,4 @@ const errorHandler = (err, req, res, next) => {
 };
 
 export default errorHandler;
+

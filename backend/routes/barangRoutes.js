@@ -12,14 +12,24 @@ import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
-// Public & User routes
+const handleUpload = (req, res, next) => {
+  upload.single('foto')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message || err.name || 'Gagal upload file'
+      });
+    }
+    next();
+  });
+};
+
 router.get('/', verifikasiToken, getAllBarang);
 router.get('/:id', verifikasiToken, getBarangById);
 router.get('/kategori/:kategori', verifikasiToken, getBarangByKategori);
 
-// Admin only routes
-router.post('/', verifikasiToken, checkAdmin, upload.single('foto'), createBarang);
-router.put('/:id', verifikasiToken, checkAdmin, upload.single('foto'), updateBarang);
+router.post('/', verifikasiToken, checkAdmin, handleUpload, createBarang);
+router.put('/:id', verifikasiToken, checkAdmin, handleUpload, updateBarang);
 router.delete('/:id', verifikasiToken, checkAdmin, deleteBarang);
 
 export default router;
