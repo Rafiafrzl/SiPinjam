@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Toast from "../../components/ui/Toast";
 import api from "../../utils/api";
 import logo from "../../assets/logo/sipinjam.png";
-import bgImage from "../../assets/bg-sipinjam.png";
+import bgImage from "../../assets/bg-login.png";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -99,7 +99,7 @@ const Register = () => {
         {/* Mobile Header */}
         <div className="lg:hidden absolute top-8 left-8">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: "#2563eb" }}>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" >
               <img src={logo} alt="Logo" className="w-8 h-8" />
             </div>
             <div>
@@ -135,7 +135,7 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="Nama lengkap"
                   required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
                 />
               </div>
               <div>
@@ -149,7 +149,7 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="X, XI, XII"
                   required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
                 />
               </div>
             </div>
@@ -166,7 +166,7 @@ const Register = () => {
                 onChange={handleChange}
                 placeholder="Masukkan Email anda"
                 required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
               />
             </div>
 
@@ -181,7 +181,7 @@ const Register = () => {
                 value={formData.noTelepon}
                 onChange={handleChange}
                 placeholder="Masukkan No Telepon"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
               />
             </div>
 
@@ -198,7 +198,7 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="Masukkan Password"
                   required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
                 />
                 {errors.password && (
                   <p className="text-red-500 text-xs mt-1">{errors.password}</p>
@@ -215,7 +215,7 @@ const Register = () => {
                   onChange={handleChange}
                   placeholder="Ulangi password"
                   required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
                 />
                 {errors.confirmPassword && (
                   <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
@@ -228,7 +228,7 @@ const Register = () => {
               type="submit"
               disabled={loading}
               className="w-full py-3 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 mt-2"
-              style={{ backgroundColor: "#2563eb" }}
+              style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" }}
             >
               {loading ? "Memproses..." : "Daftar Sekarang"}
             </button>
@@ -237,7 +237,7 @@ const Register = () => {
           {/* Login Link */}
           <p className="mt-6 text-center text-gray-500">
             Sudah punya akun?{" "}
-            <Link to="/login" className="text-blue-600 hover:underline font-medium">
+            <Link to="/login" className="text-purple-600 hover:underline font-medium">
               Login di sini
             </Link>
           </p>
