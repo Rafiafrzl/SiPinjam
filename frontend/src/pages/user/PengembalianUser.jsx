@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { IoArrowBack, IoCheckmarkCircle, IoSend, IoAlertCircle, IoWarning } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Loading from '../../components/ui/Loading';
 import Modal from '../../components/ui/Modal';
 import api from '../../utils/api';
+import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
@@ -38,7 +39,7 @@ const PengembalianUser = () => {
       const aktive = peminjamanRes.data.data.filter(p => p.statusPengembalian === 'Belum Dikembalikan');
       setPeminjamanAktif(aktive);
     } catch (err) {
-      toast.error('Gagal memuat data');
+      Toast.error('Gagal memuat data');
     } finally {
       setLoading(false);
     }
@@ -57,7 +58,7 @@ const PengembalianUser = () => {
   const handleSubmitReturn = async (e) => {
     e.preventDefault();
     if (formData.jumlahDikembalikan > selectedPeminjaman.jumlahPinjam) {
-      toast.error('Jumlah melebihi jumlah yang dipinjam');
+      Toast.error('Jumlah melebihi jumlah yang dipinjam');
       return;
     }
     try {
@@ -66,11 +67,11 @@ const PengembalianUser = () => {
         peminjamanId: selectedPeminjaman._id,
         ...formData
       });
-      toast.success('Pengembalian berhasil diajukan');
+      Toast.success('Pengembalian berhasil diajukan');
       setShowReturnModal(false);
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal mengajukan pengembalian');
+      Toast.error(err.response?.data?.message || 'Gagal mengajukan pengembalian');
     } finally {
       setSubmitLoading(false);
     }
@@ -125,9 +126,7 @@ const PengembalianUser = () => {
                   <div className="flex gap-3 sm:gap-4">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                       <img
-                        src={item.barangId?.foto !== 'default-barang.jpg'
-                          ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.barangId?.foto}`
-                          : 'https://via.placeholder.com/80'}
+                        src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
                         alt={item.barangId?.namaBarang}
                         className="w-full h-full object-cover"
                       />
@@ -181,9 +180,7 @@ const PengembalianUser = () => {
                 <div className="flex gap-3 sm:gap-4">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                     <img
-                      src={item.peminjamanId?.barangId?.foto !== 'default-barang.jpg'
-                        ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.peminjamanId?.barangId?.foto}`
-                        : 'https://via.placeholder.com/80'}
+                      src={getImageUrl(item.peminjamanId?.barangId?.foto, 'https://via.placeholder.com/80')}
                       alt={item.peminjamanId?.barangId?.namaBarang}
                       className="w-full h-full object-cover"
                     />
@@ -216,9 +213,7 @@ const PengembalianUser = () => {
           <form onSubmit={handleSubmitReturn} className="space-y-4">
             <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-xl">
               <img
-                src={selectedPeminjaman.barangId?.foto !== 'default-barang.jpg'
-                  ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${selectedPeminjaman.barangId?.foto}`
-                  : 'https://via.placeholder.com/80'}
+                src={getImageUrl(selectedPeminjaman.barangId?.foto, 'https://via.placeholder.com/80')}
                 alt={selectedPeminjaman.barangId?.namaBarang}
                 className="w-16 h-16 object-cover rounded-lg"
               />

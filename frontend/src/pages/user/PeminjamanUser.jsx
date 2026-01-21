@@ -9,12 +9,13 @@ import {
   IoHourglass,
   IoCheckmarkDone
 } from "react-icons/io5";
-import { toast } from "react-toastify";
+import Toast from "../../components/ui/Toast";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Loading from "../../components/ui/Loading";
 import Modal from "../../components/ui/Modal";
 import api from "../../utils/api";
+import { getImageUrl } from "../../utils/imageHelper";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -36,7 +37,7 @@ const PeminjamanUser = () => {
       const response = await api.get("/peminjaman/user/my-peminjaman", { params });
       setPeminjaman(response.data.data);
     } catch (err) {
-      toast.error("Gagal memuat data peminjaman");
+      Toast.error("Gagal memuat data peminjaman");
     } finally {
       setLoading(false);
     }
@@ -62,7 +63,7 @@ const PeminjamanUser = () => {
       setSelectedPeminjaman(response.data.data);
       setShowDetailModal(true);
     } catch (err) {
-      toast.error("Gagal memuat detail");
+      Toast.error("Gagal memuat detail");
     }
   };
 
@@ -98,8 +99,8 @@ const PeminjamanUser = () => {
             <button
               key={tab.value}
               className={`flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-medium text-sm transition-all ${statusFilter === tab.value
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'
                 }`}
               onClick={() => setStatusFilter(tab.value)}
             >
@@ -130,11 +131,7 @@ const PeminjamanUser = () => {
                 {/* Image */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                   <img
-                    src={
-                      item.barangId?.foto !== "default-barang.jpg"
-                        ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.barangId?.foto}`
-                        : "https://via.placeholder.com/80"
-                    }
+                    src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
                     alt={item.barangId?.namaBarang}
                     className="w-full h-full object-cover"
                   />
@@ -178,11 +175,7 @@ const PeminjamanUser = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-xl">
               <img
-                src={
-                  selectedPeminjaman.barangId?.foto !== "default-barang.jpg"
-                    ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${selectedPeminjaman.barangId?.foto}`
-                    : "https://via.placeholder.com/80"
-                }
+                src={getImageUrl(selectedPeminjaman.barangId?.foto, 'https://via.placeholder.com/80')}
                 alt={selectedPeminjaman.barangId?.namaBarang}
                 className="w-16 h-16 object-cover rounded-lg"
               />

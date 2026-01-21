@@ -10,7 +10,7 @@ import {
   IoKey,
   IoClose
 } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import useAuth from '../../hooks/useAuth';
@@ -39,11 +39,11 @@ const Profile = () => {
     try {
       setLoading(true);
       await api.put('/users/profile', formData);
-      toast.success('Profil berhasil diperbarui');
+      Toast.success('Profil berhasil diperbarui');
       setEditing(false);
       refreshUser();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal memperbarui profil');
+      Toast.error(err.response?.data?.message || 'Gagal memperbarui profil');
     } finally {
       setLoading(false);
     }
@@ -52,11 +52,11 @@ const Profile = () => {
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('Password baru tidak cocok');
+      Toast.error('Password baru tidak cocok');
       return;
     }
     if (passwordData.newPassword.length < 6) {
-      toast.error('Password minimal 6 karakter');
+      Toast.error('Password minimal 6 karakter');
       return;
     }
     try {
@@ -65,11 +65,11 @@ const Profile = () => {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
-      toast.success('Password berhasil diubah');
+      Toast.success('Password berhasil diubah');
       setChangingPassword(false);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal mengubah password');
+      Toast.error(err.response?.data?.message || 'Gagal mengubah password');
     } finally {
       setLoading(false);
     }

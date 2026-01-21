@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { IoTime, IoCheckmarkCircle, IoClose, IoCalendar, IoLayers, IoTrendingUp } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import { IoTime, IoCheckmarkCircle, IoClose, IoCalendar, IoLayers } from 'react-icons/io5';
+import Toast from '../../components/ui/Toast';
 import Loading from '../../components/ui/Loading';
 import api from '../../utils/api';
+import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
@@ -36,7 +37,7 @@ const Riwayat = () => {
 
       setStats({ total, disetujui, ditolak });
     } catch (err) {
-      toast.error('Gagal memuat riwayat');
+      Toast.error('Gagal memuat riwayat');
     } finally {
       setLoading(false);
     }
@@ -112,11 +113,7 @@ const Riwayat = () => {
               <div className="flex gap-3 sm:gap-4">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                   <img
-                    src={
-                      item.barangId?.foto !== 'default-barang.jpg'
-                        ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.barangId?.foto}`
-                        : 'https://via.placeholder.com/80'
-                    }
+                    src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
                     alt={item.barangId?.namaBarang}
                     className="w-full h-full object-cover"
                   />

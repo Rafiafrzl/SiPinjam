@@ -396,7 +396,7 @@ const UserLayout = () => {
                 </div>
               </div>
               <p className="text-sm text-blue-200 max-w-sm">
-                Sistem peminjaman barang online untuk memudahkan siswa dan guru
+                Sistem peminjaman barang online untuk memudahkan siswa
                 dalam meminjam peralatan sekolah dengan mudah dan efisien.
               </p>
             </div>

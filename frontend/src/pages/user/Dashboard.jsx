@@ -11,14 +11,15 @@ import {
   IoApps,
   IoRocket
 } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import Badge from '../../components/ui/Badge';
 import Loading from '../../components/ui/Loading';
 import useAuth from '../../hooks/useAuth';
 import api from '../../utils/api';
+import { getImageUrl } from '../../utils/imageHelper';
 
 // Import gambar hero banner dari assets
-import heroBg from '../../assets/bg-login.jpg';
+import heroBg from '../../assets/bg-banner.jpg';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -47,7 +48,7 @@ const Dashboard = () => {
         }
       } catch (err) {
         if (isMounted) {
-          toast.error('Gagal memuat data');
+          Toast.error('Gagal memuat data');
         }
       } finally {
         if (isMounted) {
@@ -238,11 +239,7 @@ const Dashboard = () => {
                   <div className="bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:border-blue-200 transition-all">
                     <div className="relative h-28 sm:h-40 bg-gray-100 overflow-hidden">
                       <img
-                        src={
-                          item.foto !== 'default-barang.jpg'
-                            ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.foto}`
-                            : 'https://via.placeholder.com/300x200?text=No+Image'
-                        }
+                        src={getImageUrl(item.foto, 'https://via.placeholder.com/300x200?text=No+Image')}
                         alt={item.namaBarang}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
@@ -297,11 +294,7 @@ const Dashboard = () => {
               <div key={item._id} className="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-4">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                   <img
-                    src={
-                      item.barangId?.foto !== 'default-barang.jpg'
-                        ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.barangId?.foto}`
-                        : 'https://via.placeholder.com/80'
-                    }
+                    src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
                     alt={item.barangId?.namaBarang}
                     className="w-full h-full object-cover"
                   />

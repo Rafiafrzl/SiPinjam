@@ -8,7 +8,7 @@ import {
   IoTrash,
   IoAlert
 } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import Loading from '../../components/ui/Loading';
 import api from '../../utils/api';
 import { format } from 'date-fns';
@@ -29,7 +29,7 @@ const Notifikasi = () => {
       const response = await api.get('/notifikasi');
       setNotifications(response.data.data);
     } catch (err) {
-      toast.error('Gagal memuat notifikasi');
+      Toast.error('Gagal memuat notifikasi');
     } finally {
       setLoading(false);
     }
@@ -39,18 +39,20 @@ const Notifikasi = () => {
     try {
       await api.put(`/notifikasi/${id}/read`);
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+      window.dispatchEvent(new Event('notificationUpdated'));
     } catch (err) {
-      toast.error('Gagal menandai notifikasi');
+      Toast.error('Gagal menandai notifikasi');
     }
   };
 
   const handleMarkAllRead = async () => {
     try {
-      await api.put('/notifikasi/mark-all-read');
+      await api.put('/notifikasi/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      toast.success('Semua notifikasi ditandai sudah dibaca');
+      window.dispatchEvent(new Event('notificationUpdated'));
+      Toast.success('Semua notifikasi ditandai sudah dibaca');
     } catch (err) {
-      toast.error('Gagal menandai notifikasi');
+      Toast.error('Gagal menandai notifikasi');
     }
   };
 
@@ -58,9 +60,9 @@ const Notifikasi = () => {
     try {
       await api.delete(`/notifikasi/${id}`);
       setNotifications(prev => prev.filter(n => n._id !== id));
-      toast.success('Notifikasi dihapus');
+      Toast.success('Notifikasi dihapus');
     } catch (err) {
-      toast.error('Gagal menghapus notifikasi');
+      Toast.error('Gagal menghapus notifikasi');
     }
   };
 
@@ -127,8 +129,8 @@ const Notifikasi = () => {
             key={tab.value}
             onClick={() => setFilter(tab.value)}
             className={`flex-shrink-0 px-4 py-2 rounded-xl font-medium text-sm transition-all ${filter === tab.value
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'
               }`}
           >
             {tab.label}

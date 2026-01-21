@@ -11,12 +11,13 @@ import {
   IoChevronBack,
   IoChevronForward
 } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import Loading from '../../components/ui/Loading';
 import Modal from '../../components/ui/Modal';
 import Button from '../../components/ui/Button';
 import Textarea from '../../components/ui/Textarea';
 import api from '../../utils/api';
+import { getImageUrl } from '../../utils/imageHelper';
 
 const Barang = () => {
   const [searchParams] = useSearchParams();
@@ -55,7 +56,7 @@ const Barang = () => {
       const response = await api.get('/barang', { params });
       setBarang(response.data.data);
     } catch (err) {
-      toast.error('Gagal memuat data barang');
+      Toast.error('Gagal memuat data barang');
     } finally {
       setLoading(false);
     }
@@ -76,7 +77,7 @@ const Barang = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.jumlahPinjam > selectedBarang.jumlahTersedia) {
-      toast.error('Jumlah melebihi stok tersedia');
+      Toast.error('Jumlah melebihi stok tersedia');
       return;
     }
     try {
@@ -85,11 +86,11 @@ const Barang = () => {
         barangId: selectedBarang._id,
         ...formData
       });
-      toast.success('Peminjaman berhasil diajukan!');
+      Toast.success('Peminjaman berhasil diajukan!');
       setShowModal(false);
       fetchBarang();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal mengajukan peminjaman');
+      Toast.error(err.response?.data?.message || 'Gagal mengajukan peminjaman');
     } finally {
       setSubmitLoading(false);
     }
@@ -209,11 +210,7 @@ const Barang = () => {
               >
                 <div className="relative aspect-square bg-gray-100 overflow-hidden">
                   <img
-                    src={
-                      item.foto !== 'default-barang.jpg'
-                        ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.foto}`
-                        : 'https://via.placeholder.com/300?text=No+Image'
-                    }
+                    src={getImageUrl(item.foto)}
                     alt={item.namaBarang}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
@@ -300,11 +297,7 @@ const Barang = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-xl">
               <img
-                src={
-                  selectedBarang.foto !== 'default-barang.jpg'
-                    ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${selectedBarang.foto}`
-                    : 'https://via.placeholder.com/80'
-                }
+                src={getImageUrl(selectedBarang.foto, 'https://via.placeholder.com/80')}
                 alt={selectedBarang.namaBarang}
                 className="w-16 h-16 rounded-lg object-cover"
               />
