@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { IoList, IoCheckmark, IoClose } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import { IoList, IoCheckmark, IoClose, IoEye, IoCalendar, IoPerson } from 'react-icons/io5';
+import Toast from '../../components/ui/Toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -8,6 +8,7 @@ import Loading from '../../components/ui/Loading';
 import Modal from '../../components/ui/Modal';
 import Textarea from '../../components/ui/Textarea';
 import api from '../../utils/api';
+import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
@@ -22,6 +23,10 @@ const Permintaan = () => {
   const [catatan, setCatatan] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Detail modal state
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailItem, setDetailItem] = useState(null);
+
   useEffect(() => {
     fetchPeminjaman();
   }, [statusFilter]);
@@ -35,8 +40,7 @@ const Permintaan = () => {
       setPeminjaman(Array.isArray(data) ? data : []);
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Gagal memuat permintaan peminjaman';
-      toast.error(errorMessage);
-      console.error('Fetch peminjaman error:', err);
+      Toast.error(errorMessage);
       setPeminjaman([]);
     } finally {
       setLoading(false);
@@ -44,14 +48,10 @@ const Permintaan = () => {
   };
 
   const handleApprove = (item) => {
-    // Debug: Log status untuk troubleshooting
-    console.log('Approve clicked - Item status:', item.status, 'Full item:', item);
-
-    // Cek status yang sudah diproses (sesuai enum di backend)
     const processedStatuses = ['Disetujui', 'Ditolak', 'Selesai'];
     if (processedStatuses.includes(item.status)) {
-      toast.error('Peminjaman sudah diproses sebelumnya');
-      fetchPeminjaman(); // Refresh data
+      Toast.error('Peminjaman sudah diproses sebelumnya');
+      fetchPeminjaman();
       return;
     }
 
@@ -62,14 +62,10 @@ const Permintaan = () => {
   };
 
   const handleReject = (item) => {
-    // Debug: Log status untuk troubleshooting
-    console.log('Reject clicked - Item status:', item.status, 'Full item:', item);
-
-    // Cek status yang sudah diproses (sesuai enum di backend)
     const processedStatuses = ['Disetujui', 'Ditolak', 'Selesai'];
     if (processedStatuses.includes(item.status)) {
-      toast.error('Peminjaman sudah diproses sebelumnya');
-      fetchPeminjaman(); // Refresh data
+      Toast.error('Peminjaman sudah diproses sebelumnya');
+      fetchPeminjaman();
       return;
     }
 
@@ -86,19 +82,20 @@ const Permintaan = () => {
     setModalType('');
   };
 
+  const handleShowDetail = (item) => {
+    setDetailItem(item);
+    setShowDetailModal(true);
+  };
+
   const handleSubmitAction = async () => {
     if (!selectedItem?._id) {
-      toast.error('Data peminjaman tidak valid');
+      Toast.error('Data peminjaman tidak valid');
       return;
     }
 
-    // Double check status before submitting - log untuk debugging
-    console.log('Submitting action - Selected item status:', selectedItem.status);
-
-    // Cek status yang sudah diproses (sesuai enum di backend)
     const processedStatuses = ['Disetujui', 'Ditolak', 'Selesai'];
     if (processedStatuses.includes(selectedItem.status)) {
-      toast.error('Peminjaman sudah diproses sebelumnya');
+      Toast.error('Peminjaman sudah diproses sebelumnya');
       setShowModal(false);
       setSelectedItem(null);
       fetchPeminjaman();
@@ -112,23 +109,21 @@ const Permintaan = () => {
         const requestData = {
           catatanAdmin: catatan.trim()
         };
-        console.log('Sending approve request:', `/peminjaman/admin/${selectedItem._id}/approve`, requestData);
 
         await api.put(`/peminjaman/admin/${selectedItem._id}/approve`, requestData);
-        toast.success('Peminjaman berhasil disetujui');
+        Toast.success('Peminjaman berhasil disetujui');
       } else {
         if (!catatan.trim()) {
-          toast.error('Alasan penolakan harus diisi');
+          Toast.error('Alasan penolakan harus diisi');
           setSubmitting(false);
           return;
         }
         const requestData = {
           alasanPenolakan: catatan.trim()
         };
-        console.log('Sending reject request:', `/peminjaman/admin/${selectedItem._id}/reject`, requestData);
 
         await api.put(`/peminjaman/admin/${selectedItem._id}/reject`, requestData);
-        toast.success('Peminjaman berhasil ditolak');
+        Toast.success('Peminjaman berhasil ditolak');
       }
 
       setShowModal(false);
@@ -138,28 +133,23 @@ const Permintaan = () => {
       await fetchPeminjaman();
       setTimeout(() => fetchPeminjaman(), 500);
     } catch (err) {
-      // Debug logging untuk melihat error detail
-      console.error('Error processing peminjaman:', err);
-      console.error('Error response:', err.response?.data);
-      console.error('Error status:', err.response?.status);
-
       const errorMessage = err.response?.data?.message || 'Gagal memproses peminjaman';
 
       // Handle specific error cases
       if (errorMessage.includes('sudah diproses')) {
-        toast.info('Peminjaman sudah diproses, data akan diperbarui');
+        Toast.info('Peminjaman sudah diproses, data akan diperbarui');
         setShowModal(false);
         setSelectedItem(null);
         await fetchPeminjaman();
         setTimeout(() => fetchPeminjaman(), 500);
       } else if (errorMessage.includes('tidak ditemukan')) {
-        toast.error('Peminjaman tidak ditemukan, data akan diperbarui');
+        Toast.error('Peminjaman tidak ditemukan, data akan diperbarui');
         setShowModal(false);
         setSelectedItem(null);
         await fetchPeminjaman();
         setTimeout(() => fetchPeminjaman(), 500);
       } else {
-        toast.error(errorMessage);
+        Toast.error(errorMessage);
       }
     } finally {
       setSubmitting(false);
@@ -200,74 +190,69 @@ const Permintaan = () => {
           </div>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-3">
           {peminjaman.map((item) => (
-            <Card key={item._id}>
-              <div className="flex flex-col md:flex-row gap-4">
+            <Card key={item._id} className="p-3">
+              <div className="flex items-center gap-4">
+                {/* Image - lebih kecil */}
                 <img
-                  src={item.barangId?.foto !== 'default-barang.jpg' ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.barangId?.foto}` : 'https://via.placeholder.com/150'}
+                  src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
                   alt={item.barangId?.namaBarang}
-                  className="w-full md:w-32 h-32 object-cover rounded-lg"
+                  className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                 />
 
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-800">{item.barangId?.namaBarang}</h3>
-                      <p className="text-sm text-gray-600">oleh {item.userId?.nama} ({item.userId?.kelas})</p>
-                    </div>
-                    <Badge variant={item.status === 'Menunggu' ? 'warning' : item.status === 'Disetujui' ? 'success' : 'danger'}>
-                      {item.status.toUpperCase()}
+
+                <div
+                  className="flex-1 min-w-0 cursor-pointer hover:bg-gray-50 p-2 -m-2 rounded-lg transition-colors"
+                  onClick={() => handleShowDetail(item)}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-semibold text-gray-800 text-sm truncate">{item.barangId?.namaBarang}</h3>
+                    <Badge size="sm" variant={item.status === 'Menunggu' ? 'warning' : item.status === 'Disetujui' ? 'success' : 'danger'}>
+                      {item.status}
                     </Badge>
                   </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div>
-                      <p className="text-gray-500">Jumlah</p>
-                      <p className="font-semibold">{item.jumlahPinjam} unit</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Tanggal Pinjam</p>
-                      <p className="font-semibold">{format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Waktu</p>
-                      <p className="font-semibold">{item.waktuPinjam}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Kembali</p>
-                      <p className="font-semibold">{format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</p>
-                    </div>
+                  <p className="text-xs text-gray-500 mb-1">
+                    {item.userId?.nama} • {item.userId?.kelas} • {item.jumlahPinjam} unit
+                  </p>
+                  <div className="flex flex-wrap gap-x-3 text-xs text-gray-400">
+                    <span>Pinjam: {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
+                    <span>Kembali: {format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
                   </div>
-
-                  <div className="bg-gray-50 p-3 rounded">
-                    <p className="text-xs text-gray-500 mb-1">Alasan Peminjaman:</p>
-                    <p className="text-sm text-gray-800">{item.alasanPeminjaman}</p>
-                  </div>
-
-                  {item.status === 'Menunggu' && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="success"
-                        size="sm"
-                        onClick={() => handleApprove(item)}
-                        disabled={submitting || selectedItem?._id === item._id}
-                      >
-                        <IoCheckmark size={18} />
-                        Setujui
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleReject(item)}
-                        disabled={submitting || selectedItem?._id === item._id}
-                      >
-                        <IoClose size={18} />
-                        Tolak
-                      </Button>
-                    </div>
-                  )}
                 </div>
+
+                {/* Detail button */}
+                <button
+                  onClick={() => handleShowDetail(item)}
+                  className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors flex-shrink-0"
+                  title="Lihat Detail"
+                >
+                  <IoEye size={20} />
+                </button>
+
+                {/* Buttons - di kanan */}
+                {item.status === 'Menunggu' && (
+                  <div className="flex gap-2 flex-shrink-0">
+                    <Button
+                      variant="success"
+                      size="sm"
+                      onClick={() => handleApprove(item)}
+                      disabled={submitting || selectedItem?._id === item._id}
+                    >
+                      <IoCheckmark size={16} />
+                      Setujui
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleReject(item)}
+                      disabled={submitting || selectedItem?._id === item._id}
+                    >
+                      <IoClose size={16} />
+                      Tolak
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
           ))}
@@ -311,6 +296,131 @@ const Permintaan = () => {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Detail Modal */}
+      <Modal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        title="Detail Peminjaman"
+        size="lg"
+      >
+        {detailItem && (
+          <div className="space-y-4">
+            {/* Header dengan gambar */}
+            <div className="flex gap-4">
+              <img
+                src={getImageUrl(detailItem.barangId?.foto, 'https://via.placeholder.com/120')}
+                alt={detailItem.barangId?.namaBarang}
+                className="w-24 h-24 object-cover rounded-lg"
+              />
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-gray-800">{detailItem.barangId?.namaBarang}</h3>
+                <p className="text-sm text-gray-500">{detailItem.barangId?.kategori}</p>
+                <Badge
+                  className="mt-2"
+                  variant={detailItem.status === 'Menunggu' ? 'warning' : detailItem.status === 'Disetujui' ? 'success' : detailItem.status === 'Ditolak' ? 'danger' : 'info'}
+                >
+                  {detailItem.status}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Info Peminjam */}
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <IoPerson size={16} />
+                Informasi Peminjam
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <p className="text-gray-500">Nama</p>
+                  <p className="font-medium">{detailItem.userId?.nama}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Kelas</p>
+                  <p className="font-medium">{detailItem.userId?.kelas || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Email</p>
+                  <p className="font-medium">{detailItem.userId?.email}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">No. Telepon</p>
+                  <p className="font-medium">{detailItem.userId?.noTelepon || '-'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Info Peminjaman */}
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <IoCalendar size={16} />
+                Jadwal Peminjaman
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <p className="text-gray-500">Jumlah Pinjam</p>
+                  <p className="font-medium">{detailItem.jumlahPinjam} unit</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Waktu Pinjam</p>
+                  <p className="font-medium">{detailItem.waktuPinjam}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Tanggal Pinjam</p>
+                  <p className="font-medium">{format(new Date(detailItem.tanggalPinjam), 'dd MMMM yyyy', { locale: id })}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Tanggal Kembali</p>
+                  <p className="font-medium">{format(new Date(detailItem.tanggalKembali), 'dd MMMM yyyy', { locale: id })}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Alasan Peminjaman */}
+            <div className="bg-yellow-50 p-3 rounded-lg">
+              <h4 className="font-semibold text-gray-700 mb-2">Alasan Peminjaman</h4>
+              <p className="text-sm text-gray-700">{detailItem.alasanPeminjaman || '-'}</p>
+            </div>
+
+            {/* Alasan Penolakan jika ditolak */}
+            {detailItem.status === 'Ditolak' && detailItem.alasanPenolakan && (
+              <div className="bg-red-50 p-3 rounded-lg">
+                <h4 className="font-semibold text-red-700 mb-2">Alasan Penolakan</h4>
+                <p className="text-sm text-red-600">{detailItem.alasanPenolakan}</p>
+              </div>
+            )}
+
+            {/* Tombol Aksi jika masih Menunggu */}
+            {detailItem.status === 'Menunggu' && (
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="success"
+                  fullWidth
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    handleApprove(detailItem);
+                  }}
+                >
+                  <IoCheckmark size={18} />
+                  Setujui Peminjaman
+                </Button>
+                <Button
+                  variant="danger"
+                  fullWidth
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    handleReject(detailItem);
+                  }}
+                >
+                  <IoClose size={18} />
+                  Tolak Peminjaman
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </div>
   );

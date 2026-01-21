@@ -10,20 +10,25 @@ import {
     IoPerson,
     IoLibrary
 } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
 import Loading from '../../components/ui/Loading';
+import Pagination from '../../components/ui/Pagination';
 import api from '../../utils/api';
+import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+
+const ITEMS_PER_PAGE = 10;
 
 const RiwayatAdmin = () => {
     const [riwayat, setRiwayat] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('semua');
+    const [currentPage, setCurrentPage] = useState(1);
     const [stats, setStats] = useState({
         total: 0,
         disetujui: 0,
@@ -50,7 +55,7 @@ const RiwayatAdmin = () => {
 
             setStats({ total, disetujui, ditolak, selesai });
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Gagal memuat riwayat');
+            Toast.error(err.response?.data?.message || 'Gagal memuat riwayat');
         } finally {
             setLoading(false);
         }
@@ -77,6 +82,18 @@ const RiwayatAdmin = () => {
 
         return matchSearch && matchStatus;
     });
+
+    // Pagination
+    const totalPages = Math.ceil(filteredRiwayat.length / ITEMS_PER_PAGE);
+    const paginatedRiwayat = filteredRiwayat.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    // Reset page saat filter berubah
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, filterStatus]);
 
     if (loading) {
         return <Loading fullScreen text="Memuat riwayat..." />;
@@ -181,17 +198,13 @@ const RiwayatAdmin = () => {
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-100">
-                            {filteredRiwayat.map((item) => (
+                            {paginatedRiwayat.map((item) => (
                                 <div key={item._id} className="p-4 hover:bg-gray-50 transition-colors">
                                     <div className="flex gap-4">
                                         {/* Image */}
                                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                                             <img
-                                                src={
-                                                    item.barangId?.foto !== 'default-barang.jpg'
-                                                        ? `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${item.barangId?.foto}`
-                                                        : 'https://via.placeholder.com/80'
-                                                }
+                                                src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
                                                 alt={item.barangId?.namaBarang}
                                                 className="w-full h-full object-cover"
                                             />
@@ -260,6 +273,13 @@ const RiwayatAdmin = () => {
                     )}
                 </Card.Content>
             </Card>
+
+            {/* Pagination */}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+            />
         </div>
     );
 };

@@ -7,7 +7,7 @@ import {
   IoTime,
   IoWarning,
 } from "react-icons/io5";
-import { toast } from "react-toastify";
+import Toast from "../../components/ui/Toast";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Loading from "../../components/ui/Loading";
@@ -29,8 +29,7 @@ const AdminDashboard = () => {
       const response = await api.get("/statistik/admin");
       setStats(response.data.data);
     } catch (err) {
-      toast.error("Gagal memuat data dashboard");
-      console.error(err);
+      Toast.error("Gagal memuat data dashboard");
     } finally {
       setLoading(false);
     }

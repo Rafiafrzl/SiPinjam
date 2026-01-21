@@ -2,21 +2,23 @@ import { useState, useEffect } from 'react';
 import {
     IoPeople,
     IoSearch,
-    IoPersonCircle,
     IoCheckmarkCircle,
     IoCloseCircle,
     IoTrash,
     IoMail,
     IoCall,
     IoSchool,
-    IoClose
+    IoClose,
+    IoCheckbox,
+    IoSquareOutline
 } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Loading from '../../components/ui/Loading';
 import Modal from '../../components/ui/Modal';
+import Pagination from '../../components/ui/Pagination';
 import api from '../../utils/api';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -34,6 +36,10 @@ const KelolaUser = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
+
+    // Multi-select state
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -53,7 +59,7 @@ const KelolaUser = () => {
             setUsers(response.data.data);
             setPagination(response.data.pagination);
         } catch (err) {
-            toast.error('Gagal memuat data user');
+            Toast.error('Gagal memuat data user');
         } finally {
             setLoading(false);
         }
@@ -69,10 +75,10 @@ const KelolaUser = () => {
         try {
             setActionLoading(true);
             await api.put(`/users/${user._id}/toggle-status`);
-            toast.success(`User berhasil ${user.isActive ? 'dinonaktifkan' : 'diaktifkan'}`);
+            Toast.success(`User berhasil ${user.isActive ? 'dinonaktifkan' : 'diaktifkan'}`);
             fetchUsers();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Gagal mengubah status');
+            Toast.error(err.response?.data?.message || 'Gagal mengubah status');
         } finally {
             setActionLoading(false);
         }
@@ -82,12 +88,12 @@ const KelolaUser = () => {
         try {
             setActionLoading(true);
             await api.delete(`/users/${selectedUser._id}`);
-            toast.success('User berhasil dihapus');
+            Toast.success('User berhasil dihapus');
             setShowDeleteModal(false);
             setSelectedUser(null);
             fetchUsers();
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Gagal menghapus user');
+            Toast.error(err.response?.data?.message || 'Gagal menghapus user');
         } finally {
             setActionLoading(false);
         }
@@ -96,6 +102,41 @@ const KelolaUser = () => {
     const openDeleteModal = (user) => {
         setSelectedUser(user);
         setShowDeleteModal(true);
+    };
+
+    // Multi-select handlers
+    const handleSelectOne = (userId) => {
+        setSelectedIds(prev => {
+            if (prev.includes(userId)) {
+                return prev.filter(id => id !== userId);
+            }
+            return [...prev, userId];
+        });
+    };
+
+    const handleSelectAll = () => {
+        if (selectedIds.length === users.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(users.map(user => user._id));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        try {
+            setActionLoading(true);
+            for (const userId of selectedIds) {
+                await api.delete(`/users/${userId}`);
+            }
+            Toast.success(`${selectedIds.length} user berhasil dihapus`);
+            setShowBulkDeleteModal(false);
+            setSelectedIds([]);
+            fetchUsers();
+        } catch (err) {
+            Toast.error(err.response?.data?.message || 'Gagal menghapus user');
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     if (loading && users.length === 0) {
@@ -111,6 +152,15 @@ const KelolaUser = () => {
                     <p className="text-gray-600 text-sm mt-1">Manajemen data pengguna sistem</p>
                 </div>
                 <div className="flex items-center gap-2">
+                    {selectedIds.length > 0 && (
+                        <Button
+                            variant="danger"
+                            onClick={() => setShowBulkDeleteModal(true)}
+                        >
+                            <IoTrash size={18} />
+                            Hapus {selectedIds.length} Terpilih
+                        </Button>
+                    )}
                     <Badge variant="primary" size="lg">
                         <IoPeople className="mr-1" />
                         {pagination.total || 0} User
@@ -176,102 +226,124 @@ const KelolaUser = () => {
                     <p className="text-gray-500">Tidak ada user ditemukan</p>
                 </Card>
             ) : (
-                <div className="grid gap-3">
-                    {users.map((user) => (
-                        <Card key={user._id} className="p-4">
-                            <div className="flex items-center gap-4">
-                                {/* Avatar */}
-                                <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg bg-blue-600">
-                                    {user.nama?.charAt(0).toUpperCase()}
-                                </div>
+                <div className="space-y-2">
+                    {/* Select All Checkbox */}
+                    <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg">
+                        <button
+                            onClick={handleSelectAll}
+                            className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+                        >
+                            {selectedIds.length === users.length && users.length > 0 ? (
+                                <IoCheckbox size={22} className="text-blue-600" />
+                            ) : (
+                                <IoSquareOutline size={22} />
+                            )}
+                            <span className="font-medium">
+                                {selectedIds.length === users.length && users.length > 0
+                                    ? 'Batal Pilih Semua'
+                                    : 'Pilih Semua'}
+                            </span>
+                        </button>
+                        {selectedIds.length > 0 && (
+                            <span className="text-xs text-gray-500">
+                                ({selectedIds.length} dipilih)
+                            </span>
+                        )}
+                    </div>
 
-                                {/* Info */}
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <h3 className="font-semibold text-gray-800 truncate">{user.nama}</h3>
-                                        <Badge variant={user.isActive ? 'success' : 'danger'} size="sm">
-                                            {user.isActive ? 'Aktif' : 'Nonaktif'}
-                                        </Badge>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
-                                        <span className="flex items-center gap-1">
-                                            <IoMail size={14} />
-                                            {user.email}
-                                        </span>
-                                        {user.kelas && (
-                                            <span className="flex items-center gap-1">
-                                                <IoSchool size={14} />
-                                                {user.kelas}
-                                            </span>
-                                        )}
-                                        {user.noTelepon && (
-                                            <span className="flex items-center gap-1">
-                                                <IoCall size={14} />
-                                                {user.noTelepon}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-gray-400 mt-1">
-                                        Bergabung {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: id })}
-                                    </p>
-                                </div>
-
-                                {/* Actions */}
-                                <div className="flex items-center gap-2">
+                    {/* User Cards */}
+                    <div className="grid gap-3">
+                        {users.map((user) => (
+                            <Card
+                                key={user._id}
+                                className={`p-4 transition-all ${selectedIds.includes(user._id)
+                                    ? 'ring-2 ring-blue-500 bg-blue-50'
+                                    : ''
+                                    }`}
+                            >
+                                <div className="flex items-center gap-4">
                                     <button
-                                        onClick={() => handleToggleStatus(user)}
-                                        disabled={actionLoading}
-                                        className={`p-2 rounded-lg transition-all ${user.isActive
+                                        onClick={() => handleSelectOne(user._id)}
+                                        className="flex-shrink-0"
+                                    >
+                                        {selectedIds.includes(user._id) ? (
+                                            <IoCheckbox size={24} className="text-blue-600" />
+                                        ) : (
+                                            <IoSquareOutline size={24} className="text-gray-400 hover:text-gray-600" />
+                                        )}
+                                    </button>
+
+                                    {/* Avatar */}
+                                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg bg-blue-600">
+                                        {user.nama?.charAt(0).toUpperCase()}
+                                    </div>
+
+                                    {/* Info */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <h3 className="font-semibold text-gray-800 truncate">{user.nama}</h3>
+                                            <Badge variant={user.isActive ? 'success' : 'danger'} size="sm">
+                                                {user.isActive ? 'Aktif' : 'Nonaktif'}
+                                            </Badge>
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                                            <span className="flex items-center gap-1">
+                                                <IoMail size={14} />
+                                                {user.email}
+                                            </span>
+                                            {user.kelas && (
+                                                <span className="flex items-center gap-1">
+                                                    <IoSchool size={14} />
+                                                    {user.kelas}
+                                                </span>
+                                            )}
+                                            {user.noTelepon && (
+                                                <span className="flex items-center gap-1">
+                                                    <IoCall size={14} />
+                                                    {user.noTelepon}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-gray-400 mt-1">
+                                            Bergabung {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: id })}
+                                        </p>
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => handleToggleStatus(user)}
+                                            disabled={actionLoading}
+                                            className={`p-2 rounded-lg transition-all ${user.isActive
                                                 ? 'bg-orange-100 text-orange-600 hover:bg-orange-200'
                                                 : 'bg-green-100 text-green-600 hover:bg-green-200'
-                                            }`}
-                                        title={user.isActive ? 'Nonaktifkan' : 'Aktifkan'}
-                                    >
-                                        {user.isActive ? <IoCloseCircle size={20} /> : <IoCheckmarkCircle size={20} />}
-                                    </button>
-                                    <button
-                                        onClick={() => openDeleteModal(user)}
-                                        disabled={actionLoading}
-                                        className="p-2 rounded-lg transition-all bg-red-100 text-red-600 hover:bg-red-200"
-                                        title="Hapus"
-                                    >
-                                        <IoTrash size={20} />
-                                    </button>
+                                                }`}
+                                            title={user.isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                                        >
+                                            {user.isActive ? <IoCloseCircle size={20} /> : <IoCheckmarkCircle size={20} />}
+                                        </button>
+                                        <button
+                                            onClick={() => openDeleteModal(user)}
+                                            disabled={actionLoading}
+                                            className="p-2 rounded-lg transition-all bg-red-100 text-red-600 hover:bg-red-200"
+                                            title="Hapus"
+                                        >
+                                            <IoTrash size={20} />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        </Card>
-                    ))}
+                            </Card>
+                        ))}
+                    </div>
                 </div>
             )}
 
-            {/* Pagination */}
-            {pagination.pages > 1 && (
-                <div className="flex items-center justify-center gap-3 pt-2">
-                    <button
-                        onClick={() => setCurrentPage(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentPage === 1
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-white text-gray-600 border border-gray-200 hover:bg-blue-50 hover:text-blue-600'
-                            }`}
-                    >
-                        Sebelumnya
-                    </button>
-                    <span className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
-                        {currentPage} / {pagination.pages}
-                    </span>
-                    <button
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                        disabled={currentPage === pagination.pages}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentPage === pagination.pages
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-white text-gray-600 border border-gray-200 hover:bg-blue-50 hover:text-blue-600'
-                            }`}
-                    >
-                        Selanjutnya
-                    </button>
-                </div>
-            )}
+            {/* Pagination - menggunakan komponen global Pagination */}
+            <Pagination
+                currentPage={currentPage}      // Halaman saat ini
+                totalPages={pagination.pages}  // Total halaman dari API
+                onPageChange={setCurrentPage}  // Fungsi untuk ganti halaman
+            />
 
             {/* Delete Confirmation Modal */}
             <Modal
@@ -308,6 +380,46 @@ const KelolaUser = () => {
                             onClick={handleDelete}
                         >
                             Hapus
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Modal Konfirmasi Hapus Massal */}
+            <Modal
+                isOpen={showBulkDeleteModal}
+                onClose={() => setShowBulkDeleteModal(false)}
+                title="Hapus User Terpilih"
+                size="sm"
+            >
+                <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <IoTrash className="text-red-600" size={32} />
+                    </div>
+                    <p className="text-gray-600 mb-2">
+                        Apakah Anda yakin ingin menghapus:
+                    </p>
+                    <p className="font-semibold text-gray-800 mb-4">
+                        {selectedIds.length} user terpilih
+                    </p>
+                    <p className="text-sm text-red-500 mb-4">
+                        Tindakan ini tidak dapat dibatalkan!
+                    </p>
+                    <div className="flex gap-3">
+                        <Button
+                            variant="secondary"
+                            fullWidth
+                            onClick={() => setShowBulkDeleteModal(false)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            variant="danger"
+                            fullWidth
+                            loading={actionLoading}
+                            onClick={handleBulkDelete}
+                        >
+                            Hapus Semua
                         </Button>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { IoCheckmarkCircle, IoCloseCircle, IoEye } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -29,7 +29,7 @@ const Pengembalian = () => {
       const response = await api.get('/pengembalian', { params });
       setPengembalian(response.data.data || response.data || []);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal memuat data pengembalian');
+      Toast.error(err.response?.data?.message || 'Gagal memuat data pengembalian');
       setLoading(false);
     } finally {
       setLoading(false);
@@ -46,11 +46,11 @@ const Pengembalian = () => {
     try {
       setVerifyLoading(true);
       await api.put(`/pengembalian/${id}/verifikasi`, { statusVerifikasi });
-      toast.success(`Pengembalian berhasil ${statusVerifikasi.toLowerCase()}`);
+      Toast.success(`Pengembalian berhasil ${statusVerifikasi.toLowerCase()}`);
       setShowDetailModal(false);
       fetchPengembalian();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal memverifikasi pengembalian');
+      Toast.error(err.response?.data?.message || 'Gagal memverifikasi pengembalian');
     } finally {
       setVerifyLoading(false);
     }
@@ -62,7 +62,7 @@ const Pengembalian = () => {
       setSelectedPengembalian(response.data.data);
       setShowDetailModal(true);
     } catch (err) {
-      toast.error('Gagal memuat detail pengembalian');
+      Toast.error('Gagal memuat detail pengembalian');
     }
   };
 

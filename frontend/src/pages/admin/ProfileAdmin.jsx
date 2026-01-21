@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { IoPerson, IoMail, IoCall, IoLockClosed, IoSave } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -56,17 +56,16 @@ const ProfileAdmin = () => {
       // Pastikan response.data.data berisi informasi user yang lengkap
       if (response.data.data) {
         updateAdmin(response.data.data);
-        toast.success('Profile berhasil diupdate');
+        Toast.success('Profile berhasil diupdate');
       } else {
         // Jika struktur data berbeda, coba gunakan response.data langsung
         updateAdmin(response.data);
-        toast.success('Profile berhasil diupdate');
+        Toast.success('Profile berhasil diupdate');
       }
 
       setEditing(false);
     } catch (err) {
-      console.error('Error updating profile:', err);
-      toast.error(err.response?.data?.message || 'Gagal update profile');
+      Toast.error(err.response?.data?.message || 'Gagal update profile');
     } finally {
       setLoading(false);
     }
@@ -76,12 +75,12 @@ const ProfileAdmin = () => {
     e.preventDefault();
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('Password baru tidak cocok');
+      Toast.error('Password baru tidak cocok');
       return;
     }
 
     if (passwordData.newPassword.length < 6) {
-      toast.error('Password minimal 6 karakter');
+      Toast.error('Password minimal 6 karakter');
       return;
     }
 
@@ -92,7 +91,7 @@ const ProfileAdmin = () => {
         newPassword: passwordData.newPassword
       });
 
-      toast.success('Password berhasil diubah');
+      Toast.success('Password berhasil diubah');
       setChangingPassword(false);
       setPasswordData({
         currentPassword: '',
@@ -100,8 +99,7 @@ const ProfileAdmin = () => {
         confirmPassword: ''
       });
     } catch (err) {
-      console.error('Error changing password:', err);
-      toast.error(err.response?.data?.message || 'Gagal ubah password');
+      Toast.error(err.response?.data?.message || 'Gagal ubah password');
     } finally {
       setLoading(false);
     }

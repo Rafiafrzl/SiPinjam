@@ -8,7 +8,7 @@ import {
   IoDocumentText,
   IoCalendar
 } from 'react-icons/io5';
-import { toast } from 'react-toastify';
+import Toast from '../../components/ui/Toast';
 import {
   BarChart,
   Bar,
@@ -65,7 +65,7 @@ const Statistik = () => {
       setStats(statsRes.data.data || statsRes.data || null);
       setPeminjaman(peminjamanRes.data.data || []);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal memuat statistik');
+      Toast.error(err.response?.data?.message || 'Gagal memuat statistik');
     } finally {
       setLoading(false);
     }
@@ -180,10 +180,10 @@ const Statistik = () => {
       let logoBase64 = null;
       try {
         // Import logo dari assets
-        const logoUrl = new URL('../../assets/logo/smkn2sby.png', import.meta.url).href;
+        const logoUrl = new URL('../../assets/logo/sipinjam.png', import.meta.url).href;
         logoBase64 = await getBase64FromUrl(logoUrl);
       } catch (err) {
-        console.log('Logo tidak ditemukan, lanjut tanpa logo');
+        // Logo tidak ditemukan, lanjut tanpa logo
       }
 
       // Fungsi untuk menambah header dengan logo
@@ -336,92 +336,61 @@ const Statistik = () => {
       }
 
       doc.save(`Laporan_Statistik_SiPinjam_${format(new Date(), 'yyyyMMdd_HHmm')}.pdf`);
-      toast.success('Laporan PDF berhasil di-export!');
+      Toast.success('Laporan PDF berhasil di-export!');
     } catch (error) {
-      console.error('Error exporting PDF:', error);
-      toast.error('Gagal export PDF');
+      Toast.error('Gagal export PDF');
     }
   };
 
+
   const exportToExcel = () => {
     try {
+
       const wb = XLSX.utils.book_new();
 
-      // Sheet 1: Ringkasan
-      const summaryData = [
-        ['Laporan Statistik SiPinjam'],
-        [`Dicetak pada: ${format(new Date(), 'dd MMMM yyyy HH:mm', { locale: id })}`],
-        [`Periode: ${periode}`],
+      // Data untuk sheet Ringkasan
+      const dataRingkasan = [
+        ['LAPORAN STATISTIK SISTEM PEMINJAMAN BARANG'],
         [],
-        ['Ringkasan'],
+        ['Tanggal Cetak:', format(new Date(), 'dd MMMM yyyy, HH:mm', { locale: id })],
+        ['Periode:', periode],
+        [],
+        ['RINGKASAN UMUM'],
         ['Kategori', 'Jumlah'],
         ['Total Barang', stats?.barang?.total || 0],
         ['Total User', stats?.user?.total || 0],
         ['Total Peminjaman', stats?.peminjaman?.total || 0],
         ['Sedang Dipinjam', stats?.aktivitas?.sedangDipinjam || 0],
         [],
-        ['Status Peminjaman'],
+        ['STATUS PEMINJAMAN'],
         ['Status', 'Jumlah'],
         ['Menunggu', stats?.peminjaman?.menunggu || 0],
         ['Disetujui', stats?.peminjaman?.disetujui || 0],
         ['Ditolak', stats?.peminjaman?.ditolak || 0],
         ['Selesai', stats?.peminjaman?.selesai || 0],
+        [],
+        ['BARANG PER KATEGORI'],
+        ['Kategori', 'Jumlah'],
+        ['Elektronik', stats?.barang?.elektronik || 0],
+        ['Olahraga', stats?.barang?.olahraga || 0],
       ];
-      const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-      XLSX.utils.book_append_sheet(wb, wsSummary, 'Ringkasan');
 
-      // Sheet 2: Tren Data
-      if (chartData.length > 0) {
-        const trendData = [
-          [`Tren Peminjaman (${periode})`],
-          ['Periode', 'Total', 'Disetujui', 'Ditolak', 'Menunggu'],
-          ...chartData.map(d => [d.name, d.total, d.disetujui, d.ditolak, d.menunggu])
-        ];
-        const wsTrend = XLSX.utils.aoa_to_sheet(trendData);
-        XLSX.utils.book_append_sheet(wb, wsTrend, 'Tren Peminjaman');
-      }
+      // Buat sheet dari data
+      const sheet1 = XLSX.utils.aoa_to_sheet(dataRingkasan);
 
-      // Sheet 3: Top Barang
-      if (stats?.barangPopular?.length > 0) {
-        const topData = [
-          ['Top 10 Barang Paling Sering Dipinjam'],
-          ['No', 'Nama Barang', 'Kategori', 'Total Peminjaman'],
-          ...stats.barangPopular.slice(0, 10).map((item, index) => [
-            index + 1,
-            item._id?.namaBarang || '-',
-            item._id?.kategori || '-',
-            item.totalPeminjaman
-          ])
-        ];
-        const wsTop = XLSX.utils.aoa_to_sheet(topData);
-        XLSX.utils.book_append_sheet(wb, wsTop, 'Top Barang');
-      }
+      // Atur lebar kolom
+      sheet1['!cols'] = [{ wch: 25 }, { wch: 15 }];
 
-      // Sheet 4: Detail Peminjaman
-      if (peminjaman.length > 0) {
-        const detailData = [
-          ['Detail Peminjaman'],
-          ['No', 'Nama Barang', 'Peminjam', 'Kelas', 'Jumlah', 'Status', 'Tanggal Pinjam', 'Tanggal Kembali'],
-          ...peminjaman.map((p, index) => [
-            index + 1,
-            p.barangId?.namaBarang || '-',
-            p.userId?.nama || '-',
-            p.userId?.kelas || '-',
-            p.jumlahPinjam,
-            p.status,
-            format(new Date(p.tanggalPinjam), 'dd/MM/yyyy'),
-            format(new Date(p.tanggalKembali), 'dd/MM/yyyy')
-          ])
-        ];
-        const wsDetail = XLSX.utils.aoa_to_sheet(detailData);
-        XLSX.utils.book_append_sheet(wb, wsDetail, 'Detail Peminjaman');
-      }
 
-      XLSX.writeFile(wb, `Laporan_Statistik_SiPinjam_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
-      toast.success('Laporan Excel berhasil di-export!');
+      XLSX.utils.book_append_sheet(wb, sheet1, 'Ringkasan');
+
+
+      const namaFile = `Laporan_Statistik_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`;
+      XLSX.writeFile(wb, namaFile);
+
+      Toast.success('Laporan Excel berhasil di-export!');
     } catch (error) {
-      console.error('Error exporting Excel:', error);
-      toast.error('Gagal export Excel');
+      Toast.error('Gagal export Excel');
     }
   };
 
@@ -659,7 +628,7 @@ const Statistik = () => {
           {stats?.barangPopular?.length === 0 ? (
             <p className="text-center text-gray-500 py-4">Belum ada data</p>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-1 max-h-64 overflow-y-auto">
               {stats?.barangPopular?.slice(0, 10).map((item, index) => (
                 <div key={item._id?._id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100">
                   <div className="flex items-center gap-2">
