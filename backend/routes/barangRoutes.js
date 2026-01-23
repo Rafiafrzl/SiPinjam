@@ -24,6 +24,9 @@ const handleUpload = (req, res, next) => {
   });
 };
 
+// Public route - tanpa autentikasi
+router.get('/public', getAllBarang);
+
 router.get('/', verifikasiToken, getAllBarang);
 router.get('/:id', verifikasiToken, getBarangById);
 router.get('/kategori/:kategori', verifikasiToken, getBarangByKategori);
