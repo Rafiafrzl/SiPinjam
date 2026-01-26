@@ -75,14 +75,12 @@ const LandingPage = () => {
                         alt="Background"
                         className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/50"></div>
+                    <div className="absolute inset-0 bg-black/60"></div>
                 </div>
 
                 {/* Content */}
                 <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                    <div className="max-w-2xl">
-
-
+                    <div className="max-w-3xl mx-auto text-center">
                         <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-6">
                             Sistem Peminjaman Barang Sekolah
                         </h1>
@@ -92,7 +90,7 @@ const LandingPage = () => {
                         </p>
 
                         {/* CTA Buttons */}
-                        <div className="flex flex-wrap gap-4">
+                        <div className="flex flex-wrap justify-center gap-4">
                             <Link
                                 to="/register"
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-lg transition-colors"
@@ -107,22 +105,6 @@ const LandingPage = () => {
                                 <IoLibrary size={20} />
                                 Lihat Katalog
                             </Link>
-                        </div>
-
-                        {/* Quick Stats */}
-                        <div className="flex gap-8 mt-12 pt-8 border-t border-white/10">
-                            <div>
-                                <p className="text-2xl font-bold text-white">{featuredBarang.length}+</p>
-                                <p className="text-sm text-gray-400">Barang Tersedia</p>
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-white">2</p>
-                                <p className="text-sm text-gray-400">Kategori</p>
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-white">24/7</p>
-                                <p className="text-sm text-gray-400">Akses Online</p>
-                            </div>
                         </div>
                     </div>
                 </div>
