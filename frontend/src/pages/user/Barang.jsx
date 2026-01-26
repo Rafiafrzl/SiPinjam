@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 import {
   IoSearch,
@@ -9,7 +10,8 @@ import {
   IoFootball,
   IoClose,
   IoChevronBack,
-  IoChevronForward
+  IoChevronForward,
+  IoExpand
 } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import Loading from '../../components/ui/Loading';
@@ -29,9 +31,11 @@ const Barang = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Modal state
+  // Modal states
+  const [selectedItem, setSelectedItem] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [selectedBarang, setSelectedBarang] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
   const [formData, setFormData] = useState({
     jumlahPinjam: 1,
     tanggalPinjam: '',
@@ -39,7 +43,6 @@ const Barang = () => {
     tanggalKembali: '',
     alasanPeminjaman: ''
   });
-  const [submitLoading, setSubmitLoading] = useState(false);
 
   // Fetch data ketika search atau kategori berubah
   useEffect(() => {
@@ -114,80 +117,92 @@ const Barang = () => {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-5 sm:space-y-6"
+    >
       {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">Katalog Barang</h1>
-        <p className="text-sm text-gray-500 mt-1">Temukan barang yang ingin Anda pinjam</p>
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Katalog Barang</h1>
+        <p className="text-gray-500">Temukan barang yang ingin Anda pinjam</p>
       </div>
 
-      {/* Search & Filter */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          setSearch(searchQuery); // Submit search
-        }}
-        className="flex flex-col gap-3 sm:flex-row sm:items-center"
-      >
-        <div className="relative flex-1">
-          <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Cari nama barang..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-20 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-sm"
-          />
-          {searchQuery && (
+      {/* Search & Filter Card */}
+      <div className="bg-neutral-900 rounded-xl p-4 mb-6 border border-neutral-800">
+        {/* Search Bar */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearch(searchQuery);
+          }}
+          className="mb-4"
+        >
+          <div className="relative">
+            <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+            <input
+              type="text"
+              placeholder="Cari nama barang..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-24 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSearch('');
+                }}
+                className="absolute right-20 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
+              >
+                <IoClose size={18} />
+              </button>
+            )}
             <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                setSearch('');
-              }}
-              className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              type="submit"
+              className="absolute right-2 top-2 bottom-2 px-4 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-md transition-colors"
             >
-              <IoClose size={18} />
+              Cari
             </button>
-          )}
-          <button
-            type="submit"
-            className="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1 text-sm font-medium"
-          >
-            <IoSearch size={16} />
-            Cari
-          </button>
-        </div>
-      </form>
+          </div>
+        </form>
 
-      {/* Category Filter */}
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-        {categories.map((cat) => {
-          const Icon = cat.icon;
-          const isActive = kategori === cat.value;
-          return (
-            <button
-              key={cat.value}
-              onClick={() => setKategori(cat.value)}
-              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all ${isActive
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'
-                }`}
-            >
-              <Icon size={18} />
-              {cat.label}
-            </button>
-          );
-        })}
+        {/* Category Filter */}
+        <div>
+          <p className="text-gray-400 text-sm mb-3 flex items-center gap-2">
+            <IoFilter size={16} />
+            Kategori
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => {
+              const Icon = cat.icon;
+              const isActive = kategori === cat.value;
+              return (
+                <button
+                  key={cat.value}
+                  onClick={() => setKategori(cat.value)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
+                    : 'bg-neutral-800 text-gray-400 hover:bg-neutral-700 hover:text-white border border-neutral-700'
+                    }`}
+                >
+                  <Icon size={18} />
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Results Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
-          Menampilkan <span className="font-semibold text-gray-800">{barang.length}</span> barang
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-gray-500 text-sm">
+          {barang.length} barang ditemukan
         </p>
         {totalPages > 1 && (
-          <p className="text-sm text-gray-400">
+          <p className="text-gray-600 text-sm">
             Halaman {currentPage} dari {totalPages}
           </p>
         )}
@@ -195,87 +210,134 @@ const Barang = () => {
 
       {/* Product Grid */}
       {barang.length === 0 ? (
-        <div className="bg-gray-50 rounded-2xl p-8 sm:p-12 text-center">
-          <IoFilter className="mx-auto mb-4 text-gray-300" size={48} />
-          <h3 className="text-lg font-bold text-gray-700 mb-2">Tidak ada barang ditemukan</h3>
-          <p className="text-gray-500 text-sm">Coba ubah kata kunci atau filter pencarian</p>
+        <div className="text-center py-16 bg-neutral-900 rounded-xl border border-neutral-800">
+          <IoFilter className="mx-auto text-gray-700 mb-4" size={48} />
+          <h3 className="text-lg font-semibold text-white mb-2">Tidak ada barang ditemukan</h3>
+          <p className="text-gray-600 mb-4">Coba ubah kata kunci atau filter pencarian</p>
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setSearch('');
+              setKategori('');
+            }}
+            className="px-4 py-2 bg-neutral-800 text-white rounded-lg hover:bg-neutral-700 transition-colors"
+          >
+            Reset Filter
+          </button>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-            {paginatedBarang.map((item) => (
-              <div
-                key={item._id}
-                className="bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all group"
-              >
-                <div className="relative aspect-square bg-gray-100 overflow-hidden">
-                  <img
-                    src={getImageUrl(item.foto)}
-                    alt={item.namaBarang}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-2 left-2">
-                    <span className={`px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full ${item.jumlahTersedia > 0 ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
-                      }`}>
-                      {item.jumlahTersedia > 0 ? 'Tersedia' : 'Habis'}
-                    </span>
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {paginatedBarang.map((item) => {
+              const isRusak = item.kondisi === 'rusak ringan' || item.kondisi === 'rusak berat';
+              const canBorrow = item.jumlahTersedia > 0 && !isRusak;
+
+              return (
+                <div
+                  key={item._id}
+                  className={`flex flex-col bg-neutral-900 rounded-xl overflow-hidden border transition-colors group ${isRusak
+                    ? 'border-orange-500/30 opacity-70'
+                    : 'border-neutral-800 hover:border-purple-500/30'
+                    }`}
+                >
+                  {/* Image */}
+                  <div
+                    className="relative aspect-square bg-neutral-800 overflow-hidden cursor-pointer"
+                    onClick={() => setPreviewImage(getImageUrl(item.foto))}
+                  >
+                    <img
+                      src={getImageUrl(item.foto)}
+                      alt={item.namaBarang}
+                      className={`w-full h-full object-cover ${!isRusak && 'group-hover:scale-105'
+                        } transition-transform duration-300`}
+                    />
+
+                    {/* Expand Icon */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <IoExpand className="text-white" size={24} />
+                    </div>
+
+                    {/* Status Badge */}
+                    <div className="absolute top-2 left-2">
+                      {isRusak ? (
+                        <span className="px-2 py-1 text-xs font-medium rounded bg-orange-500 text-white">
+                          {item.kondisi === 'rusak berat' ? 'Rusak Berat' : 'Rusak Ringan'}
+                        </span>
+                      ) : (
+                        <span className={`px-2 py-1 text-xs font-medium rounded ${item.jumlahTersedia > 0
+                          ? 'bg-green-500 text-white'
+                          : 'bg-red-500 text-white'
+                          }`}>
+                          {item.jumlahTersedia > 0 ? 'Tersedia' : 'Habis'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-3 flex flex-col flex-1">
+                    <h3 className="font-medium text-white text-sm truncate">{item.namaBarang}</h3>
+                    <p className="text-gray-600 text-xs capitalize">{item.kategori}</p>
+                    {item.lokasi && (
+                      <p className="text-gray-600 text-xs flex items-center gap-1 mt-1">
+                        <IoLocation size={12} />
+                        <span className="truncate">{item.lokasi}</span>
+                      </p>
+                    )}
+
+                    {isRusak && (
+                      <p className="text-[10px] text-orange-400 bg-orange-500/10 px-2 py-1 rounded mt-2">
+                        ⚠️ Tidak dapat dipinjam
+                      </p>
+                    )}
+
+                    <div className="mt-auto pt-3 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-500">Tersedia</span>
+                        <span className="text-purple-400 font-medium">{item.jumlahTersedia} unit</span>
+                      </div>
+                      <button
+                        onClick={() => handleOpenModal(item)}
+                        disabled={!canBorrow}
+                        className={`w-full px-3 py-2 text-xs font-semibold rounded-lg transition-all ${canBorrow
+                          ? 'bg-purple-600 text-white hover:bg-purple-500 active:scale-95'
+                          : 'bg-neutral-700 text-gray-500 cursor-not-allowed'
+                          }`}
+                      >
+                        {isRusak ? 'Tidak Tersedia' : canBorrow ? 'Pinjam' : 'Habis'}
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="p-3 sm:p-4">
-                  <h3 className="font-semibold text-gray-800 text-sm truncate mb-1">{item.namaBarang}</h3>
-                  <p className="text-xs text-gray-500 capitalize mb-1">{item.kategori}</p>
-                  {item.lokasi && (
-                    <p className="text-xs text-gray-400 flex items-center gap-1 mb-2">
-                      <IoLocation size={12} />
-                      <span className="truncate">{item.lokasi}</span>
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs sm:text-sm font-bold text-blue-600">{item.jumlahTersedia} unit</span>
-                    <button
-                      onClick={() => handleOpenModal(item)}
-                      disabled={item.jumlahTersedia === 0}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${item.jumlahTersedia > 0
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        }`}
-                    >
-                      Pinjam
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* Pagination - Versi Sederhana */}
+          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-4">
-              {/* Tombol Sebelumnya */}
+            <div className="flex items-center justify-center gap-2 mt-8">
               <button
                 onClick={() => setCurrentPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentPage === 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-blue-50 hover:text-blue-600'
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium ${currentPage === 1
+                  ? 'bg-neutral-900 text-gray-700 cursor-not-allowed'
+                  : 'bg-neutral-800 text-white hover:bg-neutral-700'
                   }`}
               >
                 <IoChevronBack size={16} />
                 Sebelumnya
               </button>
 
-              {/* Info Halaman */}
-              <span className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">
+              <span className="px-4 py-2 bg-purple-600 text-white font-medium rounded-lg">
                 {currentPage} / {totalPages}
               </span>
 
-              {/* Tombol Selanjutnya */}
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-all ${currentPage === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-blue-50 hover:text-blue-600'
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium ${currentPage === totalPages
+                  ? 'bg-neutral-900 text-gray-700 cursor-not-allowed'
+                  : 'bg-neutral-800 text-white hover:bg-neutral-700'
                   }`}
               >
                 Selanjutnya
@@ -293,90 +355,114 @@ const Barang = () => {
         title="Ajukan Peminjaman"
         size="md"
       >
-        {selectedBarang && (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-xl">
+        {selectedItem && (
+          <form onSubmit={handleSubmit} className="space-y-4 py-2">
+            <div className="flex items-center gap-4 p-4 bg-neutral-800 rounded-xl border border-neutral-700/50 shadow-inner">
               <img
-                src={getImageUrl(selectedBarang.foto, 'https://via.placeholder.com/80')}
-                alt={selectedBarang.namaBarang}
-                className="w-16 h-16 rounded-lg object-cover"
+                src={getImageUrl(selectedItem.foto, 'https://via.placeholder.com/80')}
+                alt={selectedItem.namaBarang}
+                className="w-16 h-16 rounded-lg object-cover shadow-lg"
               />
               <div>
-                <h4 className="font-semibold text-gray-800">{selectedBarang.namaBarang}</h4>
-                <p className="text-sm text-gray-500">Tersedia: {selectedBarang.jumlahTersedia} unit</p>
+                <h4 className="font-bold text-white text-base">{selectedItem.namaBarang}</h4>
+                <p className="text-sm text-gray-400">Tersedia: <span className="text-purple-400 font-semibold">{selectedItem.jumlahTersedia} unit</span></p>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
-              <input
-                type="number"
-                min="1"
-                max={selectedBarang.jumlahTersedia}
-                value={formData.jumlahPinjam}
-                onChange={(e) => setFormData({ ...formData, jumlahPinjam: parseInt(e.target.value) })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Pinjam</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Jumlah Pinjam</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={selectedItem.jumlahTersedia}
+                  value={formData.jumlahPinjam}
+                  onChange={(e) => setFormData({ ...formData, jumlahPinjam: parseInt(e.target.value) })}
+                  className="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-700 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Tanggal Pinjam</label>
+                  <input
+                    type="date"
+                    value={formData.tanggalPinjam}
+                    onChange={(e) => setFormData({ ...formData, tanggalPinjam: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-700 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 transition-all [color-scheme:dark]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Waktu Ambil</label>
+                  <input
+                    type="time"
+                    value={formData.waktuPinjam}
+                    onChange={(e) => setFormData({ ...formData, waktuPinjam: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-700 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 transition-all [color-scheme:dark]"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Tanggal Pengembalian</label>
                 <input
                   type="date"
-                  value={formData.tanggalPinjam}
-                  onChange={(e) => setFormData({ ...formData, tanggalPinjam: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400"
+                  value={formData.tanggalKembali}
+                  onChange={(e) => setFormData({ ...formData, tanggalKembali: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-700 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 transition-all [color-scheme:dark]"
                   required
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Waktu</label>
-                <input
-                  type="time"
-                  value={formData.waktuPinjam}
-                  onChange={(e) => setFormData({ ...formData, waktuPinjam: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400"
+                <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Alasan Peminjaman</label>
+                <Textarea
+                  rows="3"
+                  value={formData.alasanPeminjaman}
+                  onChange={(e) => setFormData({ ...formData, alasanPeminjaman: e.target.value })}
+                  placeholder="Jelaskan keperluan peminjaman barang ini..."
+                  className="bg-neutral-900 border-neutral-700 text-white placeholder-gray-600 focus:border-purple-500"
                   required
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Kembali</label>
-              <input
-                type="date"
-                value={formData.tanggalKembali}
-                onChange={(e) => setFormData({ ...formData, tanggalKembali: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-gray-400"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Alasan Peminjaman</label>
-              <Textarea
-                rows="3"
-                value={formData.alasanPeminjaman}
-                onChange={(e) => setFormData({ ...formData, alasanPeminjaman: e.target.value })}
-                placeholder="Jelaskan keperluan peminjaman..."
-                required
-              />
-            </div>
-
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-4">
               <Button type="button" variant="secondary" fullWidth onClick={() => setShowModal(false)}>
                 Batal
               </Button>
               <Button type="submit" variant="primary" fullWidth loading={submitLoading}>
-                Ajukan
+                Ajukan Peminjaman
               </Button>
             </div>
           </form>
         )}
       </Modal>
-    </div>
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button
+            onClick={() => setPreviewImage(null)}
+            className="absolute top-4 right-4 p-2 bg-neutral-800/80 hover:bg-neutral-700 rounded-full transition-colors"
+          >
+            <IoClose className="text-white" size={24} />
+          </button>
+          <img
+            src={previewImage}
+            alt="Preview"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </motion.div>
   );
 };
 

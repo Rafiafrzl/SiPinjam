@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   IoList,
   IoCalendar,
@@ -84,10 +85,14 @@ const PeminjamanUser = () => {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-5 sm:space-y-6"
+    >
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">Peminjaman Saya</h1>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Peminjaman Saya</h1>
         <p className="text-sm text-gray-500 mt-1">Kelola dan pantau status peminjaman</p>
       </div>
 
@@ -99,8 +104,8 @@ const PeminjamanUser = () => {
             <button
               key={tab.value}
               className={`flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-medium text-sm transition-all ${statusFilter === tab.value
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
+                : 'bg-neutral-900 text-gray-400 border border-neutral-800 hover:border-purple-500/50 hover:text-white'
                 }`}
               onClick={() => setStatusFilter(tab.value)}
             >
@@ -114,9 +119,9 @@ const PeminjamanUser = () => {
 
       {/* List */}
       {peminjaman.length === 0 ? (
-        <div className="bg-gray-50 rounded-2xl p-8 sm:p-12 text-center">
-          <IoList className="mx-auto mb-4 text-gray-300" size={48} />
-          <h3 className="text-lg font-bold text-gray-700 mb-2">Belum ada peminjaman</h3>
+        <div className="bg-neutral-900 rounded-2xl p-8 sm:p-12 text-center border border-neutral-800">
+          <IoList className="mx-auto mb-4 text-neutral-700" size={48} />
+          <h3 className="text-lg font-bold text-white mb-2">Belum ada peminjaman</h3>
           <p className="text-sm text-gray-500">Silakan ajukan peminjaman barang terlebih dahulu</p>
         </div>
       ) : (
@@ -125,22 +130,22 @@ const PeminjamanUser = () => {
             <div
               key={item._id}
               onClick={() => handleShowDetail(item._id)}
-              className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100 hover:shadow-lg hover:border-blue-200 transition-all cursor-pointer"
+              className="bg-neutral-900 rounded-xl p-3 sm:p-4 border border-neutral-800 hover:shadow-lg hover:shadow-purple-500/10 hover:border-purple-500/50 transition-all cursor-pointer group"
             >
               <div className="flex gap-3 sm:gap-4">
                 {/* Image */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-neutral-800 flex-shrink-0">
                   <img
                     src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
                     alt={item.barangId?.namaBarang}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base truncate">
+                    <h3 className="font-semibold text-white text-sm sm:text-base truncate group-hover:text-purple-400 transition-colors">
                       {item.barangId?.namaBarang}
                     </h3>
                     {getStatusBadge(item.status)}
@@ -161,7 +166,7 @@ const PeminjamanUser = () => {
                 </div>
 
                 <div className="hidden sm:flex items-center">
-                  <IoEye size={20} className="text-gray-400" />
+                  <IoEye size={20} className="text-gray-500 group-hover:text-white transition-colors" />
                 </div>
               </div>
             </div>
@@ -173,50 +178,50 @@ const PeminjamanUser = () => {
       <Modal isOpen={showDetailModal} onClose={() => setShowDetailModal(false)} title="Detail Peminjaman" size="md">
         {selectedPeminjaman && (
           <div className="space-y-4">
-            <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-xl">
+            <div className="flex items-center gap-4 p-3 bg-neutral-800 rounded-xl">
               <img
                 src={getImageUrl(selectedPeminjaman.barangId?.foto, 'https://via.placeholder.com/80')}
                 alt={selectedPeminjaman.barangId?.namaBarang}
                 className="w-16 h-16 object-cover rounded-lg"
               />
               <div>
-                <h4 className="font-bold text-gray-800">{selectedPeminjaman.barangId?.namaBarang}</h4>
+                <h4 className="font-bold text-white">{selectedPeminjaman.barangId?.namaBarang}</h4>
                 <p className="text-sm text-gray-500 capitalize">{selectedPeminjaman.barangId?.kategori}</p>
               </div>
             </div>
 
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between py-2 border-b">
+            <div className="space-y-2 text-sm text-gray-300">
+              <div className="flex justify-between py-2 border-b border-neutral-800">
                 <span className="text-gray-500">Status</span>
                 {getStatusBadge(selectedPeminjaman.status)}
               </div>
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b border-neutral-800">
                 <span className="text-gray-500">Jumlah</span>
-                <span className="font-semibold">{selectedPeminjaman.jumlahPinjam} unit</span>
+                <span className="font-semibold text-white">{selectedPeminjaman.jumlahPinjam} unit</span>
               </div>
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b border-neutral-800">
                 <span className="text-gray-500">Tanggal Pinjam</span>
-                <span className="font-semibold">{format(new Date(selectedPeminjaman.tanggalPinjam), "dd MMM yyyy", { locale: id })}</span>
+                <span className="font-semibold text-white">{format(new Date(selectedPeminjaman.tanggalPinjam), "dd MMM yyyy", { locale: id })}</span>
               </div>
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b border-neutral-800">
                 <span className="text-gray-500">Waktu</span>
-                <span className="font-semibold">{selectedPeminjaman.waktuPinjam}</span>
+                <span className="font-semibold text-white">{selectedPeminjaman.waktuPinjam}</span>
               </div>
-              <div className="flex justify-between py-2 border-b">
+              <div className="flex justify-between py-2 border-b border-neutral-800">
                 <span className="text-gray-500">Tanggal Kembali</span>
-                <span className="font-semibold">{format(new Date(selectedPeminjaman.tanggalKembali), "dd MMM yyyy", { locale: id })}</span>
+                <span className="font-semibold text-white">{format(new Date(selectedPeminjaman.tanggalKembali), "dd MMM yyyy", { locale: id })}</span>
               </div>
             </div>
 
-            <div className="bg-gray-50 p-3 rounded-xl">
-              <p className="text-xs text-gray-500 mb-1">Alasan:</p>
-              <p className="text-sm text-gray-800">{selectedPeminjaman.alasanPeminjaman}</p>
+            <div className="bg-neutral-800 p-3 rounded-xl border border-neutral-700/50">
+              <p className="text-xs text-gray-500 mb-1 font-medium">Alasan:</p>
+              <p className="text-sm text-gray-300">{selectedPeminjaman.alasanPeminjaman}</p>
             </div>
 
             {selectedPeminjaman.alasanPenolakan && (
-              <div className="bg-red-50 border border-red-100 p-3 rounded-xl">
-                <p className="text-xs text-red-600 font-medium mb-1">Alasan Ditolak:</p>
-                <p className="text-sm text-red-800">{selectedPeminjaman.alasanPenolakan}</p>
+              <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl">
+                <p className="text-xs text-red-500 font-bold mb-1">Alasan Ditolak:</p>
+                <p className="text-sm text-red-200">{selectedPeminjaman.alasanPenolakan}</p>
               </div>
             )}
 
@@ -226,7 +231,7 @@ const PeminjamanUser = () => {
           </div>
         )}
       </Modal>
-    </div>
+    </motion.div>
   );
 };
 

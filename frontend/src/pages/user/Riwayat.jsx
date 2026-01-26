@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { IoTime, IoCheckmarkCircle, IoClose, IoCalendar, IoLayers } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import Loading from '../../components/ui/Loading';
@@ -67,76 +68,87 @@ const Riwayat = () => {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="space-y-5 sm:space-y-6"
+    >
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">Riwayat Peminjaman</h1>
-        <p className="text-sm text-gray-500 mt-1">Semua aktivitas peminjaman Anda</p>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Riwayat Peminjaman</h1>
+        <p className="text-sm text-gray-400 mt-1">Semua aktivitas peminjaman Anda</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-blue-600 rounded-xl p-3 sm:p-4 text-center">
-          <div className="w-10 h-10 mx-auto mb-2 bg-white/20 rounded-lg flex items-center justify-center">
-            <IoLayers className="text-white" size={20} />
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 sm:p-4 text-center relative overflow-hidden group">
+          <div className="absolute inset-0 bg-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="w-10 h-10 mx-auto mb-2 bg-purple-600/20 rounded-lg flex items-center justify-center relative z-10">
+            <IoLayers className="text-purple-400" size={20} />
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-white">{stats.total}</p>
-          <p className="text-[10px] sm:text-xs text-blue-100">Total</p>
+          <p className="text-xl sm:text-2xl font-bold text-white relative z-10">{stats.total}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 relative z-10">Total</p>
         </div>
-        <div className="bg-emerald-600 rounded-xl p-3 sm:p-4 text-center">
-          <div className="w-10 h-10 mx-auto mb-2 bg-white/20 rounded-lg flex items-center justify-center">
-            <IoCheckmarkCircle className="text-white" size={20} />
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 sm:p-4 text-center relative overflow-hidden group">
+          <div className="absolute inset-0 bg-emerald-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="w-10 h-10 mx-auto mb-2 bg-emerald-600/20 rounded-lg flex items-center justify-center relative z-10">
+            <IoCheckmarkCircle className="text-emerald-400" size={20} />
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-white">{stats.disetujui}</p>
-          <p className="text-[10px] sm:text-xs text-emerald-100">Disetujui</p>
+          <p className="text-xl sm:text-2xl font-bold text-white relative z-10">{stats.disetujui}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 relative z-10">Disetujui</p>
         </div>
-        <div className="bg-red-600 rounded-xl p-3 sm:p-4 text-center">
-          <div className="w-10 h-10 mx-auto mb-2 bg-white/20 rounded-lg flex items-center justify-center">
-            <IoClose className="text-white" size={20} />
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 sm:p-4 text-center relative overflow-hidden group">
+          <div className="absolute inset-0 bg-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="w-10 h-10 mx-auto mb-2 bg-red-600/20 rounded-lg flex items-center justify-center relative z-10">
+            <IoClose className="text-red-400" size={20} />
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-white">{stats.ditolak}</p>
-          <p className="text-[10px] sm:text-xs text-red-100">Ditolak</p>
+          <p className="text-xl sm:text-2xl font-bold text-white relative z-10">{stats.ditolak}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 relative z-10">Ditolak</p>
         </div>
       </div>
 
       {/* List */}
       {riwayat.length === 0 ? (
-        <div className="bg-gray-50 rounded-2xl p-8 sm:p-12 text-center">
-          <IoTime className="mx-auto mb-4 text-gray-300" size={48} />
-          <h3 className="text-lg font-bold text-gray-700 mb-1">Belum ada riwayat</h3>
-          <p className="text-sm text-gray-500">Riwayat peminjaman akan muncul di sini</p>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8 sm:p-12 text-center border-dashed">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-neutral-800 rounded-full mb-4">
+            <IoTime className="text-neutral-600" size={32} />
+          </div>
+          <h3 className="text-lg font-bold text-gray-400 mb-1">Belum ada riwayat</h3>
+          <p className="text-sm text-gray-500">Riwayat peminjaman Anda akan muncul di sini</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {riwayat.map((item) => (
-            <div key={item._id} className="bg-white rounded-xl p-3 sm:p-4 border border-gray-100">
-              <div className="flex gap-3 sm:gap-4">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                  <img
-                    src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
-                    alt={item.barangId?.namaBarang}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-800 text-sm truncate">
-                      {item.barangId?.namaBarang}
-                    </h3>
-                    {getStatusBadge(item.status)}
+        <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-3">
+            {riwayat.map((item) => (
+              <div key={item._id} className="bg-neutral-900 rounded-xl p-3 sm:p-4 border border-neutral-800 hover:border-purple-500/50 transition-all group">
+                <div className="flex gap-3 sm:gap-4">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-neutral-800 flex-shrink-0">
+                    <img
+                      src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
+                      alt={item.barangId?.namaBarang}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
                   </div>
-                  <p className="text-xs text-gray-500 mb-1">{item.jumlahPinjam} unit</p>
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <IoCalendar size={12} />
-                    <span>{format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="font-semibold text-white text-sm truncate group-hover:text-purple-400 transition-colors">
+                        {item.barangId?.namaBarang}
+                      </h3>
+                      {getStatusBadge(item.status)}
+                    </div>
+                    <p className="text-xs text-gray-400 mb-1">{item.jumlahPinjam} unit</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <IoCalendar size={12} />
+                      <span>{format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     IoHelpCircle,
     IoChevronDown,
@@ -7,7 +8,8 @@ import {
     IoCheckmarkCircle,
     IoAlertCircle,
     IoDocumentText,
-    IoArrowForward
+    IoArrowForward,
+    IoList
 } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
 
@@ -86,89 +88,127 @@ const Bantuan = () => {
     return (
         <div className="space-y-6 sm:space-y-8">
             {/* Header */}
-            <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-4">
-                    <IoHelpCircle className="text-blue-600" size={32} />
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-center"
+            >
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-600/10 rounded-2xl mb-4 border border-purple-500/20 shadow-lg shadow-purple-500/10">
+                    <IoHelpCircle className="text-purple-400" size={32} />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Pusat Bantuan</h1>
-                <p className="text-gray-500 max-w-lg mx-auto">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Pusat Bantuan</h1>
+                <p className="text-gray-400 max-w-lg mx-auto text-sm sm:text-base">
                     Temukan jawaban untuk pertanyaan umum tentang sistem peminjaman barang sekolah
                 </p>
-            </div>
+            </motion.div>
 
             {/* Quick Guide */}
-            <section className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 sm:p-6">
-                <h2 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <IoBook size={24} />
+            <motion.section
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="rounded-2xl p-5 sm:p-8 relative overflow-hidden shadow-2xl"
+                style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" }}
+            >
+                <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                    <IoBook size={100} />
+                </div>
+                <h2 className="text-lg sm:text-xl font-bold text-white mb-6 flex items-center gap-2 relative z-10">
+                    <IoBook size={24} className="text-purple-200" />
                     Panduan Cepat Peminjaman
                 </h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
                     {guides.map((guide, index) => {
                         const Icon = guide.icon;
                         return (
-                            <div key={index} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                                <div className="flex items-center justify-center mb-2">
-                                    <span className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.3 + index * 0.1 }}
+                                className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/15 transition-all text-center group"
+                            >
+                                <div className="flex items-center justify-center mb-3">
+                                    <span className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-sm border border-white/30 group-hover:scale-110 transition-transform">
                                         {index + 1}
                                     </span>
                                 </div>
-                                <Icon className="mx-auto text-white mb-2" size={28} />
-                                <h3 className="font-semibold text-white text-sm mb-1">{guide.title}</h3>
-                                <p className="text-blue-100 text-xs">{guide.desc}</p>
-                            </div>
+                                <Icon className="mx-auto text-white mb-3" size={32} />
+                                <h3 className="font-bold text-white text-sm mb-2">{guide.title}</h3>
+                                <p className="text-purple-100 text-xs leading-relaxed">{guide.desc}</p>
+                            </motion.div>
                         );
                     })}
                 </div>
-            </section>
+            </motion.section>
 
             {/* FAQ Section */}
-            <section>
-                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <IoAlertCircle className="text-blue-600" size={24} />
+            <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+                <h2 className="text-xl font-bold text-white mb-5 flex items-center gap-2">
+                    <IoAlertCircle className="text-purple-500" size={24} />
                     Pertanyaan yang Sering Diajukan (FAQ)
                 </h2>
                 <div className="space-y-3">
                     {faqs.map((faq) => (
                         <div
                             key={faq.id}
-                            className="bg-white rounded-xl border border-gray-100 overflow-hidden transition-all hover:border-blue-200"
+                            className={`bg-neutral-900 rounded-2xl border transition-all duration-300 ${openFaq === faq.id ? 'border-purple-500 bg-purple-500/5' : 'border-neutral-800 hover:border-neutral-700'
+                                }`}
                         >
                             <button
                                 onClick={() => toggleFaq(faq.id)}
-                                className="w-full flex items-center justify-between p-4 text-left"
+                                className="w-full flex items-center justify-between p-4 sm:p-5 text-left"
                             >
-                                <span className="font-medium text-gray-800 pr-4">{faq.question}</span>
-                                <IoChevronDown
-                                    className={`text-gray-400 flex-shrink-0 transition-transform duration-200 ${openFaq === faq.id ? 'rotate-180' : ''
+                                <span className={`font-semibold text-sm sm:text-base pr-4 transition-colors ${openFaq === faq.id ? 'text-purple-400' : 'text-gray-200'
+                                    }`}>
+                                    {faq.question}
+                                </span>
+                                <motion.div
+                                    animate={{ rotate: openFaq === faq.id ? 180 : 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center ${openFaq === faq.id ? 'bg-purple-600 text-white' : 'bg-neutral-800 text-gray-500'
                                         }`}
-                                    size={20}
-                                />
+                                >
+                                    <IoChevronDown size={18} />
+                                </motion.div>
                             </button>
-                            <div
-                                className={`overflow-hidden transition-all duration-200 ${openFaq === faq.id ? 'max-h-48' : 'max-h-0'
-                                    }`}
-                            >
-                                <p className="px-4 pb-4 text-sm text-gray-600 leading-relaxed">
-                                    {faq.answer}
-                                </p>
-                            </div>
+                            <AnimatePresence>
+                                {openFaq === faq.id && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                    >
+                                        <div className="px-5 pb-5 pt-0">
+                                            <div className="h-px bg-neutral-800 mb-4"></div>
+                                            <p className="text-sm text-gray-400 leading-relaxed">
+                                                {faq.answer}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     ))}
                 </div>
             </section>
 
             {/* Quick Links */}
-            <section className="flex flex-wrap gap-3">
+            <section className="flex flex-wrap gap-4 pt-4">
                 <Link
                     to="/barang"
-                    className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all text-sm"
+                    className="flex-1 min-w-[200px] flex items-center justify-center gap-2 px-6 py-4 bg-purple-600 text-white font-bold rounded-2xl hover:bg-purple-500 transition-all text-sm shadow-lg shadow-purple-600/20 active:scale-95"
                 >
+                    <IoBook size={20} />
                     Lihat Katalog Barang
                 </Link>
                 <Link
                     to="/peminjaman"
-                    className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3 bg-white text-gray-700 font-medium rounded-xl border border-gray-200 hover:border-blue-300 transition-all text-sm"
+                    className="flex-1 min-w-[200px] flex items-center justify-center gap-2 px-6 py-4 bg-neutral-900 text-gray-200 font-bold rounded-2xl border border-neutral-800 hover:bg-neutral-800 transition-all text-sm active:scale-95"
                 >
+                    <IoList size={20} />
                     Peminjaman Saya
                 </Link>
             </section>
