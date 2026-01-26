@@ -4,6 +4,7 @@ import Toast from "../../components/ui/Toast";
 import api from "../../utils/api";
 import logo from "../../assets/logo/sipinjam.png";
 import bgImage from "../../assets/bg-login.png";
+import PublicNavbar from "../../components/layout/PublicNavbar";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -70,181 +71,173 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex relative bg-white overflow-hidden">
-      {/* Left Panel - Background Image with Curved Edge */}
-      <div
-        className="hidden lg:block lg:w-[55%] relative"
-        style={{
-          backgroundImage: `url(${bgImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center"
-        }}
-      >
-        {/* Curved Edge SVG - Half Circle */}
-        <svg
-          className="absolute right-0 top-0 h-full z-10"
-          style={{ transform: "translateX(50%)" }}
-          width="200"
-          height="100%"
-          viewBox="0 0 200 800"
-          preserveAspectRatio="none"
-          fill="white"
+    <>
+      <PublicNavbar />
+      <div className="h-screen flex relative bg-white overflow-hidden">
+        {/* Left Panel - Background Image with Curved Edge */}
+        <div
+          className="hidden lg:block lg:w-[55%] relative"
+          style={{
+            backgroundImage: `url(${bgImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center"
+          }}
         >
-          <path d="M200,0 L200,800 L0,800 C110,600 110,200 0,0 Z" />
-        </svg>
-      </div>
+          {/* Curved Edge SVG - Half Circle */}
+          <svg
+            className="absolute right-0 top-0 h-full z-10"
+            style={{ transform: "translateX(50%)" }}
+            width="200"
+            height="100%"
+            viewBox="0 0 200 800"
+            preserveAspectRatio="none"
+            fill="white"
+          >
+            <path d="M200,0 L200,800 L0,800 C110,600 110,200 0,0 Z" />
+          </svg>
+        </div>
 
-      {/* Right Panel - Register Form */}
-      <div className="w-full lg:w-[45%] flex items-center justify-center p-8 bg-white relative overflow-hidden">
-        {/* Mobile Header */}
-        <div className="lg:hidden absolute top-8 left-8">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center" >
-              <img src={logo} alt="Logo" className="w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="font-bold text-gray-900">SiPinjam</h1>
-            </div>
+        {/* Right Panel - Register Form */}
+        <div className="w-full lg:w-[45%] flex items-center justify-center p-8 bg-white relative overflow-hidden">
+          {/* Logo - Bottom Right */}
+          <img
+            src={logo}
+            alt=""
+            className="absolute -bottom-8 -right-8 w-64 h-64 opacity-10 pointer-events-none select-none hidden lg:block"
+          />
+
+          <div className="w-full max-w-md my-4 lg:my-0">
+            {/* Register Title */}
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">Daftar</h1>
+            <p className="text-gray-500 mb-4 text-sm">Buat akun baru untuk mulai menggunakan SiPinjam</p>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-3">
+              {/* Nama & Kelas */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Nama Lengkap <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="nama"
+                    value={formData.nama}
+                    onChange={handleChange}
+                    placeholder="Nama lengkap"
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Kelas <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="kelas"
+                    value={formData.kelas}
+                    onChange={handleChange}
+                    placeholder="X, XI, XII"
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Masukkan Email anda"
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                />
+              </div>
+
+              {/* No Telepon */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  No. Telepon <span className="text-gray-400 text-xs">(opsional)</span>
+                </label>
+                <input
+                  type="tel"
+                  name="noTelepon"
+                  value={formData.noTelepon}
+                  onChange={handleChange}
+                  placeholder="Masukkan No Telepon"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                />
+              </div>
+
+              {/* Password & Confirm */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Masukkan Password"
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                  />
+                  {errors.password && (
+                    <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Konfirmasi <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Ulangi password"
+                    required
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Register Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 mt-2"
+                style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" }}
+              >
+                {loading ? "Memproses..." : "Daftar Sekarang"}
+              </button>
+            </form>
+
+            {/* Login Link */}
+            <p className="mt-4 text-center text-gray-500 text-sm">
+              Sudah punya akun?{" "}
+              <Link to="/login" className="text-purple-600 hover:underline font-medium">
+                Login di sini
+              </Link>
+            </p>
           </div>
         </div>
-
-        {/* Logo - Bottom Right */}
-        <img
-          src={logo}
-          alt=""
-          className="absolute -bottom-8 -right-8 w-64 h-64 opacity-10 pointer-events-none select-none hidden lg:block"
-        />
-
-        <div className="w-full max-w-md my-16 lg:my-0">
-          {/* Register Title */}
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Daftar</h1>
-          <p className="text-gray-500 mb-8">Buat akun baru untuk mulai menggunakan SiPinjam</p>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nama & Kelas */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Nama Lengkap <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="nama"
-                  value={formData.nama}
-                  onChange={handleChange}
-                  placeholder="Nama lengkap"
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Kelas <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="kelas"
-                  value={formData.kelas}
-                  onChange={handleChange}
-                  placeholder="X, XI, XII"
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Masukkan Email anda"
-                required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
-              />
-            </div>
-
-            {/* No Telepon */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                No. Telepon <span className="text-gray-400 text-xs">(opsional)</span>
-              </label>
-              <input
-                type="tel"
-                name="noTelepon"
-                value={formData.noTelepon}
-                onChange={handleChange}
-                placeholder="Masukkan No Telepon"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
-              />
-            </div>
-
-            {/* Password & Confirm */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Masukkan Password"
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
-                />
-                {errors.password && (
-                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Konfirmasi <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Ulangi password"
-                  required
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
-                />
-                {errors.confirmPassword && (
-                  <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Register Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 mt-2"
-              style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" }}
-            >
-              {loading ? "Memproses..." : "Daftar Sekarang"}
-            </button>
-          </form>
-
-          {/* Login Link */}
-          <p className="mt-6 text-center text-gray-500">
-            Sudah punya akun?{" "}
-            <Link to="/login" className="text-purple-600 hover:underline font-medium">
-              Login di sini
-            </Link>
-          </p>
-        </div>
       </div>
-    </div>
+    </>
   );
 };
 
 export default Register;
+

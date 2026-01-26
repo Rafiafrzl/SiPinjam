@@ -83,38 +83,44 @@ const Profile = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-5 sm:space-y-6">
       {/* Profile Header */}
-      <div className="bg-blue-600 rounded-2xl p-5 sm:p-8">
-        <div className="flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold border-4 border-white/30">
+      <div className="rounded-2xl p-5 sm:p-8 relative overflow-hidden shadow-2xl shadow-purple-900/20" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" }}>
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+          <IoPerson size={120} />
+        </div>
+        <div className="flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 relative z-10">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold border-4 border-white/30 backdrop-blur-sm shadow-xl">
             {getInitials(user?.nama)}
           </div>
           <div className="text-center sm:text-left flex-1">
             <h1 className="text-xl sm:text-2xl font-bold text-white">{user?.nama}</h1>
-            <p className="text-blue-100 text-sm">{user?.email}</p>
-            <span className="inline-block mt-2 px-3 py-1 bg-white/20 text-white text-xs sm:text-sm font-medium rounded-full">
+            <p className="text-purple-100 text-sm">{user?.email}</p>
+            <span className="inline-block mt-2 px-3 py-1 bg-white/20 text-white text-xs sm:text-sm font-medium rounded-full backdrop-blur-sm border border-white/10">
               {user?.role === 'admin' ? 'Administrator' : user?.kelas || 'Siswa'}
             </span>
           </div>
           {!editing && (
             <button
               onClick={() => setEditing(true)}
-              className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white text-blue-600 font-semibold rounded-xl shadow-lg hover:bg-blue-50 transition-all text-sm"
+              className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl backdrop-blur-md border border-white/20 transition-all text-sm active:scale-95 shadow-lg shadow-black/10"
             >
               <IoCreate size={18} />
-              Edit
+              Edit Profil
             </button>
           )}
         </div>
       </div>
 
       {/* Profile Info */}
-      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-100">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">Informasi Profil</h2>
+      <div className="bg-neutral-900 rounded-2xl p-4 sm:p-6 border border-neutral-800">
+        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+          <span className="w-1.5 h-6 bg-purple-600 rounded-full inline-block"></span>
+          Informasi Profil
+        </h2>
 
         {editing ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">
                 Nama Lengkap <span className="text-red-500">*</span>
               </label>
               <Input
@@ -125,8 +131,8 @@ const Profile = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Kelas <span className="text-gray-400 text-xs">(opsional)</span>
+              <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">
+                Kelas <span className="text-gray-500 text-xs">(opsional)</span>
               </label>
               <Input
                 value={formData.kelas}
@@ -135,8 +141,8 @@ const Profile = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                No. Telepon <span className="text-gray-400 text-xs">(opsional)</span>
+              <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">
+                No. Telepon <span className="text-gray-500 text-xs">(opsional)</span>
               </label>
               <Input
                 value={formData.noTelepon}
@@ -158,49 +164,49 @@ const Profile = () => {
               </Button>
               <Button type="submit" variant="primary" fullWidth loading={loading}>
                 <IoSave size={18} />
-                Simpan
+                Simpan Perubahan
               </Button>
             </div>
           </form>
         ) : (
           <div className="space-y-3">
-            <div className="flex items-center gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center">
-                <IoPerson className="text-white" size={20} />
+            <div className="flex items-center gap-4 p-3 sm:p-4 bg-neutral-800 border border-neutral-700/50 rounded-xl group hover:border-purple-500/30 transition-all">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-600/20 text-purple-400 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
+                <IoPerson size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500">Nama Lengkap</p>
-                <p className="font-semibold text-gray-800 text-sm sm:text-base truncate">{user?.nama}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Nama Lengkap</p>
+                <p className="font-semibold text-white text-sm sm:text-base truncate">{user?.nama}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center">
-                <IoMail className="text-white" size={20} />
+            <div className="flex items-center gap-4 p-3 sm:p-4 bg-neutral-800 border border-neutral-700/50 rounded-xl group hover:border-purple-500/30 transition-all">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-600/20 text-purple-400 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
+                <IoMail size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500">Email</p>
-                <p className="font-semibold text-gray-800 text-sm sm:text-base truncate">{user?.email}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Email</p>
+                <p className="font-semibold text-white text-sm sm:text-base truncate">{user?.email}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-600 rounded-lg sm:rounded-xl flex items-center justify-center">
-                <IoSchool className="text-white" size={20} />
+            <div className="flex items-center gap-4 p-3 sm:p-4 bg-neutral-800 border border-neutral-700/50 rounded-xl group hover:border-purple-500/30 transition-all">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-600/20 text-purple-400 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
+                <IoSchool size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500">Kelas</p>
-                <p className="font-semibold text-gray-800 text-sm sm:text-base">{user?.kelas || '-'}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Kelas</p>
+                <p className="font-semibold text-white text-sm sm:text-base">{user?.kelas || '-'}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-3 sm:p-4 bg-gray-50 rounded-xl">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                <IoCall className="text-white" size={20} />
+            <div className="flex items-center gap-4 p-3 sm:p-4 bg-neutral-800 border border-neutral-700/50 rounded-xl group hover:border-purple-500/30 transition-all">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-600/20 text-purple-400 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
+                <IoCall size={20} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500">No. Telepon</p>
-                <p className="font-semibold text-gray-800 text-sm sm:text-base">{user?.noTelepon || '-'}</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">No. Telepon</p>
+                <p className="font-semibold text-white text-sm sm:text-base">{user?.noTelepon || '-'}</p>
               </div>
             </div>
           </div>
@@ -208,18 +214,18 @@ const Profile = () => {
       </div>
 
       {/* Change Password */}
-      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-neutral-900 rounded-2xl p-4 sm:p-6 border border-neutral-800 shadow-xl shadow-black/5">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-rose-600 rounded-lg sm:rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-rose-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-rose-600/20">
               <IoShieldCheckmark className="text-white" size={20} />
             </div>
-            <h2 className="text-lg font-bold text-gray-800">Keamanan Akun</h2>
+            <h2 className="text-lg font-bold text-white">Keamanan Akun</h2>
           </div>
           {!changingPassword && (
             <button
               onClick={() => setChangingPassword(true)}
-              className="text-sm text-blue-600 font-medium hover:underline flex items-center gap-1"
+              className="text-sm text-purple-400 font-semibold hover:text-purple-300 flex items-center gap-1.5 px-3 py-1.5 bg-purple-600/10 rounded-lg border border-purple-500/20 transition-all"
             >
               <IoKey size={16} />
               Ubah Password
@@ -230,7 +236,7 @@ const Profile = () => {
         {changingPassword && (
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password Lama</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Password Lama</label>
               <Input
                 type="password"
                 value={passwordData.currentPassword}
@@ -239,25 +245,27 @@ const Profile = () => {
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
-              <Input
-                type="password"
-                value={passwordData.newPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                placeholder="Password"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
-              <Input
-                type="password"
-                value={passwordData.confirmPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                placeholder="Ulangi password baru"
-                required
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Password Baru</label>
+                <Input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                  placeholder="Password"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Konfirmasi Password</label>
+                <Input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                  placeholder="Ulangi password baru"
+                  required
+                />
+              </div>
             </div>
             <div className="flex gap-3 pt-2">
               <Button
@@ -274,16 +282,19 @@ const Profile = () => {
               </Button>
               <Button type="submit" variant="primary" fullWidth loading={loading}>
                 <IoSave size={18} />
-                Simpan
+                Simpan Password
               </Button>
             </div>
           </form>
         )}
 
         {!changingPassword && (
-          <p className="text-sm text-gray-500">
-            Disarankan untuk mengubah password secara berkala demi keamanan akun Anda.
-          </p>
+          <div className="flex items-center gap-3 p-3 bg-neutral-800 rounded-xl border border-neutral-700/50">
+            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div>
+            <p className="text-sm text-gray-400 italic">
+              Disarankan untuk mengubah password secara berkala demi keamanan akun Anda.
+            </p>
+          </div>
         )}
       </div>
     </div>

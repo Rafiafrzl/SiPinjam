@@ -8,12 +8,16 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
 import UserLayout from "./components/layout/UserLayout";
+import PublicLayout from "./components/layout/PublicLayout";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 // Auth Pages
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+
+// Public Pages
+import LandingPage from "./pages/public/LandingPage";
+import PublicKatalog from "./pages/public/PublicKatalog";
 
 // User Pages
 import Dashboard from "./pages/user/Dashboard";
@@ -49,10 +53,17 @@ function App() {
           pauseOnFocusLoss
           draggable
           pauseOnHover
-          theme="light"
+          theme="dark"
         />
         <Routes>
-          {/* Public Routes */}
+          {/* Public Routes - Landing */}
+          <Route path="/" element={<Navigate to="/welcome" replace />} />
+          <Route element={<PublicLayout />}>
+            <Route path="/welcome" element={<LandingPage />} />
+            <Route path="/katalog" element={<PublicKatalog />} />
+          </Route>
+
+          {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
@@ -97,7 +108,7 @@ function App() {
           </Route>
 
           {/* 404 */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/welcome" replace />} />
         </Routes>
       </AuthProvider>
     </Router>
