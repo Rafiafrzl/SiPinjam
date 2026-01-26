@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
     IoArrowForward,
@@ -26,7 +27,7 @@ const LandingPage = () => {
 
     const fetchFeaturedItems = async () => {
         try {
-            const response = await api.get('/barang/public', { params: { limit: 6 } });
+            const response = await api.get('/barang/public', { params: { limit: 20 } });
             setFeaturedBarang(response.data.data || []);
         } catch (err) {
             console.error('Error fetching items:', err);
@@ -54,14 +55,19 @@ const LandingPage = () => {
     ];
 
     const categories = [
-        { value: 'elektronik', label: 'Elektronik', icon: IoDesktop, count: '15+ barang' },
-        { value: 'olahraga', label: 'Olahraga', icon: IoFootball, count: '20+ barang' },
+        { value: 'elektronik', label: 'Elektronik', icon: IoDesktop, },
+        { value: 'olahraga', label: 'Olahraga', icon: IoFootball, },
     ];
 
     return (
         <div>
             {/* Hero Section - Banner tanpa overlay ungu */}
-            <section className="relative min-h-[85vh] flex items-center">
+            <motion.section
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8 }}
+                className="relative min-h-[85vh] flex items-center"
+            >
                 {/* Background - hanya gradient hitam */}
                 <div className="absolute inset-0">
                     <img
@@ -120,10 +126,16 @@ const LandingPage = () => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
 
-            <section className="py-16 sm:py-20 bg-neutral-950">
+            <motion.section
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.6 }}
+                className="py-16 sm:py-20 bg-neutral-950"
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
@@ -150,10 +162,16 @@ const LandingPage = () => {
                         ))}
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Features */}
-            <section className="py-16 sm:py-20 bg-black">
+            <motion.section
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.6 }}
+                className="py-16 sm:py-20 bg-black"
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
@@ -179,10 +197,16 @@ const LandingPage = () => {
                         })}
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Categories */}
-            <section className="py-16 sm:py-20 bg-neutral-950">
+            <motion.section
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: false, amount: 0.3 }}
+                transition={{ duration: 0.6 }}
+                className="py-16 sm:py-20 bg-neutral-950"
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-10">
                         <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
@@ -225,11 +249,17 @@ const LandingPage = () => {
                         </Link>
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             {/* Featured Items */}
             {featuredBarang.length > 0 && (
-                <section className="py-16 sm:py-20 bg-black">
+                <motion.section
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.3 }}
+                    transition={{ duration: 0.6 }}
+                    className="py-16 sm:py-20 bg-black"
+                >
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between mb-8">
                             <div>
@@ -247,33 +277,84 @@ const LandingPage = () => {
                             </Link>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                            {featuredBarang.slice(0, 6).map((item) => (
-                                <div
-                                    key={item._id}
-                                    className="bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 hover:border-purple-500/30 transition-colors group"
-                                >
-                                    <div className="aspect-square bg-neutral-800 overflow-hidden">
-                                        <img
-                                            src={getImageUrl(item.foto)}
-                                            alt={item.namaBarang}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
-                                    <div className="p-3">
-                                        <h3 className="font-medium text-white text-sm truncate">{item.namaBarang}</h3>
-                                        <p className="text-gray-600 text-xs capitalize">{item.kategori}</p>
-                                        <div className="flex items-center justify-between mt-2">
-                                            <span className={`text-xs px-2 py-0.5 rounded ${item.jumlahTersedia > 0
-                                                ? 'bg-green-500/20 text-green-400'
-                                                : 'bg-red-500/20 text-red-400'
-                                                }`}>
-                                                {item.jumlahTersedia > 0 ? `${item.jumlahTersedia} unit` : 'Habis'}
-                                            </span>
+                        {/* Continuous Scroll Carousel */}
+                        <div className="relative overflow-hidden">
+                            <style>{`
+                                @keyframes scroll-left {
+                                    0% {
+                                        transform: translateX(0);
+                                    }
+                                    100% {
+                                        transform: translateX(-50%);
+                                    }
+                                }
+                                
+                                .animate-scroll {
+                                    animation: scroll-left 20s linear infinite;
+                                }
+                                
+                                .animate-scroll:hover {
+                                    animation-play-state: paused;
+                                }
+                            `}</style>
+
+                            <div className="flex gap-4 animate-scroll">
+                                {/* First set */}
+                                {featuredBarang.map((item) => (
+                                    <div
+                                        key={`first-${item._id}`}
+                                        className="flex-shrink-0 w-48 bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 hover:border-purple-500/30 transition-colors group"
+                                    >
+                                        <div className="aspect-square bg-neutral-800 overflow-hidden">
+                                            <img
+                                                src={getImageUrl(item.foto)}
+                                                alt={item.namaBarang}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        </div>
+                                        <div className="p-3">
+                                            <h3 className="font-medium text-white text-sm truncate">{item.namaBarang}</h3>
+                                            <p className="text-gray-600 text-xs capitalize">{item.kategori}</p>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <span className={`text-xs px-2 py-0.5 rounded ${item.jumlahTersedia > 0
+                                                    ? 'bg-green-500/20 text-green-400'
+                                                    : 'bg-red-500/20 text-red-400'
+                                                    }`}>
+                                                    {item.jumlahTersedia > 0 ? `${item.jumlahTersedia} unit` : 'Habis'}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+
+                                {/* Duplicate set for seamless loop */}
+                                {featuredBarang.map((item) => (
+                                    <div
+                                        key={`second-${item._id}`}
+                                        className="flex-shrink-0 w-48 bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 hover:border-purple-500/30 transition-colors group"
+                                    >
+                                        <div className="aspect-square bg-neutral-800 overflow-hidden">
+                                            <img
+                                                src={getImageUrl(item.foto)}
+                                                alt={item.namaBarang}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        </div>
+                                        <div className="p-3">
+                                            <h3 className="font-medium text-white text-sm truncate">{item.namaBarang}</h3>
+                                            <p className="text-gray-600 text-xs capitalize">{item.kategori}</p>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <span className={`text-xs px-2 py-0.5 rounded ${item.jumlahTersedia > 0
+                                                    ? 'bg-green-500/20 text-green-400'
+                                                    : 'bg-red-500/20 text-red-400'
+                                                    }`}>
+                                                    {item.jumlahTersedia > 0 ? `${item.jumlahTersedia} unit` : 'Habis'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         <Link
@@ -284,7 +365,7 @@ const LandingPage = () => {
                             <IoArrowForward size={16} />
                         </Link>
                     </div>
-                </section>
+                </motion.section>
             )}
 
 
