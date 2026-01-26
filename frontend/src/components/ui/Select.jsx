@@ -14,7 +14,7 @@ const Select = ({
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={name} className="block text-sm font-medium text-gray-400 mb-1">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -27,10 +27,11 @@ const Select = ({
         required={required}
         disabled={disabled}
         className={`
-          w-full px-4 py-2 border rounded-lg transition-colors
-          ${error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}
-          focus:outline-none focus:ring-2
-          disabled:bg-gray-100 disabled:cursor-not-allowed
+          w-full px-4 py-3 border rounded-xl transition-all duration-200
+          bg-neutral-800 border-neutral-700 text-white
+          ${error ? 'border-red-500 focus:ring-red-500/20' : 'focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10'}
+          focus:outline-none
+          disabled:bg-neutral-900 disabled:text-gray-500 disabled:cursor-not-allowed
           ${className}
         `}
         {...props}

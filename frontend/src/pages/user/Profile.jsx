@@ -127,6 +127,7 @@ const Profile = () => {
                 value={formData.nama}
                 onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
                 placeholder="Nama lengkap"
+                className="bg-neutral-800 border-neutral-700 text-white"
                 required
               />
             </div>
@@ -138,6 +139,7 @@ const Profile = () => {
                 value={formData.kelas}
                 onChange={(e) => setFormData({ ...formData, kelas: e.target.value })}
                 placeholder="Masukkan Kelas anda"
+                className="bg-neutral-800 border-neutral-700 text-white"
               />
             </div>
             <div>
@@ -148,6 +150,7 @@ const Profile = () => {
                 value={formData.noTelepon}
                 onChange={(e) => setFormData({ ...formData, noTelepon: e.target.value })}
                 placeholder="Masukkan No. Telepon anda"
+                className="bg-neutral-800 border-neutral-700 text-white"
               />
             </div>
             <div className="flex gap-3 pt-2">
@@ -242,6 +245,7 @@ const Profile = () => {
                 value={passwordData.currentPassword}
                 onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                 placeholder="Masukkan password lama"
+                className="bg-neutral-800 border-neutral-700 text-white"
                 required
               />
             </div>
@@ -253,6 +257,7 @@ const Profile = () => {
                   value={passwordData.newPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                   placeholder="Password"
+                  className="bg-neutral-800 border-neutral-700 text-white"
                   required
                 />
               </div>
@@ -263,6 +268,7 @@ const Profile = () => {
                   value={passwordData.confirmPassword}
                   onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                   placeholder="Ulangi password baru"
+                  className="bg-neutral-800 border-neutral-700 text-white"
                   required
                 />
               </div>
