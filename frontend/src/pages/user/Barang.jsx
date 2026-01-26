@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   IoSearch,
   IoFilter,
@@ -15,13 +15,11 @@ import {
 } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import Loading from '../../components/ui/Loading';
-import Modal from '../../components/ui/Modal';
-import Button from '../../components/ui/Button';
-import Textarea from '../../components/ui/Textarea';
 import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
 
 const Barang = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [barang, setBarang] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,20 +27,10 @@ const Barang = () => {
   const [search, setSearch] = useState(searchParams.get('search') || ''); // Nilai yang disubmit
   const [kategori, setKategori] = useState(searchParams.get('kategori') || '');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 12;
 
   // Modal states
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [showModal, setShowModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    jumlahPinjam: 1,
-    tanggalPinjam: '',
-    waktuPinjam: '',
-    tanggalKembali: '',
-    alasanPeminjaman: ''
-  });
 
   // Fetch data ketika search atau kategori berubah
   useEffect(() => {
@@ -57,7 +45,7 @@ const Barang = () => {
       if (search) params.search = search;
       if (kategori) params.kategori = kategori;
       const response = await api.get('/barang', { params });
-      setBarang(response.data.data);
+      setBarang(response.data.data || []);
     } catch (err) {
       Toast.error('Gagal memuat data barang');
     } finally {
@@ -65,44 +53,14 @@ const Barang = () => {
     }
   };
 
-  const handleOpenModal = (item) => {
-    setSelectedBarang(item);
-    setFormData({
-      jumlahPinjam: 1,
-      tanggalPinjam: '',
-      waktuPinjam: '',
-      tanggalKembali: '',
-      alasanPeminjaman: ''
-    });
-    setShowModal(true);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (formData.jumlahPinjam > selectedBarang.jumlahTersedia) {
-      Toast.error('Jumlah melebihi stok tersedia');
-      return;
-    }
-    try {
-      setSubmitLoading(true);
-      await api.post('/peminjaman', {
-        barangId: selectedBarang._id,
-        ...formData
-      });
-      Toast.success('Peminjaman berhasil diajukan!');
-      setShowModal(false);
-      fetchBarang();
-    } catch (err) {
-      Toast.error(err.response?.data?.message || 'Gagal mengajukan peminjaman');
-    } finally {
-      setSubmitLoading(false);
-    }
+  const handlePinjamClick = (item) => {
+    navigate(`/pinjam/${item._id}`);
   };
 
   const categories = [
-    { value: '', label: 'Semua', icon: IoApps, color: 'blue' },
+    { value: '', label: 'Semua', icon: IoApps, color: 'purple' },
     { value: 'elektronik', label: 'Elektronik', icon: IoDesktop, color: 'purple' },
-    { value: 'olahraga', label: 'Olahraga', icon: IoFootball, color: 'emerald' },
+    { value: 'olahraga', label: 'Olahraga', icon: IoFootball, color: 'purple' },
   ];
 
   const totalPages = Math.ceil(barang.length / itemsPerPage);
@@ -297,7 +255,7 @@ const Barang = () => {
                         <span className="text-purple-400 font-medium">{item.jumlahTersedia} unit</span>
                       </div>
                       <button
-                        onClick={() => handleOpenModal(item)}
+                        onClick={() => handlePinjamClick(item)}
                         disabled={!canBorrow}
                         className={`w-full px-3 py-2 text-xs font-semibold rounded-lg transition-all ${canBorrow
                           ? 'bg-purple-600 text-white hover:bg-purple-500 active:scale-95'
@@ -348,99 +306,6 @@ const Barang = () => {
         </>
       )}
 
-      {/* Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title="Ajukan Peminjaman"
-        size="md"
-      >
-        {selectedItem && (
-          <form onSubmit={handleSubmit} className="space-y-4 py-2">
-            <div className="flex items-center gap-4 p-4 bg-neutral-800 rounded-xl border border-neutral-700/50 shadow-inner">
-              <img
-                src={getImageUrl(selectedItem.foto, 'https://via.placeholder.com/80')}
-                alt={selectedItem.namaBarang}
-                className="w-16 h-16 rounded-lg object-cover shadow-lg"
-              />
-              <div>
-                <h4 className="font-bold text-white text-base">{selectedItem.namaBarang}</h4>
-                <p className="text-sm text-gray-400">Tersedia: <span className="text-purple-400 font-semibold">{selectedItem.jumlahTersedia} unit</span></p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Jumlah Pinjam</label>
-                <input
-                  type="number"
-                  min="1"
-                  max={selectedItem.jumlahTersedia}
-                  value={formData.jumlahPinjam}
-                  onChange={(e) => setFormData({ ...formData, jumlahPinjam: parseInt(e.target.value) })}
-                  className="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-700 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Tanggal Pinjam</label>
-                  <input
-                    type="date"
-                    value={formData.tanggalPinjam}
-                    onChange={(e) => setFormData({ ...formData, tanggalPinjam: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-700 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 transition-all [color-scheme:dark]"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Waktu Ambil</label>
-                  <input
-                    type="time"
-                    value={formData.waktuPinjam}
-                    onChange={(e) => setFormData({ ...formData, waktuPinjam: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-700 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 transition-all [color-scheme:dark]"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Tanggal Pengembalian</label>
-                <input
-                  type="date"
-                  value={formData.tanggalKembali}
-                  onChange={(e) => setFormData({ ...formData, tanggalKembali: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-neutral-900 border border-neutral-700 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 transition-all [color-scheme:dark]"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1.5 ml-1">Alasan Peminjaman</label>
-                <Textarea
-                  rows="3"
-                  value={formData.alasanPeminjaman}
-                  onChange={(e) => setFormData({ ...formData, alasanPeminjaman: e.target.value })}
-                  placeholder="Jelaskan keperluan peminjaman barang ini..."
-                  className="bg-neutral-900 border-neutral-700 text-white placeholder-gray-600 focus:border-purple-500"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button type="button" variant="secondary" fullWidth onClick={() => setShowModal(false)}>
-                Batal
-              </Button>
-              <Button type="submit" variant="primary" fullWidth loading={submitLoading}>
-                Ajukan Peminjaman
-              </Button>
-            </div>
-          </form>
-        )}
-      </Modal>
 
       {/* Image Preview Modal */}
       {previewImage && (

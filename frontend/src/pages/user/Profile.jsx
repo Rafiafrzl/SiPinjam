@@ -83,7 +83,7 @@ const Profile = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-5 sm:space-y-6">
       {/* Profile Header */}
-      <div className="rounded-2xl p-5 sm:p-8 relative overflow-hidden shadow-2xl shadow-purple-900/20" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" }}>
+      <div className="rounded-2xl p-5 sm:p-8 relative overflow-hidden shadow-2xl border border-neutral-800" style={{ background: "linear-gradient(135deg, #171717 0%, #7c3aed 100%)" }}>
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
           <IoPerson size={120} />
         </div>

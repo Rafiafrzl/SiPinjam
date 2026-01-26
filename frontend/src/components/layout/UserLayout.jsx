@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   IoHome,
   IoLibrary,
@@ -74,12 +75,12 @@ const UserLayout = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-black flex flex-col">
       {/* Main Header */}
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
-          ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100/50"
-          : "bg-white shadow-sm border-b border-gray-100"
+        className={`sticky top-0 z-50 transition-all duration-300 backdrop-blur-xl ${isScrolled
+          ? "bg-black/60 shadow-lg border-b border-white/5"
+          : "bg-black/40 border-b border-white/5"
           }`}
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -95,8 +96,8 @@ const UserLayout = () => {
                 className="w-12 h-12 object-contain"
               />
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-800">SiPinjam</h1>
-                <p className="text-xs text-gray-500">Sistem Peminjaman Barang Sekolah</p>
+                <h1 className="text-xl font-bold text-white">SiPinjam</h1>
+                <p className="text-xs text-gray-400">Sistem Peminjaman Barang Sekolah</p>
               </div>
             </Link>
 
@@ -107,7 +108,7 @@ const UserLayout = () => {
             >
               <div className="relative w-full">
                 <IoSearch
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
                   size={20}
                 />
                 <input
@@ -115,11 +116,11 @@ const UserLayout = () => {
                   placeholder="Cari barang yang ingin dipinjam..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:border-gray-400 focus:bg-white transition-all text-sm"
+                  className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-full focus:outline-none focus:border-purple-500 focus:bg-neutral-800 transition-all text-sm text-white"
                 />
                 <button
                   type="submit"
-                  className="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors flex items-center gap-1"
+                  className="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors flex items-center gap-1"
                 >
                   <IoSearch size={18} />
                   <span className="hidden lg:inline text-sm font-medium">
@@ -135,8 +136,8 @@ const UserLayout = () => {
               <Link
                 to="/notifikasi"
                 className={`relative p-2.5 rounded-full transition-all ${isActive("/notifikasi")
-                  ? "bg-blue-100 text-blue-600"
-                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  ? "bg-purple-600/20 text-purple-400"
+                  : "text-gray-400 hover:bg-neutral-800 hover:text-white"
                   }`}
               >
                 <IoNotifications size={22} />
@@ -148,28 +149,28 @@ const UserLayout = () => {
               </Link>
 
               {/* Divider */}
-              <div className="hidden sm:block w-px h-8 bg-gray-200 mx-2"></div>
+              <div className="hidden sm:block w-px h-8 bg-neutral-800 mx-2"></div>
 
               {/* User Menu */}
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-all"
+                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-neutral-800 transition-all"
                 >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                     {user?.nama?.charAt(0).toUpperCase()}
                   </div>
                   <div className="hidden lg:block text-left">
-                    <p className="text-sm font-medium text-gray-700 leading-tight max-w-[100px] truncate">
+                    <p className="text-sm font-medium text-white leading-tight max-w-[100px] truncate">
                       {user?.nama?.split(" ")[0]}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500">
                       {user?.kelas || "User"}
                     </p>
                   </div>
                   <IoChevronDown
                     size={16}
-                    className={`hidden lg:block text-gray-400 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""
+                    className={`hidden lg:block text-gray-500 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""
                       }`}
                   />
                 </button>
@@ -181,44 +182,44 @@ const UserLayout = () => {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowUserMenu(false)}
                     />
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-20 overflow-hidden">
-                      <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
-                        <p className="font-semibold text-gray-800">
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-neutral-900 rounded-2xl shadow-xl border border-neutral-800 py-2 z-20 overflow-hidden">
+                      <div className="px-4 py-3 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border-b border-neutral-800">
+                        <p className="font-semibold text-white">
                           {user?.nama}
                         </p>
-                        <p className="text-sm text-gray-500">{user?.email}</p>
+                        <p className="text-sm text-gray-400">{user?.email}</p>
                       </div>
                       <Link
                         to="/profile"
                         onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-neutral-800 transition-colors"
                       >
-                        <IoPerson size={20} className="text-gray-400" />
+                        <IoPerson size={20} className="text-gray-500" />
                         <span>Profile Saya</span>
                       </Link>
                       <Link
                         to="/riwayat"
                         onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-neutral-800 transition-colors"
                       >
-                        <IoTime size={20} className="text-gray-400" />
+                        <IoTime size={20} className="text-gray-500" />
                         <span>Riwayat Peminjaman</span>
                       </Link>
                       <Link
                         to="/bantuan"
                         onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-neutral-800 transition-colors"
                       >
-                        <IoHelpCircle size={20} className="text-gray-400" />
+                        <IoHelpCircle size={20} className="text-gray-500" />
                         <span>Bantuan</span>
                       </Link>
-                      <div className="border-t border-gray-100 mt-1 pt-1">
+                      <div className="border-t border-neutral-800 mt-1 pt-1">
                         <button
                           onClick={() => {
                             handleLogout();
                             setShowUserMenu(false);
                           }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors"
+                          className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors"
                         >
                           <IoLogOut size={20} />
                           <span>Keluar</span>
@@ -232,7 +233,7 @@ const UserLayout = () => {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="lg:hidden p-2.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 rounded-full transition-all"
+                className="lg:hidden p-2.5 text-gray-400 hover:bg-neutral-800 hover:text-white rounded-full transition-all"
               >
                 {showMobileMenu ? <IoClose size={24} /> : <IoMenu size={24} />}
               </button>
@@ -240,23 +241,29 @@ const UserLayout = () => {
           </div>
         </div>
 
-        {/* Navigation Bar - Desktop */}
-        <div className="bg-white border-t border-gray-100 hidden lg:block">
+        {/* Navigation Bar - Desktop Centered & Glass */}
+        <div className="bg-white/5 backdrop-blur-md hidden lg:block border-b border-white/5">
           <div className="max-w-7xl mx-auto px-4">
-            <nav className="flex items-center gap-1">
+            <nav className="flex items-center justify-center gap-2">
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 return (
                   <Link
                     key={link.path}
                     to={link.path}
-                    className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-all border-b-2 ${isActive(link.path)
-                      ? "border-blue-600 text-blue-600 bg-blue-50/50"
-                      : "border-transparent text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                    className={`flex items-center gap-2 px-6 py-4 text-sm font-semibold transition-all relative group ${isActive(link.path)
+                      ? "text-purple-400"
+                      : "text-gray-400 hover:text-white"
                       }`}
                   >
                     <Icon size={18} />
                     {link.label}
+                    {isActive(link.path) && (
+                      <motion.div
+                        layoutId="nav-active"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-indigo-500"
+                      />
+                    )}
                   </Link>
                 );
               })}
@@ -265,11 +272,11 @@ const UserLayout = () => {
         </div>
 
         {/* Mobile Search */}
-        <div className="md:hidden px-4 py-3 bg-gray-50 border-t border-gray-100">
+        <div className="md:hidden px-4 py-3 bg-neutral-950 border-t border-neutral-800">
           <form onSubmit={handleSearch}>
             <div className="relative">
               <IoSearch
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
                 size={18}
               />
               <input
@@ -277,7 +284,7 @@ const UserLayout = () => {
                 placeholder="Cari barang..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-200 rounded-full focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full pl-11 pr-4 py-2.5 bg-neutral-900 border border-neutral-800 rounded-full focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm text-white"
               />
             </div>
           </form>
@@ -293,27 +300,27 @@ const UserLayout = () => {
             />
 
             {/* Mobile Menu Panel */}
-            <div className="lg:hidden fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 flex flex-col animate-slide-in">
+            <div className="lg:hidden fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-neutral-950 border-l border-neutral-800 z-50 flex flex-col animate-slide-in">
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                <h2 className="text-lg font-bold text-gray-800">Menu</h2>
+              <div className="flex items-center justify-between p-4 border-b border-neutral-800">
+                <h2 className="text-lg font-bold text-white">Menu</h2>
                 <button
                   onClick={() => setShowMobileMenu(false)}
-                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+                  className="p-2 text-gray-400 hover:text-white hover:bg-neutral-800 rounded-full"
                 >
                   <IoClose size={24} />
                 </button>
               </div>
 
               {/* User Info */}
-              <div className="p-4 bg-blue-600">
+              <div className="p-4 bg-purple-600">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
                     {user?.nama?.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <p className="font-semibold text-white">{user?.nama}</p>
-                    <p className="text-blue-100 text-sm">{user?.email}</p>
+                    <p className="text-purple-100 text-sm">{user?.email}</p>
                   </div>
                 </div>
               </div>
@@ -328,8 +335,8 @@ const UserLayout = () => {
                       to={link.path}
                       onClick={() => setShowMobileMenu(false)}
                       className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${isActive(link.path)
-                        ? "bg-blue-600 text-white shadow-lg"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? "bg-purple-600 text-white shadow-lg"
+                        : "text-gray-400 hover:bg-neutral-800 hover:text-white"
                         }`}
                     >
                       <Icon size={22} />
@@ -343,8 +350,8 @@ const UserLayout = () => {
                   to="/profile"
                   onClick={() => setShowMobileMenu(false)}
                   className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${isActive("/profile")
-                    ? "bg-blue-600 text-white shadow-lg"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-purple-600 text-white shadow-lg"
+                    : "text-gray-400 hover:bg-neutral-800 hover:text-white"
                     }`}
                 >
                   <IoPerson size={22} />
@@ -353,13 +360,13 @@ const UserLayout = () => {
               </nav>
 
               {/* Logout Button */}
-              <div className="p-4 border-t border-gray-100">
+              <div className="p-4 border-t border-neutral-800">
                 <button
                   onClick={() => {
                     handleLogout();
                     setShowMobileMenu(false);
                   }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition-all"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-500 font-medium rounded-xl hover:bg-red-500/20 transition-all"
                 >
                   <IoLogOut size={20} />
                   Keluar
@@ -378,7 +385,7 @@ const UserLayout = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-blue-900">
+      <footer className="bg-neutral-950 border-t border-neutral-800">
         {/* Main Footer */}
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
@@ -392,10 +399,10 @@ const UserLayout = () => {
                 />
                 <div>
                   <h3 className="text-xl font-bold text-white">SiPinjam</h3>
-                  <p className="text-sm text-blue-300">Sistem Peminjaman</p>
+                  <p className="text-sm text-purple-400">Sistem Peminjaman</p>
                 </div>
               </div>
-              <p className="text-sm text-blue-200 max-w-sm">
+              <p className="text-sm text-gray-400 max-w-sm">
                 Sistem peminjaman barang online untuk memudahkan siswa
                 dalam meminjam peralatan sekolah dengan mudah dan efisien.
               </p>
@@ -408,7 +415,7 @@ const UserLayout = () => {
                 <li>
                   <Link
                     to="/dashboard"
-                    className="text-blue-300 hover:text-white transition-colors flex items-center gap-2"
+                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                   >
                     <IoHome size={16} />
                     Beranda
@@ -417,7 +424,7 @@ const UserLayout = () => {
                 <li>
                   <Link
                     to="/barang"
-                    className="text-blue-300 hover:text-white transition-colors flex items-center gap-2"
+                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                   >
                     <IoLibrary size={16} />
                     Katalog Barang
@@ -426,7 +433,7 @@ const UserLayout = () => {
                 <li>
                   <Link
                     to="/peminjaman"
-                    className="text-blue-300 hover:text-white transition-colors flex items-center gap-2"
+                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                   >
                     <IoList size={16} />
                     Peminjaman Saya
@@ -435,7 +442,7 @@ const UserLayout = () => {
                 <li>
                   <Link
                     to="/riwayat"
-                    className="text-blue-300 hover:text-white transition-colors flex items-center gap-2"
+                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                   >
                     <IoTime size={16} />
                     Riwayat
@@ -444,7 +451,7 @@ const UserLayout = () => {
                 <li>
                   <Link
                     to="/bantuan"
-                    className="text-blue-300 hover:text-white transition-colors flex items-center gap-2"
+                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
                   >
                     <IoHelpCircle size={16} />
                     Bantuan
@@ -456,9 +463,9 @@ const UserLayout = () => {
         </div>
 
         {/* Bottom Footer */}
-        <div className="border-t border-blue-800 bg-blue-950">
+        <div className="border-t border-neutral-800 bg-black">
           <div className="max-w-7xl mx-auto px-4 py-4">
-            <p className="text-sm text-center text-blue-400">© 2026 SiPinjam</p>
+            <p className="text-sm text-center text-gray-500">© 2026 SiPinjam</p>
           </div>
         </div>
       </footer>

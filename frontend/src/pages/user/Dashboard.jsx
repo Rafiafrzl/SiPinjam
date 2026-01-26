@@ -20,53 +20,6 @@ import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
 import heroBg from '../../assets/bg-banner.jpg';
 
-const SplitText = ({ text, className, delay = 0 }) => {
-  const letters = Array.from(text);
-  const container = {
-    hidden: { opacity: 0 },
-    visible: (i = 1) => ({
-      opacity: 1,
-      transition: { staggerChildren: 0.02, delayChildren: delay * i },
-    }),
-  };
-
-  const child = {
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        damping: 12,
-        stiffness: 200,
-      },
-    },
-    hidden: {
-      opacity: 0,
-      y: 20,
-      transition: {
-        type: "spring",
-        damping: 12,
-        stiffness: 200,
-      },
-    },
-  };
-
-  return (
-    <motion.div
-      style={{ display: "flex", overflow: "hidden", flexWrap: "wrap" }}
-      variants={container}
-      initial="hidden"
-      animate="visible"
-      className={className}
-    >
-      {letters.map((letter, index) => (
-        <motion.span variants={child} key={index}>
-          {letter === " " ? "\u00A0" : letter}
-        </motion.span>
-      ))}
-    </motion.div>
-  );
-};
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -152,18 +105,18 @@ const Dashboard = () => {
               transition={{ delay: 0.05 }}
               className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-white/20 backdrop-blur-sm text-white text-xs sm:text-sm font-medium rounded-full mb-4 sm:mb-6"
             >
-              <SplitText text={`Selamat datang, ${user?.nama}!`} delay={0.05} />
+              Selamat datang, {user?.nama}!
             </motion.div>
 
             <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-white mb-3 sm:mb-4 leading-tight">
-              <SplitText text="Sistem Peminjaman" delay={0.1} />
+              Sistem Peminjaman{' '}
               <span className="text-yellow-400">
-                <SplitText text="Barang Sekolah" delay={0.15} />
+                Barang Sekolah
               </span>
             </h1>
 
             <div className="text-sm sm:text-base lg:text-lg text-gray-200 mb-5 sm:mb-8 max-w-lg">
-              <SplitText text="Temukan peralatan yang Anda butuhkan dan ajukan pinjaman" delay={0.2} />
+              Temukan peralatan yang Anda butuhkan dan ajukan pinjaman
             </div>
 
             <motion.div
@@ -174,10 +127,10 @@ const Dashboard = () => {
             >
               <Link
                 to="/barang"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 bg-white text-blue-600 font-semibold rounded-xl hover:bg-blue-50 transition-all shadow-lg text-sm sm:text-base"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 bg-white text-purple-600 font-semibold rounded-xl hover:bg-purple-50 transition-all shadow-lg text-sm sm:text-base"
               >
                 <IoLayers size={18} />
-                <SplitText text="Lihat Katalog" delay={0.35} />
+                Lihat Katalog
                 <IoArrowForward size={16} />
               </Link>
               <Link
@@ -185,7 +138,7 @@ const Dashboard = () => {
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/30 transition-all border border-white/30 text-sm sm:text-base"
               >
                 <IoRocket size={18} />
-                <SplitText text="Peminjaman Saya" delay={0.4} />
+                Peminjaman Saya
               </Link>
             </motion.div>
           </div>
@@ -266,9 +219,9 @@ const Dashboard = () => {
             </div>
           </button>
           <button onClick={() => setSelectedCategory('olahraga')} className="flex-shrink-0 w-24 sm:w-auto group">
-            <div className={`bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center border-2 transition-all ${selectedCategory === 'olahraga' ? 'border-emerald-500 bg-emerald-500/10' : 'border-neutral-800 hover:border-emerald-500/50'
+            <div className={`bg-neutral-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center border-2 transition-all ${selectedCategory === 'olahraga' ? 'border-purple-500 bg-purple-500/10' : 'border-neutral-800 hover:border-purple-500/50'
               }`}>
-              <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 bg-emerald-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 ${selectedCategory === 'olahraga' ? 'scale-105' : 'group-hover:scale-105'
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 sm:mb-3 bg-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 ${selectedCategory === 'olahraga' ? 'scale-105' : 'group-hover:scale-105'
                 } transition-transform`}>
                 <IoFootball className="text-white" size={24} />
               </div>

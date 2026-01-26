@@ -28,6 +28,7 @@ import Riwayat from "./pages/user/Riwayat";
 import Notifikasi from "./pages/user/Notifikasi";
 import Profile from "./pages/user/Profile";
 import Bantuan from "./pages/user/Bantuan";
+import FormPeminjaman from "./pages/user/FormPeminjaman";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -85,6 +86,7 @@ function App() {
             <Route path="notifikasi" element={<Notifikasi />} />
             <Route path="profile" element={<Profile />} />
             <Route path="bantuan" element={<Bantuan />} />
+            <Route path="pinjam/:id" element={<FormPeminjaman />} />
           </Route>
 
           {/* Protected Admin Routes */}
