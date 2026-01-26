@@ -19,6 +19,7 @@ import {
 import useAuth from "../../hooks/useAuth";
 import logoSiPinjam from "../../assets/logo/sipinjam.png";
 import api from "../../utils/api";
+import NotificationModal from "./NotificationModal";
 
 const UserLayout = () => {
   const location = useLocation();
@@ -27,6 +28,7 @@ const UserLayout = () => {
   const [notifCount, setNotifCount] = useState(0);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -133,9 +135,9 @@ const UserLayout = () => {
             {/* Right Section */}
             <div className="flex items-center gap-2">
               {/* Notification */}
-              <Link
-                to="/notifikasi"
-                className={`relative p-2.5 rounded-full transition-all ${isActive("/notifikasi")
+              <button
+                onClick={() => setIsNotifOpen(true)}
+                className={`relative p-2.5 rounded-full transition-all ${isNotifOpen
                   ? "bg-purple-600/20 text-purple-400"
                   : "text-gray-400 hover:bg-neutral-800 hover:text-white"
                   }`}
@@ -146,7 +148,7 @@ const UserLayout = () => {
                     {notifCount > 9 ? "9+" : notifCount}
                   </span>
                 )}
-              </Link>
+              </button>
 
               {/* Divider */}
               <div className="hidden sm:block w-px h-8 bg-neutral-800 mx-2"></div>
@@ -469,6 +471,12 @@ const UserLayout = () => {
           </div>
         </div>
       </footer>
+
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={isNotifOpen}
+        onClose={() => setIsNotifOpen(false)}
+      />
     </div>
   );
 };

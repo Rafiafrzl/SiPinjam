@@ -25,7 +25,6 @@ import Barang from "./pages/user/Barang";
 import PeminjamanUser from "./pages/user/PeminjamanUser";
 import PengembalianUser from "./pages/user/PengembalianUser";
 import Riwayat from "./pages/user/Riwayat";
-import Notifikasi from "./pages/user/Notifikasi";
 import Profile from "./pages/user/Profile";
 import Bantuan from "./pages/user/Bantuan";
 import FormPeminjaman from "./pages/user/FormPeminjaman";
@@ -83,7 +82,6 @@ function App() {
             <Route path="peminjaman" element={<PeminjamanUser />} />
             <Route path="pengembalian" element={<PengembalianUser />} />
             <Route path="riwayat" element={<Riwayat />} />
-            <Route path="notifikasi" element={<Notifikasi />} />
             <Route path="profile" element={<Profile />} />
             <Route path="bantuan" element={<Bantuan />} />
             <Route path="pinjam/:id" element={<FormPeminjaman />} />

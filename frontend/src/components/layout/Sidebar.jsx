@@ -19,7 +19,7 @@ import useAuth from "../../hooks/useAuth";
 import logoSiPinjam from "../../assets/logo/sipinjam.png";
 import api from "../../utils/api";
 
-const Sidebar = ({ isOpen, onClose }) => {
+const Sidebar = ({ isOpen, onClose, onOpenNotif }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -178,33 +178,65 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                       return (
                         <li key={item.path}>
-                          <Link
-                            to={item.path}
-                            onClick={onClose}
-                            className={`
-                              flex items-center justify-between gap-3 px-4 py-3 rounded-xl
-                              text-sm font-medium transition-colors duration-200
-                              ${isActive
-                                ? "bg-white text-indigo-600 shadow-lg"
-                                : "text-white/90 hover:bg-indigo-700 hover:text-white"
-                              }
-                            `}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Icon
-                                size={22}
-                                className={
-                                  isActive ? "text-indigo-600" : "text-white/80"
+                          {item.path === "/notifikasi" || item.path === "/admin/notifikasi" ? (
+                            <button
+                              onClick={() => {
+                                onOpenNotif();
+                                onClose();
+                              }}
+                              className={`
+                                w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl
+                                text-sm font-medium transition-colors duration-200
+                                ${isActive
+                                  ? "bg-white text-indigo-600 shadow-lg"
+                                  : "text-white/90 hover:bg-indigo-700 hover:text-white"
                                 }
-                              />
-                              <span>{item.label}</span>
-                            </div>
-                            {item.badge > 0 && (
-                              <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center animate-pulse">
-                                {item.badge > 9 ? "9+" : item.badge}
-                              </span>
-                            )}
-                          </Link>
+                              `}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Icon
+                                  size={22}
+                                  className={
+                                    isActive ? "text-indigo-600" : "text-white/80"
+                                  }
+                                />
+                                <span>{item.label}</span>
+                              </div>
+                              {item.badge > 0 && (
+                                <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center animate-pulse">
+                                  {item.badge > 9 ? "9+" : item.badge}
+                                </span>
+                              )}
+                            </button>
+                          ) : (
+                            <Link
+                              to={item.path}
+                              onClick={onClose}
+                              className={`
+                                flex items-center justify-between gap-3 px-4 py-3 rounded-xl
+                                text-sm font-medium transition-colors duration-200
+                                ${isActive
+                                  ? "bg-white text-indigo-600 shadow-lg"
+                                  : "text-white/90 hover:bg-indigo-700 hover:text-white"
+                                }
+                              `}
+                            >
+                              <div className="flex items-center gap-3">
+                                <Icon
+                                  size={22}
+                                  className={
+                                    isActive ? "text-indigo-600" : "text-white/80"
+                                  }
+                                />
+                                <span>{item.label}</span>
+                              </div>
+                              {item.badge > 0 && (
+                                <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center animate-pulse">
+                                  {item.badge > 9 ? "9+" : item.badge}
+                                </span>
+                              )}
+                            </Link>
+                          )}
                         </li>
                       );
                     })}

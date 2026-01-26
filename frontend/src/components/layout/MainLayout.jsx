@@ -2,18 +2,28 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { IoMenu } from 'react-icons/io5';
+import NotificationModal from './NotificationModal';
 
 const MainLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  const openNotif = () => {
+    setIsNotifOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="flex">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onOpenNotif={openNotif}
+        />
 
         <main className="flex-1 min-h-screen">
           {/* Mobile Menu Button - Floating */}
@@ -30,6 +40,11 @@ const MainLayout = () => {
           </div>
         </main>
       </div>
+
+      <NotificationModal
+        isOpen={isNotifOpen}
+        onClose={() => setIsNotifOpen(false)}
+      />
     </div>
   );
 };
