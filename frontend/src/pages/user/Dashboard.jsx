@@ -252,33 +252,38 @@ const Dashboard = () => {
           </div>
 
           {/* Continuous Scroll Carousel */}
-          <div className="relative overflow-hidden">
+          <div className="relative overflow-hidden group/marquee py-4">
+            {/* Gradient Masks */}
+            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black via-black/50 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black via-black/50 to-transparent z-10 pointer-events-none"></div>
+
             <style>{`
               @keyframes scroll-left {
                 0% {
                   transform: translateX(0);
                 }
                 100% {
-                  transform: translateX(-50%);
+                  transform: translateX(-25%);
                 }
               }
               
               .animate-scroll {
-                animation: scroll-left 25s linear infinite;
+                animation: scroll-left 45s linear infinite;
               }
               
-              .animate-scroll:hover {
+              .group\\/marquee:hover .animate-scroll {
                 animation-play-state: paused;
               }
             `}</style>
 
-            <div className="flex gap-4 animate-scroll">
-              {/* First set */}
-              {featuredBarang
-                .filter(item => selectedCategory === '' || item.kategori === selectedCategory)
-                .map((item) => (
-                  <div key={`first-${item._id}`} className="flex-shrink-0 w-48 group">
-                    <div className="bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-800 hover:border-purple-500/50 transition-all">
+            <div className="flex animate-scroll w-max gap-4 pr-4">
+              {(() => {
+                const filtered = featuredBarang.filter(item => selectedCategory === '' || item.kategori === selectedCategory);
+                if (filtered.length === 0) return null;
+                // Repeat filtered items 4 times for gap-less flow
+                return [...filtered, ...filtered, ...filtered, ...filtered].map((item, idx) => (
+                  <div key={`${idx}-${item._id}`} className="flex-shrink-0 w-48 group">
+                    <div className="bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-800 hover:border-purple-500/50 transition-all duration-300 hover:scale-[1.05] hover:shadow-2xl hover:shadow-purple-500/10">
                       <div className="relative aspect-square bg-neutral-800 overflow-hidden">
                         <img
                           src={getImageUrl(item.foto, 'https://via.placeholder.com/300x200?text=No+Image')}
@@ -303,39 +308,8 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-                ))}
-
-              {/* Duplicate set for seamless loop */}
-              {featuredBarang
-                .filter(item => selectedCategory === '' || item.kategori === selectedCategory)
-                .map((item) => (
-                  <div key={`second-${item._id}`} className="flex-shrink-0 w-48 group">
-                    <div className="bg-neutral-900 rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-800 hover:border-purple-500/50 transition-all">
-                      <div className="relative aspect-square bg-neutral-800 overflow-hidden">
-                        <img
-                          src={getImageUrl(item.foto, 'https://via.placeholder.com/300x200?text=No+Image')}
-                          alt={item.namaBarang}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute top-2 right-2">
-                          <span className={`px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full ${item.jumlahTersedia > 0
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-red-500 text-white'
-                            }`}>
-                            {item.jumlahTersedia > 0 ? 'Tersedia' : 'Habis'}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="p-3 sm:p-4">
-                        <h3 className="font-semibold text-white text-sm truncate">{item.namaBarang}</h3>
-                        <p className="text-xs text-gray-500 capitalize">{item.kategori}</p>
-                        <p className="text-xs sm:text-sm font-semibold text-purple-400 mt-1 sm:mt-2">
-                          {item.jumlahTersedia} unit
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                ));
+              })()}
             </div>
           </div>
 

@@ -260,66 +260,42 @@ const LandingPage = () => {
                         </div>
 
                         {/* Continuous Scroll Carousel */}
-                        <div className="relative overflow-hidden">
+                        <div className="relative overflow-hidden group/marquee py-4">
+                            {/* Gradient Masks */}
+                            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black via-black/50 to-transparent z-10 pointer-events-none"></div>
+                            <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black via-black/50 to-transparent z-10 pointer-events-none"></div>
+
                             <style>{`
                                 @keyframes scroll-left {
                                     0% {
                                         transform: translateX(0);
                                     }
                                     100% {
-                                        transform: translateX(-50%);
+                                        transform: translateX(-25%);
                                     }
                                 }
                                 
                                 .animate-scroll {
-                                    animation: scroll-left 20s linear infinite;
+                                    animation: scroll-left 30s linear infinite;
                                 }
                                 
-                                .animate-scroll:hover {
+                                .group\\/marquee:hover .animate-scroll {
                                     animation-play-state: paused;
                                 }
                             `}</style>
 
-                            <div className="flex gap-4 animate-scroll">
-                                {/* First set */}
-                                {featuredBarang.map((item) => (
+                            <div className="flex animate-scroll w-max gap-4 pr-4">
+                                {/* Map 4 times to ensure no gaps even with few items on wide screens */}
+                                {[...featuredBarang, ...featuredBarang, ...featuredBarang, ...featuredBarang].map((item, idx) => (
                                     <div
-                                        key={`first-${item._id}`}
-                                        className="flex-shrink-0 w-48 bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 hover:border-purple-500/30 transition-colors group"
+                                        key={`${idx}-${item._id}`}
+                                        className="flex-shrink-0 w-48 bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 hover:border-purple-500/30 transition-all duration-300 hover:scale-[1.05] hover:shadow-2xl hover:shadow-purple-500/10"
                                     >
                                         <div className="aspect-square bg-neutral-800 overflow-hidden">
                                             <img
                                                 src={getImageUrl(item.foto)}
                                                 alt={item.namaBarang}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                        </div>
-                                        <div className="p-3">
-                                            <h3 className="font-medium text-white text-sm truncate">{item.namaBarang}</h3>
-                                            <p className="text-gray-600 text-xs capitalize">{item.kategori}</p>
-                                            <div className="flex items-center justify-between mt-2">
-                                                <span className={`text-xs px-2 py-0.5 rounded ${item.jumlahTersedia > 0
-                                                    ? 'bg-green-500/20 text-green-400'
-                                                    : 'bg-red-500/20 text-red-400'
-                                                    }`}>
-                                                    {item.jumlahTersedia > 0 ? `${item.jumlahTersedia} unit` : 'Habis'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {/* Duplicate set for seamless loop */}
-                                {featuredBarang.map((item) => (
-                                    <div
-                                        key={`second-${item._id}`}
-                                        className="flex-shrink-0 w-48 bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 hover:border-purple-500/30 transition-colors group"
-                                    >
-                                        <div className="aspect-square bg-neutral-800 overflow-hidden">
-                                            <img
-                                                src={getImageUrl(item.foto)}
-                                                alt={item.namaBarang}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                className="w-full h-full object-cover"
                                             />
                                         </div>
                                         <div className="p-3">
