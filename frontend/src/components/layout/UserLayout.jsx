@@ -71,7 +71,6 @@ const UserLayout = () => {
     { path: "/barang", label: "Katalog Barang", icon: IoLibrary },
     { path: "/peminjaman", label: "Peminjaman Saya", icon: IoList },
     { path: "/pengembalian", label: "Pengembalian", icon: IoCheckmarkCircle },
-    { path: "/riwayat", label: "Riwayat", icon: IoTime },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -80,13 +79,13 @@ const UserLayout = () => {
     <div className="min-h-screen bg-black flex flex-col">
       {/* Main Header */}
       <header
-        className={`sticky top-0 z-50 transition-all duration-300 backdrop-blur-xl ${isScrolled
-          ? "bg-black/60 shadow-lg border-b border-white/5"
-          : "bg-black/40 border-b border-white/5"
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
+          ? "bg-black/60 backdrop-blur-xl shadow-lg border-b border-white/10 py-2"
+          : "bg-transparent border-b border-transparent py-4"
           }`}
       >
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-20 gap-4">
+        <div className="max-w-[1600px] mx-auto px-6">
+          <div className="flex items-center justify-between h-16 gap-8">
             {/* Logo */}
             <Link
               to="/dashboard"
@@ -95,138 +94,128 @@ const UserLayout = () => {
               <img
                 src={logoSiPinjam}
                 alt="Logo SiPinjam"
-                className="w-12 h-12 object-contain"
+                className="w-10 h-10 object-contain"
               />
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-white">SiPinjam</h1>
-                <p className="text-xs text-gray-400">Sistem Peminjaman Barang Sekolah</p>
+                <h1 className="text-lg font-bold text-white leading-tight">SiPinjam</h1>
+                <p className="text-[10px] text-gray-400">Peminjaman Barang</p>
               </div>
             </Link>
 
-            {/* Search Bar - Desktop */}
-            <form
-              onSubmit={handleSearch}
-              className="hidden md:flex flex-1 max-w-xl mx-8"
-            >
-              <div className="relative w-full">
-                <IoSearch
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
-                  size={20}
-                />
-                <input
-                  type="text"
-                  placeholder="Cari barang yang ingin dipinjam..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-full focus:outline-none focus:border-purple-500 focus:bg-neutral-800 transition-all text-sm text-white"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors flex items-center gap-1"
-                >
-                  <IoSearch size={18} />
-                  <span className="hidden lg:inline text-sm font-medium">
-                    Cari
-                  </span>
-                </button>
-              </div>
-            </form>
+            {/* Navbar Links - Desktop */}
+            <nav className="hidden lg:flex items-center gap-1 ml-4">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all relative group rounded-lg ${isActive(link.path)
+                      ? "text-white bg-white/10"
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                      }`}
+                  >
+                    <Icon size={16} className={isActive(link.path) ? "text-purple-400" : "text-gray-500 group-hover:text-gray-300"} />
+                    {link.label}
+                    {isActive(link.path) && (
+                      <motion.div
+                        layoutId="nav-active"
+                        className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Desktop Search Bar */}
+            <div className="hidden lg:flex items-center flex-1 max-w-sm ml-6">
+              <form onSubmit={handleSearch} className="w-full">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <IoSearch className="text-gray-500 group-focus-within:text-purple-400 transition-colors" size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search anything..."
+                    className="w-full bg-white/5 hover:bg-white/10 border border-white/5 focus:border-purple-500/50 text-white text-sm rounded-xl pl-11 pr-4 py-2 transition-all outline-none backdrop-blur-sm"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+
+                  </div>
+                </div>
+              </form>
+            </div>
 
             {/* Right Section */}
             <div className="flex items-center gap-2">
               {/* Notification */}
               <button
                 onClick={() => setIsNotifOpen(true)}
-                className={`relative p-2.5 rounded-full transition-all ${isNotifOpen
+                className={`relative p-2 rounded-full transition-all ${isNotifOpen
                   ? "bg-purple-600/20 text-purple-400"
-                  : "text-gray-400 hover:bg-neutral-800 hover:text-white"
+                  : "text-gray-400 hover:bg-white/10 hover:text-white"
                   }`}
               >
                 <IoNotifications size={22} />
                 {notifCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center animate-pulse">
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center animate-pulse">
                     {notifCount > 9 ? "9+" : notifCount}
                   </span>
                 )}
               </button>
 
-              {/* Divider */}
-              <div className="hidden sm:block w-px h-8 bg-neutral-800 mx-2"></div>
+              <div className="hidden sm:block w-px h-6 bg-white/10 mx-2"></div>
 
               {/* User Menu */}
               <div className="relative">
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-neutral-800 transition-all"
+                  className="flex items-center gap-2 p-1 rounded-full hover:bg-white/10 transition-all border border-transparent hover:border-white/10"
                 >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
                     {user?.nama?.charAt(0).toUpperCase()}
                   </div>
-                  <div className="hidden lg:block text-left">
-                    <p className="text-sm font-medium text-white leading-tight max-w-[100px] truncate">
-                      {user?.nama?.split(" ")[0]}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {user?.kelas || "User"}
-                    </p>
-                  </div>
                   <IoChevronDown
-                    size={16}
-                    className={`hidden lg:block text-gray-500 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""
-                      }`}
+                    size={14}
+                    className={`hidden lg:block text-gray-500 transition-transform duration-200 ${showUserMenu ? "rotate-180" : ""}`}
                   />
                 </button>
 
-                {/* Dropdown Menu */}
                 {showUserMenu && (
                   <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setShowUserMenu(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-neutral-900 rounded-2xl shadow-xl border border-neutral-800 py-2 z-20 overflow-hidden">
-                      <div className="px-4 py-3 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border-b border-neutral-800">
-                        <p className="font-semibold text-white">
-                          {user?.nama}
-                        </p>
-                        <p className="text-sm text-gray-400">{user?.email}</p>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
+                    <div className="absolute right-0 top-full mt-3 w-64 bg-neutral-900 border border-white/10 rounded-2xl shadow-2xl z-20 overflow-hidden py-1">
+                      <div className="px-4 py-3 bg-white/5 border-b border-white/5">
+                        <p className="font-semibold text-white">{user?.nama}</p>
+                        <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                       </div>
-                      <Link
-                        to="/profile"
-                        onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-neutral-800 transition-colors"
-                      >
-                        <IoPerson size={20} className="text-gray-500" />
-                        <span>Profile Saya</span>
+                      <Link to="/profile" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:bg-white/5 hover:text-white transition-all">
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500">
+                          <IoPerson size={18} />
+                        </div>
+                        Profile Saya
                       </Link>
-                      <Link
-                        to="/riwayat"
-                        onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-neutral-800 transition-colors"
-                      >
-                        <IoTime size={20} className="text-gray-500" />
-                        <span>Riwayat Peminjaman</span>
+                      <Link to="/riwayat" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:bg-white/5 hover:text-white transition-all">
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500">
+                          <IoTime size={18} />
+                        </div>
+                        Riwayat Peminjaman
                       </Link>
-                      <Link
-                        to="/bantuan"
-                        onClick={() => setShowUserMenu(false)}
-                        className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-neutral-800 transition-colors"
-                      >
-                        <IoHelpCircle size={20} className="text-gray-500" />
-                        <span>Bantuan</span>
+                      <Link to="/bantuan" onClick={() => setShowUserMenu(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:bg-white/5 hover:text-white transition-all border-b border-white/5 pb-4">
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500">
+                          <IoHelpCircle size={18} />
+                        </div>
+                        Bantuan & Panduan
                       </Link>
-                      <div className="border-t border-neutral-800 mt-1 pt-1">
-                        <button
-                          onClick={() => {
-                            handleLogout();
-                            setShowUserMenu(false);
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors"
-                        >
-                          <IoLogOut size={20} />
-                          <span>Keluar</span>
-                        </button>
-                      </div>
+                      <button onClick={() => { handleLogout(); setShowUserMenu(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-all mt-1">
+                        <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500">
+                          <IoLogOut size={18} />
+                        </div>
+                        Keluar
+                      </button>
                     </div>
                   </>
                 )}
@@ -235,7 +224,7 @@ const UserLayout = () => {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="lg:hidden p-2.5 text-gray-400 hover:bg-neutral-800 hover:text-white rounded-full transition-all"
+                className="lg:hidden p-2 text-gray-400 hover:bg-white/10 hover:text-white rounded-full transition-all"
               >
                 {showMobileMenu ? <IoClose size={24} /> : <IoMenu size={24} />}
               </button>
@@ -243,92 +232,34 @@ const UserLayout = () => {
           </div>
         </div>
 
-        {/* Navigation Bar - Desktop Centered & Glass */}
-        <div className="bg-white/5 backdrop-blur-md hidden lg:block border-b border-white/5">
-          <div className="max-w-7xl mx-auto px-4">
-            <nav className="flex items-center justify-center gap-2">
-              {navLinks.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-semibold transition-all relative group ${isActive(link.path)
-                      ? "text-purple-400"
-                      : "text-gray-400 hover:text-white"
-                      }`}
-                  >
-                    <Icon size={18} />
-                    {link.label}
-                    {isActive(link.path) && (
-                      <motion.div
-                        layoutId="nav-active"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500 to-indigo-500"
-                      />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-
-        {/* Mobile Search */}
-        <div className="md:hidden px-4 py-3 bg-neutral-950 border-t border-neutral-800">
-          <form onSubmit={handleSearch}>
-            <div className="relative">
-              <IoSearch
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
-                size={18}
-              />
-              <input
-                type="text"
-                placeholder="Cari barang..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 bg-neutral-900 border border-neutral-800 rounded-full focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm text-white"
-              />
-            </div>
-          </form>
-        </div>
-
         {/* Mobile Navigation */}
         {showMobileMenu && (
           <>
-            {/* Overlay */}
-            <div
-              className="lg:hidden fixed inset-0 bg-black/50 z-40"
-              onClick={() => setShowMobileMenu(false)}
-            />
-
-            {/* Mobile Menu Panel */}
-            <div className="lg:hidden fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-neutral-950 border-l border-neutral-800 z-50 flex flex-col animate-slide-in">
-              {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-neutral-800">
-                <h2 className="text-lg font-bold text-white">Menu</h2>
-                <button
-                  onClick={() => setShowMobileMenu(false)}
-                  className="p-2 text-gray-400 hover:text-white hover:bg-neutral-800 rounded-full"
-                >
+            <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => setShowMobileMenu(false)} />
+            <div className="lg:hidden fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-neutral-950 border-l border-white/10 z-50 flex flex-col animate-slide-in">
+              <div className="flex items-center justify-between p-6 border-b border-white/5">
+                <h2 className="text-xl font-bold text-white">Menu</h2>
+                <button onClick={() => setShowMobileMenu(false)} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full">
                   <IoClose size={24} />
                 </button>
               </div>
 
-              {/* User Info */}
-              <div className="p-4 bg-purple-600">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-                    {user?.nama?.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white">{user?.nama}</p>
-                    <p className="text-purple-100 text-sm">{user?.email}</p>
-                  </div>
-                </div>
+              {/* Mobile Search */}
+              <div className="p-4 border-b border-white/5">
+                <form onSubmit={handleSearch} className="relative group">
+                  <IoSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search anything..."
+                    className="w-full bg-white/5 border border-white/5 text-white text-sm rounded-xl pl-11 pr-4 py-3 outline-none focus:border-purple-500/50 transition-all"
+                  />
+                </form>
               </div>
 
-              {/* Nav Links */}
-              <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+              <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+                <div className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 ml-4">Main Menu</div>
                 {navLinks.map((link) => {
                   const Icon = link.icon;
                   return (
@@ -336,138 +267,97 @@ const UserLayout = () => {
                       key={link.path}
                       to={link.path}
                       onClick={() => setShowMobileMenu(false)}
-                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${isActive(link.path)
-                        ? "bg-purple-600 text-white shadow-lg"
-                        : "text-gray-400 hover:bg-neutral-800 hover:text-white"
+                      className={`flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold transition-all ${isActive(link.path)
+                        ? "bg-purple-600 text-white shadow-xl shadow-purple-600/20"
+                        : "text-gray-400 hover:bg-white/5 hover:text-white"
                         }`}
                     >
-                      <Icon size={22} />
+                      <Icon size={20} className={isActive(link.path) ? "text-white" : "text-gray-500"} />
                       {link.label}
                     </Link>
                   );
                 })}
 
-                {/* Profile Link */}
-                <Link
-                  to="/profile"
-                  onClick={() => setShowMobileMenu(false)}
-                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${isActive("/profile")
-                    ? "bg-purple-600 text-white shadow-lg"
-                    : "text-gray-400 hover:bg-neutral-800 hover:text-white"
-                    }`}
-                >
-                  <IoPerson size={22} />
-                  Profile Saya
-                </Link>
-              </nav>
+                <div className="pt-8 mb-4 border-t border-white/5">
+                  <div className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 ml-4">Account</div>
+                  <Link
+                    to="/profile"
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
+                  >
+                    <IoPerson size={20} className="text-gray-500" />
+                    Profile Saya
+                  </Link>
+                  <Link
+                    to="/riwayat"
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
+                  >
+                    <IoTime size={20} className="text-gray-500" />
+                    Riwayat Peminjaman
+                  </Link>
+                  <Link
+                    to="/bantuan"
+                    onClick={() => setShowMobileMenu(false)}
+                    className="flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
+                  >
+                    <IoHelpCircle size={20} className="text-gray-500" />
+                    Bantuan & Panduan
+                  </Link>
+                </div>
 
-              {/* Logout Button */}
-              <div className="p-4 border-t border-neutral-800">
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setShowMobileMenu(false);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-500 font-medium rounded-xl hover:bg-red-500/20 transition-all"
-                >
-                  <IoLogOut size={20} />
-                  Keluar
-                </button>
-              </div>
+                <div className="pt-4 pb-12">
+                  <button
+                    onClick={() => { handleLogout(); setShowMobileMenu(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold text-red-400 hover:bg-red-500/10 transition-all border border-red-500/20"
+                  >
+                    <IoLogOut size={20} />
+                    Keluar
+                  </button>
+                </div>
+              </nav>
             </div>
           </>
         )}
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <Outlet />
-        </div>
+      <main className={`flex-1 ${location.pathname === '/dashboard' ? '' : 'pt-24 lg:pt-28'}`}>
+        <Outlet />
       </main>
 
       {/* Footer */}
-      <footer className="bg-neutral-950 border-t border-neutral-800">
-        {/* Main Footer */}
-        <div className="max-w-7xl mx-auto px-4 py-10">
+      <footer className="bg-neutral-950 border-t border-white/5">
+        <div className="max-w-[1600px] mx-auto px-6 py-12">
           <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
-            {/* About */}
             <div className="text-center md:text-left">
               <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-                <img
-                  src={logoSiPinjam}
-                  alt="Logo SiPinjam"
-                  className="w-12 h-12 object-contain"
-                />
+                <img src={logoSiPinjam} alt="Logo SiPinjam" className="w-10 h-10 object-contain" />
                 <div>
-                  <h3 className="text-xl font-bold text-white">SiPinjam</h3>
-                  <p className="text-sm text-purple-400">Sistem Peminjaman</p>
+                  <h3 className="text-lg font-bold text-white">SiPinjam</h3>
+                  <p className="text-xs text-purple-400">Sistem Peminjaman Sekolah</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-400 max-w-sm">
-                Sistem peminjaman barang online untuk memudahkan siswa
-                dalam meminjam peralatan sekolah dengan mudah dan efisien.
+              <p className="text-sm text-gray-500 max-w-sm leading-relaxed">
+                Platform peminjaman barang terpadu untuk memudahkan operasional sekolah secara efisien dan transparan.
               </p>
             </div>
-
-            {/* Quick Links */}
             <div className="text-center md:text-left">
-              <h4 className="text-white font-semibold mb-4">Menu</h4>
+
               <ul className="flex flex-wrap justify-center md:justify-start gap-x-6 gap-y-2 text-sm">
-                <li>
-                  <Link
-                    to="/dashboard"
-                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                  >
-                    <IoHome size={16} />
-                    Beranda
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/barang"
-                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                  >
-                    <IoLibrary size={16} />
-                    Katalog Barang
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/peminjaman"
-                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                  >
-                    <IoList size={16} />
-                    Peminjaman Saya
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/riwayat"
-                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                  >
-                    <IoTime size={16} />
-                    Riwayat
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/bantuan"
-                    className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
-                  >
-                    <IoHelpCircle size={16} />
-                    Bantuan
-                  </Link>
-                </li>
+                {navLinks.map(link => (
+                  <li key={link.path}>
+                    <Link to={link.path} className="text-gray-500 hover:text-white transition-colors">{link.label}</Link>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
         </div>
+        <div className="border-t border-white/5 bg-black/50 py-6">
+          <div className="max-w-[1600px] mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-xs text-gray-600">© 2026 SiPinjam. All rights reserved.</p>
 
-        {/* Bottom Footer */}
-        <div className="border-t border-neutral-800 bg-black">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <p className="text-sm text-center text-gray-500">© 2026 SiPinjam</p>
           </div>
         </div>
       </footer>

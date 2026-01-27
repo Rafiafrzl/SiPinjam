@@ -44,18 +44,18 @@ const Riwayat = () => {
     }
   };
 
-  const getStatusBadge = (status) => {
-    const config = {
-      'Menunggu': { bg: 'bg-amber-500', text: 'text-white', icon: IoTime },
-      'Disetujui': { bg: 'bg-emerald-500', text: 'text-white', icon: IoCheckmarkCircle },
-      'Ditolak': { bg: 'bg-red-500', text: 'text-white', icon: IoClose },
-      'Selesai': { bg: 'bg-blue-500', text: 'text-white', icon: IoCheckmarkCircle },
+  const getStatusIndicator = (status) => {
+    const colors = {
+      'Menunggu': 'bg-amber-500',
+      'Disetujui': 'bg-emerald-500',
+      'Ditolak': 'bg-red-500',
+      'Selesai': 'bg-blue-500',
     };
-    const c = config[status] || config['Menunggu'];
     return (
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full ${c.bg} ${c.text}`}>
-        {status}
-      </span>
+      <div className="flex items-center gap-2">
+        <span className={`w-1.5 h-1.5 rounded-full ${colors[status] || 'bg-gray-500'}`} />
+        <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{status}</span>
+      </div>
     );
   };
 
@@ -68,87 +68,107 @@ const Riwayat = () => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-5 sm:space-y-6"
-    >
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Riwayat Peminjaman</h1>
-        <p className="text-sm text-gray-400 mt-1">Semua aktivitas peminjaman Anda</p>
-      </div>
+    <div className="max-w-[1600px] mx-auto px-6 py-8 sm:py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6"
+      >
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Riwayat Peminjaman</h1>
+            <p className="text-gray-500 text-sm">Monitor seluruh jejak aktivitas peminjaman Anda.</p>
+          </div>
+        </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 sm:p-4 text-center relative overflow-hidden group">
-          <div className="absolute inset-0 bg-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="w-10 h-10 mx-auto mb-2 bg-purple-600/20 rounded-lg flex items-center justify-center relative z-10">
-            <IoLayers className="text-purple-400" size={20} />
+        {/* Modern Stats Bar - Minimalist */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 p-2 bg-black/40 backdrop-blur-md rounded-2xl border border-white/[0.05] shadow-inner">
+          <div className="flex items-center gap-4 px-6 py-4 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/[0.03]">
+            <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-400">
+              <IoLayers size={20} />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-white">{stats.total}</p>
+              <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none">Total Aktivitas</p>
+            </div>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-white relative z-10">{stats.total}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500 relative z-10">Total</p>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 sm:p-4 text-center relative overflow-hidden group">
-          <div className="absolute inset-0 bg-emerald-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="w-10 h-10 mx-auto mb-2 bg-emerald-600/20 rounded-lg flex items-center justify-center relative z-10">
-            <IoCheckmarkCircle className="text-emerald-400" size={20} />
+          <div className="flex items-center gap-4 px-6 py-4 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/[0.03]">
+            <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400">
+              <IoCheckmarkCircle size={20} />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-white">{stats.disetujui}</p>
+              <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none">Selesai / Setuju</p>
+            </div>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-white relative z-10">{stats.disetujui}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500 relative z-10">Disetujui</p>
-        </div>
-        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 sm:p-4 text-center relative overflow-hidden group">
-          <div className="absolute inset-0 bg-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="w-10 h-10 mx-auto mb-2 bg-red-600/20 rounded-lg flex items-center justify-center relative z-10">
-            <IoClose className="text-red-400" size={20} />
+          <div className="flex items-center gap-4 px-6 py-4 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/[0.03]">
+            <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-400">
+              <IoClose size={20} />
+            </div>
+            <div>
+              <p className="text-xl font-bold text-white">{stats.ditolak}</p>
+              <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none">Ditolak</p>
+            </div>
           </div>
-          <p className="text-xl sm:text-2xl font-bold text-white relative z-10">{stats.ditolak}</p>
-          <p className="text-[10px] sm:text-xs text-gray-500 relative z-10">Ditolak</p>
         </div>
-      </div>
 
-      {/* List */}
-      {riwayat.length === 0 ? (
-        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8 sm:p-12 text-center border-dashed">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-neutral-800 rounded-full mb-4">
-            <IoTime className="text-neutral-600" size={32} />
+        {/* Content Section - Table Layout */}
+        <div className="bg-neutral-900/30 border border-white/5 rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/5 bg-white/[0.02]">
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Barang & Kategori</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Tgl Pinjam</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 text-center">Jumlah</th>
+                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {riwayat.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-12 text-center text-gray-500 italic text-sm">
+                      Belum ada riwayat aktivitas yang tercatat.
+                    </td>
+                  </tr>
+                ) : (
+                  riwayat.map((item) => (
+                    <tr key={item._id} className="group hover:bg-white/[0.02] transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-neutral-800 border border-white/5 flex-shrink-0">
+                            <img src={getImageUrl(item.barangId?.foto)} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-white text-sm group-hover:text-purple-400 transition-colors">{item.barangId?.namaBarang}</p>
+                            <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider">{item.barangId?.kategori}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <IoCalendar className="text-gray-700" size={14} />
+                          {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-medium text-gray-300">{item.jumlahPinjam} Units</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-center">
+                          {getStatusIndicator(item.status)}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-          <h3 className="text-lg font-bold text-gray-400 mb-1">Belum ada riwayat</h3>
-          <p className="text-sm text-gray-500">Riwayat peminjaman Anda akan muncul di sini</p>
         </div>
-      ) : (
-        <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-          <div className="space-y-3">
-            {riwayat.map((item) => (
-              <div key={item._id} className="bg-neutral-900 rounded-xl p-3 sm:p-4 border border-neutral-800 hover:border-purple-500/50 transition-all group">
-                <div className="flex gap-3 sm:gap-4">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-neutral-800 flex-shrink-0">
-                    <img
-                      src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
-                      alt={item.barangId?.namaBarang}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h3 className="font-semibold text-white text-sm truncate group-hover:text-purple-400 transition-colors">
-                        {item.barangId?.namaBarang}
-                      </h3>
-                      {getStatusBadge(item.status)}
-                    </div>
-                    <p className="text-xs text-gray-400 mb-1">{item.jumlahPinjam} unit</p>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <IoCalendar size={12} />
-                      <span>{format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 
