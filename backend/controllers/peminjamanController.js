@@ -362,7 +362,7 @@ const markAsReturned = async (req, res) => {
       userId: peminjaman.userId._id,
       peminjamanId: peminjaman._id,
       judul: 'Pengembalian Dikonfirmasi',
-      pesan: `Pengembalian ${peminjaman.barangId.namaBarang} telah dikonfirmasi. ${peminjaman.statusPengembalian === 'terlambat' ? 'Barang dikembalikan terlambat.' : 'Terima kasih!'}`,
+      pesan: `Pengembalian ${peminjaman.barangId.namaBarang} telah dikonfirmasi. ${peminjaman.statusPengembalian === 'terlambat' ? 'Lain kali, mohon kembalikan tepat waktu ya.' : 'Terima kasih telah mengembalikan tepat waktu!'}`,
       tipe: peminjaman.statusPengembalian === 'terlambat' ? 'warning' : 'success'
     });
 

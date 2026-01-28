@@ -36,23 +36,15 @@ const createPengembalian = async (req, res) => {
       });
     }
 
-    // Hitung denda jika terlambat
+    // Hitung denda hanya jika kondisi rusak atau hilang (tidak ada denda untuk keterlambatan)
     let denda = 0;
-    const today = new Date();
-    const tanggalKembali = new Date(peminjaman.tanggalKembali);
 
-    if (today > tanggalKembali) {
-      const hariTerlambat = Math.ceil((today - tanggalKembali) / (1000 * 60 * 60 * 24));
-      denda = hariTerlambat * 5000; // 5000 per hari
-    }
-
-    // Tambah denda jika kondisi rusak atau hilang
     if (kondisiBarang === 'Rusak Ringan') {
-      denda += 10000;
+      denda = 10000;
     } else if (kondisiBarang === 'Rusak Berat') {
-      denda += 50000;
+      denda = 50000;
     } else if (kondisiBarang === 'Hilang') {
-      denda += 100000;
+      denda = 100000;
     }
 
     // Buat pengembalian
@@ -85,7 +77,7 @@ const createPengembalian = async (req, res) => {
       data: pengembalian
     });
   } catch (error) {
-        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -151,7 +143,7 @@ const verifikasiPengembalian = async (req, res) => {
       data: pengembalian
     });
   } catch (error) {
-        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -188,7 +180,7 @@ const getAllPengembalian = async (req, res) => {
       total: count
     });
   } catch (error) {
-        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -220,7 +212,7 @@ const getPengembalianByUser = async (req, res) => {
       total: count
     });
   } catch (error) {
-        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -246,13 +238,13 @@ const getPengembalianById = async (req, res) => {
 
     // Check authorization
     if (req.user.role !== 'admin' &&
-        pengembalian.dikembalikanOleh._id.toString() !== req.user.id) {
+      pengembalian.dikembalikanOleh._id.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Anda tidak memiliki akses ke pengembalian ini' });
     }
 
     res.json({ data: pengembalian });
   } catch (error) {
-        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
@@ -271,7 +263,7 @@ const getPengembalianByPeminjamanId = async (req, res) => {
 
     res.json({ data: pengembalian });
   } catch (error) {
-        res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
   }
 };
 
