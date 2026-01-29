@@ -89,7 +89,7 @@ const FormPeminjaman = () => {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="max-w-5xl mx-auto"
+                className="mx-auto"
             >
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-5">

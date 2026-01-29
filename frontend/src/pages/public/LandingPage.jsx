@@ -15,11 +15,28 @@ import {
 } from 'react-icons/io5';
 import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
-import heroBg from '../../assets/bg-banner.jpg';
+import hero1 from '../../assets/hero/hero1.jpg';
+import hero2 from '../../assets/hero/hero2.png';
+import hero3 from '../../assets/hero/hero3.png';
+import { AnimatePresence } from 'framer-motion';
 
 const LandingPage = () => {
     const [featuredBarang, setFeaturedBarang] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentSlide, setCurrentSlide] = useState(0);
+
+    const heroSlides = [
+        { image: hero1, title: 'Akses Peralatan\nSekolah Kamu.', subtitle: 'Temukan, pinjam, dan kelola perlengkapan belajar kamu dengan sistem yang modern dan terintegrasi.' },
+        { image: hero2, title: 'Eksplorasi Ilmu\nTanpa Batas.', subtitle: 'Koleksi buku dan referensi lengkap siap mendukung perjalanan akademik Anda di perpustakaan.' },
+        { image: hero3, title: 'Teknologi Unggul\nUntuk Masa Depan.', subtitle: 'Pinjam perangkat elektronik terbaru untuk kebutuhan proyek dan penelitian inovatif kamu.' }
+    ];
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         fetchFeaturedItems();
@@ -61,54 +78,80 @@ const LandingPage = () => {
 
     return (
         <div>
-            {/* Hero Section - Banner tanpa overlay ungu */}
-            <motion.section
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8 }}
-                className="relative min-h-[85vh] flex items-center"
-            >
-                {/* Background - hanya gradient hitam */}
-                <div className="absolute inset-0">
-                    <img
-                        src={heroBg}
-                        alt="Background"
-                        className="w-full h-full object-cover"
+            {/* Hero Carousel Section */}
+            <section className="relative overflow-hidden min-h-[550px] lg:min-h-[750px] flex items-center bg-black">
+                <AnimatePresence mode='wait'>
+                    <motion.div
+                        key={currentSlide}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.6 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1 }}
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                        style={{ backgroundImage: `url(${heroSlides[currentSlide].image})` }}
                     />
-                    <div className="absolute inset-0 bg-black/60"></div>
-                </div>
+                </AnimatePresence>
 
-                {/* Content */}
-                <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-                    <div className="max-w-3xl mx-auto text-center">
-                        <h1 className="text-4xl sm:text-5xl font-bold text-white leading-tight mb-6">
-                            Sistem Peminjaman Barang Sekolah
-                        </h1>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20"></div>
 
-                        <p className="text-lg text-gray-300 mb-8 leading-relaxed">
-                            Pinjam peralatan sekolah dengan mudah dan cepat. Cukup daftar, pilih barang, dan ajukan peminjaman secara online.
-                        </p>
+                <div className="relative w-full max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-16 pt-32 pb-20 lg:pt-40 lg:pb-32">
+                    <div className="max-w-3xl">
+                        <AnimatePresence mode='wait'>
+                            <motion.div
+                                key={currentSlide}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.8 }}
+                            >
+                                <p className="text-purple-400 font-bold tracking-widest uppercase text-xs sm:text-sm mb-4 border-l-4 border-purple-500 pl-4 bg-purple-500/10 py-1 pr-6 inline-block rounded-r-lg">
+                                    Sistem Peminjaman Barang Sekolah
+                                </p>
 
-                        {/* CTA Buttons */}
-                        <div className="flex flex-wrap justify-center gap-4">
+                                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight whitespace-pre-line">
+                                    {heroSlides[currentSlide].title}
+                                </h1>
+
+                                <p className="text-lg sm:text-xl text-gray-400 mb-12 max-w-xl leading-relaxed">
+                                    {heroSlides[currentSlide].subtitle}
+                                </p>
+                            </motion.div>
+                        </AnimatePresence>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="flex flex-wrap gap-4"
+                        >
                             <Link
                                 to="/register"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-lg transition-colors"
+                                className="inline-flex items-center justify-center px-8 py-3.5 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-600/20"
                             >
-                                <IoPersonAdd size={20} />
                                 Daftar Sekarang
                             </Link>
                             <Link
                                 to="/katalog"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-medium rounded-lg border border-white/20 transition-colors"
+                                className="inline-flex items-center justify-center px-8 py-3.5 bg-white/5 backdrop-blur-md text-white font-semibold rounded-xl hover:bg-white/10 transition-all border border-white/10"
                             >
-                                <IoLibrary size={20} />
                                 Lihat Katalog
                             </Link>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
-            </motion.section>
+
+                {/* Pagination Dots */}
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+                    {heroSlides.map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setCurrentSlide(idx)}
+                            className={`h-1.5 rounded-full transition-all duration-300 ${currentSlide === idx ? 'w-8 bg-purple-500' : 'w-2 bg-white/30 hover:bg-white/50'
+                                }`}
+                        />
+                    ))}
+                </div>
+            </section>
 
 
             <motion.section

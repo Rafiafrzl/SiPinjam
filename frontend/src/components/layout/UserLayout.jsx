@@ -20,6 +20,7 @@ import useAuth from "../../hooks/useAuth";
 import logoSiPinjam from "../../assets/logo/sipinjam.png";
 import api from "../../utils/api";
 import NotificationModal from "./NotificationModal";
+import { getImageUrl } from "../../utils/imageHelper";
 
 const UserLayout = () => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const UserLayout = () => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hoveredPath, setHoveredPath] = useState(null);
 
   useEffect(() => {
     fetchNotifCount();
@@ -102,25 +104,49 @@ const UserLayout = () => {
               </div>
             </Link>
 
-            {/* Navbar Links - Desktop */}
-            <nav className="hidden lg:flex items-center gap-1 ml-4">
+            <nav
+              className="hidden lg:flex items-center gap-1 ml-4"
+              onMouseLeave={() => setHoveredPath(null)}
+            >
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 return (
                   <Link
                     key={link.path}
                     to={link.path}
+                    onMouseEnter={() => setHoveredPath(link.path)}
                     className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-all relative group rounded-lg ${isActive(link.path)
-                      ? "text-white bg-white/10"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                      ? "text-white"
+                      : "text-gray-400 hover:text-white"
                       }`}
                   >
+                    {/* Hover Background Highlight */}
+                    {hoveredPath === link.path && (
+                      <motion.div
+                        layoutId="hover-bg"
+                        className="absolute inset-0 bg-white/5 rounded-lg -z-10"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    )}
+
                     <Icon size={16} className={isActive(link.path) ? "text-purple-400" : "text-gray-500 group-hover:text-gray-300"} />
                     {link.label}
+
+                    {/* Active Underline */}
                     {isActive(link.path) && (
                       <motion.div
                         layoutId="nav-active"
+                        initial={false}
                         className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full"
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 30,
+                          mass: 1
+                        }}
                       />
                     )}
                   </Link>
@@ -175,8 +201,16 @@ const UserLayout = () => {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-2 p-1 rounded-full hover:bg-white/10 transition-all border border-transparent hover:border-white/10"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
-                    {user?.nama?.charAt(0).toUpperCase()}
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-lg overflow-hidden">
+                    {user?.foto ? (
+                      <img
+                        src={getImageUrl(user.foto)}
+                        alt={user?.nama}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      user?.nama?.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <IoChevronDown
                     size={14}
@@ -285,7 +319,17 @@ const UserLayout = () => {
                     onClick={() => setShowMobileMenu(false)}
                     className="flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
                   >
-                    <IoPerson size={20} className="text-gray-500" />
+                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 overflow-hidden">
+                      {user?.foto ? (
+                        <img
+                          src={getImageUrl(user.foto)}
+                          alt={user?.nama}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <IoPerson size={20} />
+                      )}
+                    </div>
                     Profile Saya
                   </Link>
                   <Link

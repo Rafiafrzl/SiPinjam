@@ -148,10 +148,10 @@ const Dashboard = () => {
               className="flex flex-wrap gap-4"
             >
               <Link
-                to="/peminjaman"
+                to="/barang"
                 className="inline-flex items-center justify-center px-8 py-3.5 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-600/20"
               >
-                Peminjaman Saya
+                Pinjam Sekarang
               </Link>
               <Link
                 to="/barang"
