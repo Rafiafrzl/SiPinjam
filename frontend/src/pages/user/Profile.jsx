@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   IoPerson,
   IoMail,
@@ -8,19 +8,23 @@ import {
   IoSave,
   IoShieldCheckmark,
   IoKey,
-  IoClose
+  IoClose,
+  IoCamera,
+  IoTrash
 } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import useAuth from '../../hooks/useAuth';
 import api from '../../utils/api';
+import { getImageUrl } from '../../utils/imageHelper';
 
 const Profile = () => {
-  const { user, refreshUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const [editing, setEditing] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     nama: user?.nama || '',
@@ -28,20 +32,78 @@ const Profile = () => {
     noTelepon: user?.noTelepon || ''
   });
 
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [removedFoto, setRemovedFoto] = useState(false);
+
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        Toast.error('Ukuran file maksimal 5MB');
+        return;
+      }
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      setRemovedFoto(false);
+    }
+  };
+
+  const handleRemoveFoto = () => {
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    setRemovedFoto(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      await api.put('/users/profile', formData);
+
+      let data;
+      const isMultipart = selectedFile || removedFoto;
+
+      if (isMultipart) {
+        data = new FormData();
+        data.append('nama', formData.nama);
+        data.append('kelas', formData.kelas);
+        data.append('noTelepon', formData.noTelepon);
+        if (selectedFile) {
+          data.append('foto', selectedFile);
+        }
+        if (removedFoto && !selectedFile) {
+          data.append('removeFoto', 'true');
+        }
+      } else {
+        data = formData;
+      }
+
+      const response = await api.put('/auth/profile', data, {
+        headers: isMultipart ? { 'Content-Type': 'multipart/form-data' } : {}
+      });
+
       Toast.success('Profil berhasil diperbarui');
       setEditing(false);
-      refreshUser();
+      setSelectedFile(null);
+      setRemovedFoto(false);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+      }
+
+      if (response.data?.data) {
+        updateUser(response.data.data);
+      }
     } catch (err) {
       Toast.error(err.response?.data?.message || 'Gagal memperbarui profil');
     } finally {
@@ -89,8 +151,57 @@ const Profile = () => {
             <IoPerson size={120} />
           </div>
           <div className="flex flex-col items-center sm:flex-row sm:items-center gap-4 sm:gap-6 relative z-10">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold border-4 border-white/30 backdrop-blur-sm shadow-xl">
-              {getInitials(user?.nama)}
+            <div className="relative group">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/20 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold border-4 border-white/30 backdrop-blur-sm shadow-xl overflow-hidden relative">
+                {(!removedFoto && (previewUrl || user?.foto)) ? (
+                  <img
+                    src={previewUrl || getImageUrl(user.foto)}
+                    alt={user?.nama}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  getInitials(user?.nama)
+                )}
+
+                {editing && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  >
+                    <IoCamera size={24} className="text-white" />
+                  </button>
+                )}
+              </div>
+
+              {editing && (previewUrl || (!removedFoto && user?.foto)) && (
+                <button
+                  type="button"
+                  onClick={handleRemoveFoto}
+                  className="absolute top-0 right-0 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center border-4 border-neutral-900 text-white shadow-xl hover:bg-red-600 transition-all hover:scale-110 active:scale-95 z-20"
+                  title="Batalkan/Hapus Foto Profil"
+                >
+                  <IoClose size={20} />
+                </button>
+              )}
+
+              {editing && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 w-8 h-8 sm:w-10 sm:h-10 bg-purple-600 rounded-full flex items-center justify-center border-4 border-neutral-900 text-white shadow-xl hover:bg-purple-500 transition-all hover:scale-110 active:scale-95 z-20"
+                  title="Ubah Foto Profil"
+                >
+                  <IoCamera size={18} />
+                </button>
+              )}
             </div>
             <div className="text-center sm:text-left flex-1">
               <h1 className="text-xl sm:text-2xl font-bold text-white">{user?.nama}</h1>

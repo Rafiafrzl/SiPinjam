@@ -35,6 +35,7 @@ const registerUser = async (req, res) => {
           email: user.email,
           kelas: user.kelas,
           noTelepon: user.noTelepon,
+          foto: user.foto,
           role: user.role,
           token: generateToken(user._id),
         },
@@ -90,6 +91,7 @@ const loginUser = async (req, res) => {
         email: user.email,
         kelas: user.kelas,
         noTelepon: user.noTelepon,
+        foto: user.foto,
         role: user.role,
         token: generateToken(user._id),
       },
@@ -129,6 +131,13 @@ const updateProfile = async (req, res) => {
       noTelepon: req.body.noTelepon,
     };
 
+    // Handle foto upload or removal
+    if (req.file) {
+      updateData.foto = req.file.path;
+    } else if (req.body.removeFoto === 'true' || req.body.removeFoto === true) {
+      updateData.foto = null;
+    }
+
     // Only update password if provided
     if (req.body.password) {
       updateData.password = req.body.password;
@@ -150,6 +159,7 @@ const updateProfile = async (req, res) => {
           kelas: updatedUser.kelas,
           noTelepon: updatedUser.noTelepon,
           role: updatedUser.role,
+          foto: updatedUser.foto
         },
       });
     } else {
