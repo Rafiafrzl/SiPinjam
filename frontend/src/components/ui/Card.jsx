@@ -1,5 +1,5 @@
 const Card = ({ children, className = '', hover = false, onClick }) => {
-  const hoverClass = hover ? 'hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer' : 'transition-all duration-300';
+  const hoverClass = hover ? 'hover:shadow-lg transition-all duration-300 cursor-pointer' : 'transition-all duration-300';
 
   // Check if custom background is provided
   const hasCustomBg = className.includes('bg-') || className.includes('!bg-');
@@ -8,7 +8,7 @@ const Card = ({ children, className = '', hover = false, onClick }) => {
 
   return (
     <div
-      className={`${bgClass} rounded-xl shadow-lg border ${borderClass} p-6 ${hoverClass} ${className}`}
+      className={`${bgClass} rounded-xl shadow-sm border ${borderClass} p-6 ${hoverClass} ${className}`}
       onClick={onClick}
     >
       {children}

@@ -19,8 +19,10 @@ import Loading from '../../components/ui/Loading';
 import useAuth from '../../hooks/useAuth';
 import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
-import heroBg from '../../assets/bg-banner.jpg';
-
+import hero1 from '../../assets/hero/hero1.jpg';
+import hero2 from '../../assets/hero/hero2.png';
+import hero3 from '../../assets/hero/hero3.png';
+import { AnimatePresence } from 'framer-motion';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -29,6 +31,20 @@ const Dashboard = () => {
   const [recentPeminjaman, setRecentPeminjaman] = useState([]);
   const [featuredBarang, setFeaturedBarang] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const heroSlides = [
+    { image: hero1, title: 'Akses Peralatan\nSekolah Kamu.', subtitle: 'Temukan, pinjam, dan kelola perlengkapan belajar kamu dengan sistem yang modern dan terintegrasi.' },
+    { image: hero2, title: 'Eksplorasi Ilmu\nTanpa Batas.', subtitle: 'Koleksi buku dan referensi lengkap siap mendukung perjalanan akademik Anda di perpustakaan.' },
+    { image: hero3, title: 'Teknologi Unggul\nUntuk Masa Depan.', subtitle: 'Pinjam perangkat elektronik terbaru untuk kebutuhan proyek dan penelitian inovatif kamu.' }
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -85,48 +101,45 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-12 pb-20">
-      {/* Hero Banner */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        className="relative overflow-hidden min-h-[550px] lg:min-h-[750px] flex items-center bg-black"
-      >
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
-          style={{ backgroundImage: `url(${heroBg})` }}
-        ></div>
+      {/* Hero Carousel Banner */}
+      <section className="relative overflow-hidden min-h-[550px] lg:min-h-[750px] flex items-center bg-black">
+        <AnimatePresence mode='wait'>
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${heroSlides[currentSlide].image})` }}
+          />
+        </AnimatePresence>
+
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20"></div>
 
         <div className="relative w-full max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-16 pt-32 pb-20 lg:pt-40 lg:pb-32">
           <div className="max-w-3xl">
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-purple-400 font-bold tracking-widest uppercase text-xs sm:text-sm mb-4"
-            >
-              Selamat datang kembali, {user?.nama}!
-            </motion.p>
+            <AnimatePresence mode='wait'>
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.8 }}
+              >
+                <p className="text-purple-400 font-bold tracking-widest uppercase text-xs sm:text-sm mb-4">
+                  Selamat datang kembali, {user?.nama}!
+                </p>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight"
-            >
-              Akses Peralatan <br />
-              Sekolah Kamu.
-            </motion.h1>
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight whitespace-pre-line">
+                  {heroSlides[currentSlide].title}
+                </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="text-lg sm:text-xl text-gray-400 mb-12 max-w-xl leading-relaxed"
-            >
-              Temukan, pinjam, dan kelola perlengkapan belajar kamu dengan sistem yang modern dan terintegrasi.
-            </motion.p>
+                <p className="text-lg sm:text-xl text-gray-400 mb-12 max-w-xl leading-relaxed">
+                  {heroSlides[currentSlide].subtitle}
+                </p>
+              </motion.div>
+            </AnimatePresence>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -149,7 +162,19 @@ const Dashboard = () => {
             </motion.div>
           </div>
         </div>
-      </motion.section>
+
+        {/* Pagination Dots */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+          {heroSlides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentSlide(idx)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${currentSlide === idx ? 'w-8 bg-purple-500' : 'w-2 bg-white/30 hover:bg-white/50'
+                }`}
+            />
+          ))}
+        </div>
+      </section>
 
       {/* Centered Content Sections */}
       <div className="max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-16 space-y-12 lg:space-y-20">

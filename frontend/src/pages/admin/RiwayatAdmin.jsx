@@ -13,6 +13,7 @@ import {
 import Toast from '../../components/ui/Toast';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import Loading from '../../components/ui/Loading';
 import Pagination from '../../components/ui/Pagination';
@@ -161,19 +162,19 @@ const RiwayatAdmin = () => {
                             icon={<IoSearch size={18} />}
                         />
                     </div>
-                    <div className="flex items-center gap-2">
-                        <IoFilter size={18} className="text-gray-500" />
-                        <select
+                    <div className="flex items-center gap-2 min-w-[200px]">
+                        <Select
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
-                            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="semua">Semua Status</option>
-                            <option value="Menunggu">Menunggu</option>
-                            <option value="Disetujui">Disetujui</option>
-                            <option value="Ditolak">Ditolak</option>
-                            <option value="Selesai">Selesai</option>
-                        </select>
+                            options={[
+                                { value: "semua", label: "Semua Status" },
+                                { value: "Menunggu", label: "Menunggu" },
+                                { value: "Disetujui", label: "Disetujui" },
+                                { value: "Ditolak", label: "Ditolak" },
+                                { value: "Selesai", label: "Selesai" }
+                            ]}
+                            className="text-sm"
+                        />
                     </div>
                 </div>
             </Card>

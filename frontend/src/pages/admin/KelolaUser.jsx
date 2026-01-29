@@ -16,6 +16,8 @@ import Toast from '../../components/ui/Toast';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
 import Loading from '../../components/ui/Loading';
 import Modal from '../../components/ui/Modal';
 import Pagination from '../../components/ui/Pagination';
@@ -170,52 +172,32 @@ const KelolaUser = () => {
 
             {/* Search & Filter */}
             <Card className="p-4">
-                <div className="flex flex-col md:flex-row gap-3">
-                    {/* Search */}
-                    <form onSubmit={handleSearch} className="flex-1">
-                        <div className="relative">
-                            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                            <input
-                                type="text"
-                                placeholder="Cari nama, email, atau kelas..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-20 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-sm"
-                            />
-                            {searchQuery && (
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSearchQuery('');
-                                        setSearch('');
-                                    }}
-                                    className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
-                                    <IoClose size={18} />
-                                </button>
-                            )}
-                            <button
-                                type="submit"
-                                className="absolute right-1 top-1 bottom-1 px-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
-                            >
-                                Cari
-                            </button>
-                        </div>
-                    </form>
+                {/* Search */}
+                <form onSubmit={handleSearch} className="flex-1">
+                    <Input
+                        placeholder="Cari nama, email, atau kelas..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        icon={<IoSearch size={20} />}
+                        className="text-sm"
+                    />
+                </form>
 
-                    {/* Filter Status */}
-                    <select
+                {/* Filter Status */}
+                <div className="w-full md:w-48">
+                    <Select
                         value={filterStatus}
                         onChange={(e) => {
                             setFilterStatus(e.target.value);
                             setCurrentPage(1);
                         }}
-                        className="px-3 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-sm"
-                    >
-                        <option value="all">Semua Status</option>
-                        <option value="true">Aktif</option>
-                        <option value="false">Nonaktif</option>
-                    </select>
+                        options={[
+                            { value: "all", label: "Semua Status" },
+                            { value: "true", label: "Aktif" },
+                            { value: "false", label: "Nonaktif" }
+                        ]}
+                        className="text-sm"
+                    />
                 </div>
             </Card>
 

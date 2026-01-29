@@ -99,7 +99,7 @@ const PeminjamanUser = () => {
                 </div>
 
                 {/* Modern Stats Bar */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 p-2 bg-black/40 backdrop-blur-md rounded-2xl border border-white/[0.05] shadow-inner">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 p-2 bg-zinc-900/50 backdrop-blur-md rounded-2xl border border-white/[0.05] shadow-inner">
                     <div className="flex items-center gap-4 px-6 py-4 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/[0.03]">
                         <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-400">
                             <IoLayers size={20} />
