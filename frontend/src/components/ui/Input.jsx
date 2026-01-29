@@ -37,12 +37,11 @@ const Input = ({
           disabled={disabled}
           className={`
             w-full px-4 py-3 border rounded-xl transition-all duration-200
-            bg-white border-slate-200 text-slate-900 placeholder-slate-400
             ${icon ? 'pl-11' : ''}
             ${error ? 'border-red-500 focus:ring-red-500/20' : 'focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'}
             focus:outline-none
-            disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed
-            ${className}
+            disabled:cursor-not-allowed
+            ${className || 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 disabled:bg-slate-50 disabled:text-slate-400'}
           `}
           {...props}
         />
