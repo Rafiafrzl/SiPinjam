@@ -63,14 +63,18 @@ const PublicNavbar = () => {
                     <nav className="hidden md:flex items-center gap-1 bg-white/5 backdrop-blur-sm rounded-full px-2 py-1 border border-white/10">
                         {navLinks.map((link) => {
                             const Icon = link.icon;
+                            const isLinkActive = isActive(link.path);
                             return (
                                 <Link
                                     key={link.path}
                                     to={link.path}
-                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive(link.path)
-                                        ? "bg-purple-600 text-white shadow-lg shadow-purple-500/30"
-                                        : "text-gray-400 hover:text-white hover:bg-white/10"
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-500 ${isLinkActive && isScrolled
+                                        ? "text-white hover:scale-105"
+                                        : isLinkActive
+                                            ? "text-white"
+                                            : "text-gray-400 hover:text-white hover:bg-white/5"
                                         }`}
+                                    style={isLinkActive && isScrolled ? { background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" } : {}}
                                 >
                                     <Icon size={18} />
                                     {link.label}
@@ -83,22 +87,22 @@ const PublicNavbar = () => {
                     <div className="hidden md:flex items-center gap-3">
                         <Link
                             to="/login"
-                            className={`relative flex items-center gap-2 px-5 py-2 font-medium rounded-full transition-all duration-300 text-sm overflow-hidden group ${location.pathname === "/login"
-                                ? "text-white hover:shadow-lg hover:shadow-purple-500/40 hover:scale-105"
-                                : "text-gray-400 hover:text-white border border-white/20 hover:bg-white/5"
+                            className={`relative flex items-center gap-2 px-6 py-2.5 font-semibold rounded-full transition-all duration-500 text-sm overflow-hidden group ${isActive("/login") || (isScrolled && !isActive("/register"))
+                                ? "text-white hover:scale-105"
+                                : "text-gray-400 hover:text-white hover:bg-white/5"
                                 }`}
-                            style={location.pathname === "/login" ? { background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" } : {}}
+                            style={(isActive("/login") || (isScrolled && !isActive("/register"))) ? { background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" } : {}}
                         >
                             <IoLogIn size={18} className="relative z-10" />
                             <span className="relative z-10">Masuk</span>
                         </Link>
                         <Link
                             to="/register"
-                            className={`relative flex items-center gap-2 px-5 py-2 font-medium rounded-full transition-all duration-300 text-sm overflow-hidden group ${location.pathname === "/register"
-                                ? "text-white hover:shadow-lg hover:shadow-purple-500/40 hover:scale-105"
-                                : "text-gray-400 hover:text-white border border-white/20 hover:bg-white/5"
+                            className={`relative flex items-center gap-2 px-6 py-2.5 font-semibold rounded-full transition-all duration-500 text-sm overflow-hidden group ${isActive("/register")
+                                ? "text-white hover:scale-105"
+                                : "text-gray-400 hover:text-white hover:bg-white/5"
                                 }`}
-                            style={location.pathname === "/register" ? { background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" } : {}}
+                            style={isActive("/register") ? { background: "linear-gradient(135deg, #1a1a2e 0%, #7c3aed 100%)" } : {}}
                         >
                             <IoPersonAdd size={18} className="relative z-10" />
                             <span className="relative z-10">Daftar</span>
