@@ -262,7 +262,7 @@ const Sidebar = ({ isOpen, onClose, onOpenNotif }) => {
                     >
                       <IoPerson size={18} className="text-indigo-400" />
                       <div>
-                        <p className="text-xs font-bold">My Account</p>
+                        <p className="text-xs font-bold">Profilku</p>
                         <p className="text-[10px] text-slate-500">Profile & Settings</p>
                       </div>
                     </Link>
