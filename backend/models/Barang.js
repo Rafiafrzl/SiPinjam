@@ -45,11 +45,12 @@ const barangSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  collection: 'barang'
 });
 
 // Virtual untuk status ketersediaan
-barangSchema.virtual('statusKetersediaan').get(function() {
+barangSchema.virtual('statusKetersediaan').get(function () {
   if (this.jumlahTersedia === 0) return 'tidak-tersedia';
   if (this.jumlahTersedia <= 3) return 'terbatas';
   return 'tersedia';

@@ -29,7 +29,8 @@ const notifikasiSchema = new mongoose.Schema({
     default: false
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  collection: 'notifikasi'
 });
 
 // Index untuk query notifikasi user

@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
   },
   kelas: {
     type: String,
-    required: function() {
+    required: function () {
       return this.role === 'user';
     }
   },
@@ -39,11 +39,12 @@ const userSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  collection: 'users'
 });
 
 // Hash password sebelum save
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   try {
@@ -56,7 +57,7 @@ userSchema.pre('save', async function(next) {
 });
 
 // Method untuk compare password
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 

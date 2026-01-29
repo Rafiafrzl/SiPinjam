@@ -59,7 +59,8 @@ const peminjamanSchema = new mongoose.Schema({
     type: Date
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  collection: 'peminjaman'
 });
 
 // Index untuk query yang sering digunakan

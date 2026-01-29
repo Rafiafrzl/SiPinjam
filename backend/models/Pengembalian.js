@@ -46,7 +46,8 @@ const pengembalianSchema = new mongoose.Schema({
     default: 'Menunggu Verifikasi'
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  collection: 'pengembalian'
 });
 
 // Index untuk query yang sering digunakan
