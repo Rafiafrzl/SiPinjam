@@ -7,6 +7,8 @@ const Modal = ({
   children,
   size = "md",
   showCloseButton = true,
+  theme = "light",
+  zIndex,
 }) => {
   useEffect(() => {
     const handleEscape = (e) => {
@@ -37,7 +39,10 @@ const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-hidden">
+    <div
+      className="fixed inset-0 overflow-hidden"
+      style={{ zIndex: zIndex || 9999 }}
+    >
       <div className="flex items-center justify-center min-h-screen px-4">
         {/* Background dark overlay */}
         <div
@@ -48,25 +53,35 @@ const Modal = ({
         {/* Modal panel */}
         <div
           className={`
-          relative bg-white rounded-lg shadow-xl
+          relative rounded-lg shadow-xl
           transform transition-all
           w-full max-h-[90vh] overflow-y-auto
           ${sizeClasses[size]}
+          ${theme === "dark"
+              ? "bg-neutral-900 border border-white/10"
+              : "bg-white"}
         `}
         >
           {/* Header */}
           {(title || showCloseButton) && (
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+            <div className={`sticky top-0 px-6 py-4 z-10 ${theme === "dark"
+              ? "bg-neutral-900 border-b border-white/10"
+              : "bg-white border-b border-gray-200"
+              }`}>
               <div className="flex items-center justify-between">
                 {title && (
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className={`text-lg font-semibold ${theme === "dark" ? "text-white" : "text-gray-900"
+                    }`}>
                     {title}
                   </h3>
                 )}
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="ml-3 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-1"
+                    className={`ml-3 focus:outline-none focus:ring-2 rounded-lg p-1 ${theme === "dark"
+                      ? "text-gray-400 hover:text-gray-200 focus:ring-cyan-500"
+                      : "text-gray-400 hover:text-gray-600 focus:ring-blue-500"
+                      }`}
                   >
                     <svg
                       className="h-5 w-5"

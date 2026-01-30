@@ -10,6 +10,7 @@ import MainLayout from "./components/layout/MainLayout";
 import UserLayout from "./components/layout/UserLayout";
 import PublicLayout from "./components/layout/PublicLayout";
 import { ToastContainer } from "react-toastify";
+import { AlertContainer } from "./components/ui/Alert";
 
 // Auth Pages
 import Login from "./pages/auth/Login";
@@ -43,6 +44,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <AlertContainer />
         <ToastContainer
           position="top-right"
           autoClose={5000}

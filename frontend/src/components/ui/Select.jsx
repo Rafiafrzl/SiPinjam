@@ -9,12 +9,14 @@ const Select = ({
   error,
   placeholder = 'Pilih...',
   className = '',
+  theme = 'light', // 'light' or 'dark'
   ...props
 }) => {
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={name} className="block text-sm font-medium text-gray-400 mb-1">
+        <label htmlFor={name} className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'
+          }`}>
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -28,10 +30,13 @@ const Select = ({
         disabled={disabled}
         className={`
           w-full px-4 py-3 border rounded-xl transition-all duration-200
-          bg-white border-slate-200 text-slate-900
-          ${error ? 'border-red-500 focus:ring-red-500/20' : 'focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'}
+          ${theme === 'dark'
+            ? 'bg-neutral-800 border-white/10 text-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20'
+            : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'
+          }
+          ${error ? 'border-red-500 focus:ring-red-500/20' : ''}
           focus:outline-none
-          disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed
+          disabled:opacity-50 disabled:cursor-not-allowed
           ${className}
         `}
         {...props}
