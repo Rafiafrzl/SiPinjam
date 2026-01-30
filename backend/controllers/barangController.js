@@ -166,11 +166,22 @@ const updateBarang = async (req, res) => {
       updateData.foto = req.file.path;
     }
 
-    // Update jumlah tersedia jika jumlah total berubah
-    if (req.body.jumlahTotal) {
-      const selisih = req.body.jumlahTotal - barang.jumlahTotal;
-      updateData.jumlahTersedia = barang.jumlahTersedia + selisih;
-    }
+    // Recalculate jumlahTersedia based on new Total and Active Loans
+    // This ensures data consistency (fixes any sync issues)
+    const newJumlahTotal = req.body.jumlahTotal !== undefined ? parseInt(req.body.jumlahTotal) : barang.jumlahTotal;
+
+    // Find all active loans (Menunggu, Disetujui, or disetujui_lowercase)
+    // Note: 'Selesai'/'selesai' or 'Ditolak' don't count as reserved stock
+    const activeLoans = await Peminjaman.find({
+      barangId: req.params.id,
+      status: { $in: ['Menunggu', 'Disetujui', 'disetujui'] }
+    });
+
+    const totalBorrowed = activeLoans.reduce((sum, loan) => sum + (loan.jumlahPinjam || 0), 0);
+
+    updateData.jumlahTotal = newJumlahTotal;
+    // Ensure tersedia doesn't go below 0 (though ideally shouldn't happen if validation works)
+    updateData.jumlahTersedia = Math.max(0, newJumlahTotal - totalBorrowed);
 
     const updatedBarang = await Barang.findByIdAndUpdate(
       req.params.id,
