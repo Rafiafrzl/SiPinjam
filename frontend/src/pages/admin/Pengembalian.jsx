@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { IoCheckmarkCircle, IoTime, IoWarning, IoEye, IoTrash, IoImage, IoCloseCircle } from 'react-icons/io5';
+import { IoCheckmarkCircle, IoTime, IoWarning, IoEye, IoTrash, IoImage, IoCloseCircle, IoCheckbox, IoSquareOutline } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import { Alert } from '../../components/ui/Alert';
 import Card from '../../components/ui/Card';
@@ -191,7 +191,7 @@ const Pengembalian = () => {
         {selectedIds.length > 0 && (
           <Button variant="danger" size="sm" onClick={handleBulkDelete}>
             <IoTrash size={16} />
-            Hapus {selectedIds.length} item
+            Hapus Massal ({selectedIds.length})
           </Button>
         )}
       </div>
@@ -204,63 +204,97 @@ const Pengembalian = () => {
           </div>
         </Card>
       ) : (
-        <div className="overflow-x-auto">
-          <Card>
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 w-10">
-                    <input
-                      type="checkbox"
-                      checked={pengembalian.length > 0 && selectedIds.length === pengembalian.length}
-                      onChange={toggleSelectAll}
-                      className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
-                    />
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Siswa</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Barang</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Jumlah</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Kondisi</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Tgl Pinjam</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {pengembalian.map((item) => (
-                  <tr key={item._id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(item._id)}
-                        onChange={() => toggleSelection(item._id)}
-                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <p className="font-medium">{item.userId?.nama}</p>
-                      <p className="text-xs text-gray-500">{item.userId?.kelas}</p>
-                    </td>
-                    <td className="px-4 py-3">{item.barangId?.namaBarang}</td>
-                    <td className="px-4 py-3">{item.jumlahPinjam} unit</td>
-                    <td className="px-4 py-3">
-                      {item.kondisiPengembalian ? getKondisiBadge(item.kondisiPengembalian) : '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
-                    </td>
-                    <td className="px-4 py-3">{getStatusBadge(item.statusPengembalian)}</td>
-                    <td className="px-4 py-3">
-                      <Button variant="primary" size="sm" onClick={() => handleShowDetail(item._id)}>
-                        <IoEye size={18} />
-                        Detail
-                      </Button>
-                    </td>
+        <div className="space-y-3">
+          {/* Select All Row */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg">
+            <button
+              onClick={toggleSelectAll}
+              className="flex items-center gap-2 text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+            >
+              {selectedIds.length === pengembalian.length && pengembalian.length > 0 ? (
+                <IoCheckbox size={22} className="text-indigo-600" />
+              ) : (
+                <IoSquareOutline size={22} />
+              )}
+              <span className="font-medium">
+                {selectedIds.length === pengembalian.length && pengembalian.length > 0
+                  ? 'Batal Pilih Semua'
+                  : 'Pilih Semua'}
+              </span>
+            </button>
+            {selectedIds.length > 0 && (
+              <span className="text-xs text-gray-500">
+                ({selectedIds.length} dipilih)
+              </span>
+            )}
+          </div>
+
+          <div className="overflow-x-auto">
+            <Card>
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 w-10">
+                      <button
+                        onClick={toggleSelectAll}
+                        className="flex items-center justify-center"
+                      >
+                        {selectedIds.length === pengembalian.length && pengembalian.length > 0 ? (
+                          <IoCheckbox size={22} className="text-indigo-600" />
+                        ) : (
+                          <IoSquareOutline size={22} className="text-gray-400" />
+                        )}
+                      </button>
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Siswa</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Barang</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Jumlah</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Kondisi</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Tgl Pinjam</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
+                </thead>
+                <tbody className="divide-y">
+                  {pengembalian.map((item) => (
+                    <tr key={item._id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => toggleSelection(item._id)}
+                          className="flex items-center justify-center"
+                        >
+                          {selectedIds.includes(item._id) ? (
+                            <IoCheckbox size={22} className="text-indigo-600" />
+                          ) : (
+                            <IoSquareOutline size={22} className="text-gray-400 hover:text-gray-600" />
+                          )}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <p className="font-medium">{item.userId?.nama}</p>
+                        <p className="text-xs text-gray-500">{item.userId?.kelas}</p>
+                      </td>
+                      <td className="px-4 py-3">{item.barangId?.namaBarang}</td>
+                      <td className="px-4 py-3">{item.jumlahPinjam} unit</td>
+                      <td className="px-4 py-3">
+                        {item.kondisiPengembalian ? getKondisiBadge(item.kondisiPengembalian) : '-'}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
+                      </td>
+                      <td className="px-4 py-3">{getStatusBadge(item.statusPengembalian)}</td>
+                      <td className="px-4 py-3">
+                        <Button variant="primary" size="sm" onClick={() => handleShowDetail(item._id)}>
+                          <IoEye size={18} />
+                          Detail
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          </div>
         </div>
       )}
 

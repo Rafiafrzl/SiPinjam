@@ -328,10 +328,10 @@ const KelolaUser = () => {
                                             <button
                                                 onClick={() => openDeleteModal(user)}
                                                 disabled={actionLoading}
-                                                className="p-2.5 rounded-xl transition-all bg-red-50 text-red-600 hover:bg-red-500 hover:text-white"
+                                                className="p-1 px-2.5 rounded-xl transition-all bg-red-50 text-red-600 hover:bg-red-500 hover:text-white flex items-center justify-center min-h-[24px]"
                                                 title="Hapus Permanent"
                                             >
-                                                <IoTrash size={20} />
+                                                <IoTrash size={18} />
                                             </button>
                                             <span className="text-[10px] font-medium text-gray-500 uppercase tracking-tighter">
                                                 Hapus

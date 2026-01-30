@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { IoList, IoCheckmark, IoClose, IoEye, IoCalendar, IoPerson, IoTrash } from 'react-icons/io5';
+import { IoList, IoCheckmark, IoClose, IoEye, IoCalendar, IoPerson, IoTrash, IoCheckbox, IoSquareOutline } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import { Alert } from '../../components/ui/Alert';
 import Card from '../../components/ui/Card';
@@ -221,7 +221,7 @@ const Permintaan = () => {
         {selectedIds.length > 0 && (
           <Button variant="danger" size="sm" onClick={handleBulkDelete}>
             <IoTrash size={16} />
-            Hapus {selectedIds.length} item
+            Hapus Massal ({selectedIds.length})
           </Button>
         )}
       </div>
@@ -235,27 +235,44 @@ const Permintaan = () => {
         </Card>
       ) : (
         <div className="space-y-3">
-          {peminjaman.length > 1 && (
-            <div className="flex items-center gap-2 px-3">
-              <input
-                type="checkbox"
-                checked={selectedIds.length === peminjaman.length}
-                onChange={toggleSelectAll}
-                className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
-              />
-              <span className="text-sm text-gray-600">Pilih Semua ({peminjaman.length})</span>
+          {peminjaman.length > 0 && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-lg">
+              <button
+                onClick={toggleSelectAll}
+                className="flex items-center gap-2 text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+              >
+                {selectedIds.length === peminjaman.length && peminjaman.length > 0 ? (
+                  <IoCheckbox size={22} className="text-indigo-600" />
+                ) : (
+                  <IoSquareOutline size={22} />
+                )}
+                <span className="font-medium">
+                  {selectedIds.length === peminjaman.length && peminjaman.length > 0
+                    ? 'Batal Pilih Semua'
+                    : 'Pilih Semua'}
+                </span>
+              </button>
+              {selectedIds.length > 0 && (
+                <span className="text-xs text-gray-500">
+                  ({selectedIds.length} dipilih)
+                </span>
+              )}
             </div>
           )}
           <div className="grid gap-3">
             {peminjaman.map((item) => (
               <Card key={item._id} className="p-3">
                 <div className="flex items-center gap-4">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(item._id)}
-                    onChange={() => toggleSelection(item._id)}
-                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
-                  />
+                  <button
+                    onClick={() => toggleSelection(item._id)}
+                    className="flex-shrink-0"
+                  >
+                    {selectedIds.includes(item._id) ? (
+                      <IoCheckbox size={22} className="text-indigo-600" />
+                    ) : (
+                      <IoSquareOutline size={22} className="text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
                   {/* Image - lebih kecil */}
                   <img
                     src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
