@@ -24,7 +24,7 @@ import hero2 from '../../assets/hero/hero2.png';
 import hero3 from '../../assets/hero/hero3.png';
 import { AnimatePresence } from 'framer-motion';
 
-const Dashboard = () => {
+const Beranda = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
@@ -396,5 +396,5 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Beranda;
 

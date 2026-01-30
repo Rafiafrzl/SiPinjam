@@ -22,6 +22,7 @@ import Loading from '../../components/ui/Loading';
 import Modal from '../../components/ui/Modal';
 import Pagination from '../../components/ui/Pagination';
 import api from '../../utils/api';
+import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
@@ -171,9 +172,9 @@ const KelolaUser = () => {
             </div>
 
             {/* Search & Filter */}
-            <Card className="p-4">
-                {/* Search */}
-                <form onSubmit={handleSearch} className="flex-1">
+            <Card className="p-4 flex flex-col gap-4">
+
+                <form onSubmit={handleSearch} className="w-full">
                     <Input
                         placeholder="Cari nama, email, atau kelas..."
                         value={searchQuery}
@@ -183,21 +184,23 @@ const KelolaUser = () => {
                     />
                 </form>
 
-                {/* Filter Status */}
-                <div className="w-full md:w-48">
-                    <Select
-                        value={filterStatus}
-                        onChange={(e) => {
-                            setFilterStatus(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                        options={[
-                            { value: "all", label: "Semua Status" },
-                            { value: "true", label: "Aktif" },
-                            { value: "false", label: "Nonaktif" }
-                        ]}
-                        className="text-sm"
-                    />
+                {/* Filter Status  */}
+                <div className="flex justify-end">
+                    <div className="w-full md:w-56">
+                        <Select
+                            value={filterStatus}
+                            onChange={(e) => {
+                                setFilterStatus(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            options={[
+                                { value: "all", label: "Semua Status Akun" },
+                                { value: "true", label: "Hanya User Aktif" },
+                                { value: "false", label: "Hanya User Nonaktif" }
+                            ]}
+                            className="text-sm"
+                        />
+                    </div>
                 </div>
             </Card>
 
@@ -256,8 +259,16 @@ const KelolaUser = () => {
                                     </button>
 
                                     {/* Avatar */}
-                                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg bg-blue-600">
-                                        {user.nama?.charAt(0).toUpperCase()}
+                                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg bg-indigo-600 overflow-hidden shadow-inner border border-gray-100 flex-shrink-0">
+                                        {user.foto ? (
+                                            <img
+                                                src={getImageUrl(user.foto)}
+                                                alt={user.nama}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            user.nama?.charAt(0).toUpperCase()
+                                        )}
                                     </div>
 
                                     {/* Info */}
@@ -292,26 +303,40 @@ const KelolaUser = () => {
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => handleToggleStatus(user)}
-                                            disabled={actionLoading}
-                                            className={`p-2 rounded-lg transition-all ${user.isActive
-                                                ? 'bg-orange-100 text-orange-600 hover:bg-orange-200'
-                                                : 'bg-green-100 text-green-600 hover:bg-green-200'
-                                                }`}
-                                            title={user.isActive ? 'Nonaktifkan' : 'Aktifkan'}
-                                        >
-                                            {user.isActive ? <IoCloseCircle size={20} /> : <IoCheckmarkCircle size={20} />}
-                                        </button>
-                                        <button
-                                            onClick={() => openDeleteModal(user)}
-                                            disabled={actionLoading}
-                                            className="p-2 rounded-lg transition-all bg-red-100 text-red-600 hover:bg-red-200"
-                                            title="Hapus"
-                                        >
-                                            <IoTrash size={20} />
-                                        </button>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex flex-col items-center gap-1">
+                                            <button
+                                                onClick={() => handleToggleStatus(user)}
+                                                disabled={actionLoading}
+                                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none ${user.isActive
+                                                    ? 'bg-purple-600 shadow-lg shadow-purple-600/20'
+                                                    : 'bg-gray-300'
+                                                    }`}
+                                                title={user.isActive ? 'Klik untuk Nonaktifkan' : 'Klik untuk Aktifkan'}
+                                            >
+                                                <span
+                                                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${user.isActive ? 'translate-x-6' : 'translate-x-1'
+                                                        }`}
+                                                />
+                                            </button>
+                                            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-tighter">
+                                                {user.isActive ? 'Aktif' : 'Off'}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex flex-col items-center gap-1">
+                                            <button
+                                                onClick={() => openDeleteModal(user)}
+                                                disabled={actionLoading}
+                                                className="p-2.5 rounded-xl transition-all bg-red-50 text-red-600 hover:bg-red-500 hover:text-white"
+                                                title="Hapus Permanent"
+                                            >
+                                                <IoTrash size={20} />
+                                            </button>
+                                            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-tighter">
+                                                Hapus
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </Card>

@@ -230,7 +230,7 @@ const PublicKatalog = () => {
                                                         ? 'bg-green-500 text-white'
                                                         : 'bg-red-500 text-white'
                                                         }`}>
-                                                        {item.jumlahTersedia > 0 ? 'Tersedia' : 'Habis'}
+                                                        {item.jumlahTersedia > 0 ? 'Tersedia' : 'Barang tidak tersedia'}
                                                     </span>
                                                 )}
                                             </div>

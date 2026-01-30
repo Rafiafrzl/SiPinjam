@@ -59,7 +59,7 @@ const Sidebar = ({ isOpen, onClose, onOpenNotif }) => {
     {
       title: "MENU UTAMA",
       items: [
-        { path: "/dashboard", icon: IoHome, label: "Dashboard" },
+        { path: "/beranda", icon: IoHome, label: "Beranda" },
         { path: "/barang", icon: IoLibrary, label: "Daftar Barang" },
       ],
     },

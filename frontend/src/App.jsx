@@ -21,7 +21,7 @@ import LandingPage from "./pages/public/LandingPage";
 import PublicKatalog from "./pages/public/PublicKatalog";
 
 // User Pages
-import Dashboard from "./pages/user/Dashboard";
+import Beranda from "./pages/user/Beranda";
 import Barang from "./pages/user/Barang";
 import PeminjamanUser from "./pages/user/PeminjamanUser";
 import PengembalianUser from "./pages/user/PengembalianUser";
@@ -69,24 +69,22 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* Protected User Routes */}
+          {/* Protected User Routes - Pathless layout to avoid / conflict */}
           <Route
-            path="/"
             element={
               <ProtectedRoute requiredRole="user">
                 <UserLayout />
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="barang" element={<Barang />} />
-            <Route path="peminjaman" element={<PeminjamanUser />} />
-            <Route path="pengembalian" element={<PengembalianUser />} />
-            <Route path="riwayat" element={<Riwayat />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="bantuan" element={<Bantuan />} />
-            <Route path="pinjam/:id" element={<FormPeminjaman />} />
+            <Route path="/beranda" element={<Beranda />} />
+            <Route path="/barang" element={<Barang />} />
+            <Route path="/peminjaman" element={<PeminjamanUser />} />
+            <Route path="/pengembalian" element={<PengembalianUser />} />
+            <Route path="/riwayat" element={<Riwayat />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/bantuan" element={<Bantuan />} />
+            <Route path="/pinjam/:id" element={<FormPeminjaman />} />
           </Route>
 
           {/* Protected Admin Routes */}

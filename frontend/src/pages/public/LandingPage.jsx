@@ -11,7 +11,7 @@ import {
     IoCheckmarkCircle,
     IoPersonAdd,
     IoShieldCheckmark,
-    IoPhonePortrait,
+    IoStatsChart,
 } from 'react-icons/io5';
 import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
@@ -65,9 +65,9 @@ const LandingPage = () => {
             description: 'Semua data peminjaman tersimpan aman dan dapat dilihat riwayatnya.',
         },
         {
-            icon: IoPhonePortrait,
-            title: 'Akses Mudah',
-            description: 'Bisa diakses dari HP atau laptop, kapanpun dan dimanapun.',
+            icon: IoStatsChart,
+            title: 'Monitoring Real-time',
+            description: 'Pantau status peminjaman dan ketersediaan barang sekolah secara langsung.',
         },
     ];
 

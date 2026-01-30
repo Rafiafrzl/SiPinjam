@@ -69,7 +69,7 @@ const UserLayout = () => {
   };
 
   const navLinks = [
-    { path: "/dashboard", label: "Beranda", icon: IoHome },
+    { path: "/beranda", label: "Beranda", icon: IoHome },
     { path: "/barang", label: "Katalog Barang", icon: IoLibrary },
     { path: "/peminjaman", label: "Peminjaman Saya", icon: IoList },
     { path: "/pengembalian", label: "Pengembalian", icon: IoCheckmarkCircle },
@@ -90,7 +90,7 @@ const UserLayout = () => {
           <div className="flex items-center justify-between h-16 gap-8">
             {/* Logo */}
             <Link
-              to="/dashboard"
+              to="/beranda"
               className="flex items-center gap-3 flex-shrink-0"
             >
               <img
@@ -366,7 +366,7 @@ const UserLayout = () => {
       </header>
 
       {/* Main Content */}
-      <main className={`flex-1 ${location.pathname === '/dashboard' ? '' : 'pt-24 lg:pt-28'}`}>
+      <main className={`flex-1 ${location.pathname === '/beranda' ? '' : 'pt-24 lg:pt-28'}`}>
         <Outlet />
       </main>
 

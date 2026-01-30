@@ -35,7 +35,7 @@ const Login = () => {
         const { data } = response.data;
         login(data, data.token);
         Toast.success("Login berhasil!", { autoClose: 2000 });
-        navigate(data.role === "admin" ? "/admin/dashboard" : "/dashboard");
+        navigate(data.role === "admin" ? "/admin/dashboard" : "/beranda");
       }
     } catch (err) {
       Toast.error(
