@@ -7,9 +7,11 @@ import {
   IoCloudUpload,
   IoClose,
   IoCheckbox,
-  IoSquareOutline
+  IoSquareOutline,
+  IoImage
 } from "react-icons/io5";
 import Toast from "../../components/ui/Toast";
+import { Alert } from "../../components/ui/Alert";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
@@ -54,6 +56,10 @@ const KelolaBarang = () => {
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState({ id: null, nama: "" });
+
+  // Photo detail modal state
+  const [showPhotoDetail, setShowPhotoDetail] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     fetchBarang();
@@ -195,18 +201,52 @@ const KelolaBarang = () => {
   const handleFormChange = (e) => {
     if (e.target.name === "foto") {
       const file = e.target.files[0];
+      handleFileUpload(file);
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+  };
+
+  const handleFileUpload = (file) => {
+    if (file && file.type.startsWith('image/')) {
       setFormData({ ...formData, foto: file });
 
       // Create image preview
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    } else {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else if (file) {
+      Alert.error("File yang dipilih bukan format gambar. Harap pilih file PNG, JPG, atau GIF.", "Format File Tidak Valid");
+    }
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileUpload(files[0]);
     }
   };
 
@@ -217,6 +257,48 @@ const KelolaBarang = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate Nama Barang
+    if (!formData.namaBarang || formData.namaBarang.trim() === "") {
+      Alert.error("Nama barang wajib diisi. Silakan isi nama barang terlebih dahulu.", "Nama Barang Kosong");
+      return;
+    }
+
+    // Validate Kategori
+    if (!formData.kategori) {
+      Alert.error("Kategori barang wajib dipilih. Silakan pilih kategori terlebih dahulu.", "Kategori Belum Dipilih");
+      return;
+    }
+
+    // Validate Jumlah Total
+    if (!formData.jumlahTotal || formData.jumlahTotal < 1) {
+      Alert.error("Jumlah total barang wajib diisi dan minimal 1. Silakan isi jumlah total yang valid.", "Jumlah Total Tidak Valid");
+      return;
+    }
+
+    // Validate Kondisi
+    if (!formData.kondisi) {
+      Alert.error("Kondisi barang wajib dipilih. Silakan pilih kondisi barang.", "Kondisi Belum Dipilih");
+      return;
+    }
+
+    // Validate photo is uploaded
+    if (!formData.foto && !imagePreview) {
+      Alert.error("Foto barang wajib diupload. Silakan pilih foto terlebih dahulu.", "Foto Belum Diupload");
+      return;
+    }
+
+    // Check for duplicate name
+    const duplicateItem = barang.find(item =>
+      item.namaBarang.toLowerCase() === formData.namaBarang.toLowerCase() &&
+      (modalMode === "add" || item._id !== selectedBarang._id)
+    );
+
+    if (duplicateItem) {
+      Alert.error(`Barang dengan nama "${formData.namaBarang}" sudah terdaftar dalam sistem.`, "Nama Barang Duplikat");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -472,13 +554,7 @@ const KelolaBarang = () => {
             required
           />
 
-          <Textarea
-            label="Deskripsi"
-            name="deskripsi"
-            value={formData.deskripsi}
-            onChange={handleFormChange}
-            rows={3}
-          />
+
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
@@ -516,7 +592,7 @@ const KelolaBarang = () => {
           {/* Image Upload with Preview */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Foto Barang
+              Foto Barang <span className="text-red-500">*</span>
             </label>
 
             {imagePreview ? (
@@ -524,7 +600,9 @@ const KelolaBarang = () => {
                 <img
                   src={imagePreview}
                   alt="Preview"
-                  className="w-full h-48 object-cover rounded-lg border-2 border-gray-300"
+                  onClick={() => setShowPhotoDetail(true)}
+                  className="w-full h-48 object-cover rounded-lg border-2 border-gray-300 cursor-pointer hover:opacity-90 transition-opacity"
+                  title="Klik untuk melihat detail"
                 />
                 <button
                   type="button"
@@ -533,11 +611,23 @@ const KelolaBarang = () => {
                 >
                   <IoClose size={20} />
                 </button>
+                <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                  Klik untuk melihat detail
+                </div>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-indigo-300 rounded-lg cursor-pointer bg-indigo-50 hover:bg-indigo-100 transition-all">
+              <label
+                className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer transition-all ${isDragging
+                  ? 'border-indigo-500 bg-indigo-100'
+                  : 'border-indigo-300 bg-indigo-50 hover:bg-indigo-100'
+                  }`}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <IoCloudUpload size={48} className="text-indigo-500 mb-3" />
+                  <IoCloudUpload size={48} className={`mb-3 ${isDragging ? 'text-indigo-600' : 'text-indigo-500'}`} />
                   <p className="mb-2 text-sm text-gray-700">
                     <span className="font-semibold">Klik untuk upload</span>{" "}
                     atau drag & drop
@@ -556,6 +646,14 @@ const KelolaBarang = () => {
               </label>
             )}
           </div>
+
+          <Textarea
+            label="Deskripsi"
+            name="deskripsi"
+            value={formData.deskripsi}
+            onChange={handleFormChange}
+            rows={3}
+          />
 
           <div className="flex gap-3 pt-4">
             <Button
@@ -655,6 +753,22 @@ const KelolaBarang = () => {
               Hapus
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Modal Lihat Detail Foto */}
+      <Modal
+        isOpen={showPhotoDetail}
+        onClose={() => setShowPhotoDetail(false)}
+        title="Detail Foto"
+        size="lg"
+      >
+        <div className="flex items-center justify-center">
+          <img
+            src={imagePreview}
+            alt="Detail Foto"
+            className="max-w-full max-h-[70vh] object-contain rounded-lg"
+          />
         </div>
       </Modal>
     </div>

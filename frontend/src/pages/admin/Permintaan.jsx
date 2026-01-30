@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { IoList, IoCheckmark, IoClose, IoEye, IoCalendar, IoPerson } from 'react-icons/io5';
+import { IoList, IoCheckmark, IoClose, IoEye, IoCalendar, IoPerson, IoTrash } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
+import { Alert } from '../../components/ui/Alert';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -16,6 +17,7 @@ const Permintaan = () => {
   const [peminjaman, setPeminjaman] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(''); // approve or reject
@@ -156,6 +158,39 @@ const Permintaan = () => {
     }
   };
 
+  const toggleSelection = (id) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === peminjaman.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(peminjaman.map(p => p._id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const isConfirmed = await Alert.confirm(
+      `Hapus ${selectedIds.length} peminjaman yang dipilih?`,
+      'Konfirmasi Hapus Massal',
+      'Hapus',
+      'Batal'
+    );
+    if (!isConfirmed) return;
+
+    try {
+      await api.delete('/peminjaman/admin/bulk-delete', { data: { ids: selectedIds } });
+      Toast.success(`Berhasil menghapus ${selectedIds.length} peminjaman`);
+      setSelectedIds([]);
+      fetchPeminjaman();
+    } catch (err) {
+      Toast.error(err.response?.data?.message || 'Gagal menghapus peminjaman');
+    }
+  };
+
   if (loading) {
     return <Loading fullScreen text="Memuat permintaan..." />;
   }
@@ -167,19 +202,28 @@ const Permintaan = () => {
         <p className="text-gray-600 mt-1">Kelola permintaan peminjaman dari siswa</p>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        <Button variant={statusFilter === '' ? 'primary' : 'outline'} size="sm" onClick={() => setStatusFilter('')}>
-          Semua
-        </Button>
-        <Button variant={statusFilter === 'Menunggu' ? 'warning' : 'outline'} size="sm" onClick={() => setStatusFilter('Menunggu')}>
-          Menunggu
-        </Button>
-        <Button variant={statusFilter === 'Disetujui' ? 'success' : 'outline'} size="sm" onClick={() => setStatusFilter('Disetujui')}>
-          Disetujui
-        </Button>
-        <Button variant={statusFilter === 'Ditolak' ? 'danger' : 'outline'} size="sm" onClick={() => setStatusFilter('Ditolak')}>
-          Ditolak
-        </Button>
+      <div className="flex justify-between items-center gap-4 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant={statusFilter === '' ? 'primary' : 'outline'} size="sm" onClick={() => setStatusFilter('')}>
+            Semua
+          </Button>
+          <Button variant={statusFilter === 'Menunggu' ? 'warning' : 'outline'} size="sm" onClick={() => setStatusFilter('Menunggu')}>
+            Menunggu
+          </Button>
+          <Button variant={statusFilter === 'Disetujui' ? 'success' : 'outline'} size="sm" onClick={() => setStatusFilter('Disetujui')}>
+            Disetujui
+          </Button>
+          <Button variant={statusFilter === 'Ditolak' ? 'danger' : 'outline'} size="sm" onClick={() => setStatusFilter('Ditolak')}>
+            Ditolak
+          </Button>
+        </div>
+
+        {selectedIds.length > 0 && (
+          <Button variant="danger" size="sm" onClick={handleBulkDelete}>
+            <IoTrash size={16} />
+            Hapus {selectedIds.length} item
+          </Button>
+        )}
       </div>
 
       {peminjaman.length === 0 ? (
@@ -190,72 +234,91 @@ const Permintaan = () => {
           </div>
         </Card>
       ) : (
-        <div className="grid gap-3">
-          {peminjaman.map((item) => (
-            <Card key={item._id} className="p-3">
-              <div className="flex items-center gap-4">
-                {/* Image - lebih kecil */}
-                <img
-                  src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
-                  alt={item.barangId?.namaBarang}
-                  className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
-                />
+        <div className="space-y-3">
+          {peminjaman.length > 1 && (
+            <div className="flex items-center gap-2 px-3">
+              <input
+                type="checkbox"
+                checked={selectedIds.length === peminjaman.length}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+              />
+              <span className="text-sm text-gray-600">Pilih Semua ({peminjaman.length})</span>
+            </div>
+          )}
+          <div className="grid gap-3">
+            {peminjaman.map((item) => (
+              <Card key={item._id} className="p-3">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(item._id)}
+                    onChange={() => toggleSelection(item._id)}
+                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                  />
+                  {/* Image - lebih kecil */}
+                  <img
+                    src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
+                    alt={item.barangId?.namaBarang}
+                    className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                  />
 
 
-                <div
-                  className="flex-1 min-w-0 cursor-pointer hover:bg-gray-50 p-2 -m-2 rounded-lg transition-colors"
-                  onClick={() => handleShowDetail(item)}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-800 text-sm truncate">{item.barangId?.namaBarang}</h3>
-                    <Badge size="sm" variant={item.status === 'Menunggu' ? 'warning' : item.status === 'Disetujui' ? 'success' : 'danger'}>
-                      {item.status}
-                    </Badge>
+                  <div
+                    className="flex-1 min-w-0 cursor-pointer hover:bg-gray-50 p-2 -m-2 rounded-lg transition-colors"
+                    onClick={() => handleShowDetail(item)}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-gray-800 text-sm truncate">{item.barangId?.namaBarang}</h3>
+                      <Badge size="sm" variant={item.status === 'Menunggu' ? 'warning' : item.status === 'Disetujui' ? 'success' : 'danger'}>
+                        {item.status}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-gray-500 mb-1">
+                      {item.userId?.nama} • {item.userId?.kelas} • {item.jumlahPinjam} unit
+                    </p>
+                    <div className="flex flex-wrap gap-x-3 text-xs text-gray-400">
+                      <span>Pinjam: {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
+                      <span>Kembali: {format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 mb-1">
-                    {item.userId?.nama} • {item.userId?.kelas} • {item.jumlahPinjam} unit
-                  </p>
-                  <div className="flex flex-wrap gap-x-3 text-xs text-gray-400">
-                    <span>Pinjam: {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
-                    <span>Kembali: {format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
-                  </div>
+
+                  {/* Detail button */}
+                  <button
+                    onClick={() => handleShowDetail(item)}
+                    className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors flex-shrink-0"
+                    title="Lihat Detail"
+                  >
+                    <IoEye size={20} />
+                  </button>
+
+                  {/* Buttons - di kanan */}
+                  {item.status === 'Menunggu' && (
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button
+                        variant="success"
+                        size="sm"
+                        onClick={() => handleApprove(item)}
+                        disabled={submitting || selectedItem?._id === item._id}
+                      >
+                        <IoCheckmark size={16} />
+                        Setujui
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleReject(item)}
+                        disabled={submitting || selectedItem?._id === item._id}
+                      >
+                        <IoClose size={16} />
+                        Tolak
+                      </Button>
+                    </div>
+                  )}
                 </div>
-
-                {/* Detail button */}
-                <button
-                  onClick={() => handleShowDetail(item)}
-                  className="p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors flex-shrink-0"
-                  title="Lihat Detail"
-                >
-                  <IoEye size={20} />
-                </button>
-
-                {/* Buttons - di kanan */}
-                {item.status === 'Menunggu' && (
-                  <div className="flex gap-2 flex-shrink-0">
-                    <Button
-                      variant="success"
-                      size="sm"
-                      onClick={() => handleApprove(item)}
-                      disabled={submitting || selectedItem?._id === item._id}
-                    >
-                      <IoCheckmark size={16} />
-                      Setujui
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleReject(item)}
-                      disabled={submitting || selectedItem?._id === item._id}
-                    >
-                      <IoClose size={16} />
-                      Tolak
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))}
+          </div>
         </div>
       )}
 

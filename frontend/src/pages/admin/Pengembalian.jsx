@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { IoCheckmarkCircle, IoCloseCircle, IoEye } from 'react-icons/io5';
+import { IoCheckmarkCircle, IoTime, IoWarning, IoEye, IoTrash, IoImage, IoCloseCircle } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
+import { Alert } from '../../components/ui/Alert';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Loading from '../../components/ui/Loading';
 import Modal from '../../components/ui/Modal';
+import Input from '../../components/ui/Input';
 import api from '../../utils/api';
+import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 
@@ -14,9 +17,14 @@ const Pengembalian = () => {
   const [pengembalian, setPengembalian] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  // Detail & Verify State
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [selectedPengembalian, setSelectedPengembalian] = useState(null);
   const [verifyLoading, setVerifyLoading] = useState(false);
+  const [denda, setDenda] = useState(0);
 
   useEffect(() => {
     fetchPengembalian();
@@ -25,29 +33,56 @@ const Pengembalian = () => {
   const fetchPengembalian = async () => {
     try {
       setLoading(true);
-      const params = statusFilter ? { status: statusFilter } : {};
-      const response = await api.get('/pengembalian', { params });
-      setPengembalian(response.data.data || response.data || []);
+      // Fetch from peminjaman endpoint with statusPengembalian filter
+      const response = await api.get('/peminjaman/admin/all');
+      let data = response.data.data || response.data || [];
+
+      // Filter by status pengembalian
+      data = data.filter(item => {
+        // Only show items with Menunggu Verifikasi or Sudah Dikembalikan status
+        return item.statusPengembalian === 'Menunggu Verifikasi' ||
+          item.statusPengembalian === 'Sudah Dikembalikan';
+      });
+
+      // Apply status filter if selected
+      if (statusFilter) {
+        data = data.filter(item => item.statusPengembalian === statusFilter);
+      }
+
+      setPengembalian(data);
     } catch (err) {
       Toast.error(err.response?.data?.message || 'Gagal memuat data pengembalian');
-      setLoading(false);
     } finally {
       setLoading(false);
     }
   };
 
   const handleVerify = async (id, statusVerifikasi) => {
+    // Validasi denda jika kondisi rusak berat
+    if (statusVerifikasi === 'Diterima' && selectedPengembalian?.kondisiPengembalian === 'rusak berat') {
+      if (!denda || denda <= 0) {
+        Toast.error('Harap masukkan jumlah denda untuk barang rusak berat');
+        return;
+      }
+    }
+
     const message = statusVerifikasi === 'Diterima'
       ? 'Terima pengembalian ini?'
       : 'Tolak pengembalian ini?';
 
-    if (!confirm(message)) return;
+    const isConfirmed = await Alert.confirm(message, 'Konfirmasi Verifikasi', 'Ya', 'Batal');
+    if (!isConfirmed) return;
 
     try {
       setVerifyLoading(true);
-      await api.put(`/pengembalian/${id}/verifikasi`, { statusVerifikasi });
+      const payload = {
+        statusVerifikasi,
+        denda: selectedPengembalian?.kondisiPengembalian === 'rusak berat' ? denda : 0
+      };
+      await api.put(`/peminjaman/admin/${id}/verify-return`, payload);
       Toast.success(`Pengembalian berhasil ${statusVerifikasi.toLowerCase()}`);
       setShowDetailModal(false);
+      setDenda(0);
       fetchPengembalian();
     } catch (err) {
       Toast.error(err.response?.data?.message || 'Gagal memverifikasi pengembalian');
@@ -58,8 +93,9 @@ const Pengembalian = () => {
 
   const handleShowDetail = async (id) => {
     try {
-      const response = await api.get(`/pengembalian/${id}`);
+      const response = await api.get(`/peminjaman/${id}`);
       setSelectedPengembalian(response.data.data);
+      setDenda(0); // Reset denda
       setShowDetailModal(true);
     } catch (err) {
       Toast.error('Gagal memuat detail pengembalian');
@@ -69,24 +105,56 @@ const Pengembalian = () => {
   const getStatusBadge = (status) => {
     const variants = {
       'Menunggu Verifikasi': 'warning',
-      'Diterima': 'success',
-      'Ditolak': 'danger'
+      'Sudah Dikembalikan': 'success',
+      'Belum Dikembalikan': 'danger'
     };
     return <Badge variant={variants[status]}>{status.toUpperCase()}</Badge>;
   };
 
   const getKondisiBadge = (kondisi) => {
     const variants = {
-      'Baik': 'success',
-      'Rusak Ringan': 'warning',
-      'Rusak Berat': 'danger',
-      'Hilang': 'danger'
+      'baik': 'success',
+      'rusak ringan': 'warning',
+      'rusak berat': 'danger'
     };
     return <Badge variant={variants[kondisi]} size="sm">{kondisi}</Badge>;
   };
 
+  const toggleSelection = (id) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === pengembalian.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(pengembalian.map(p => p._id));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const isConfirmed = await Alert.confirm(
+      `Hapus ${selectedIds.length} data pengembalian yang dipilih?`,
+      'Konfirmasi Hapus Massal',
+      'Hapus',
+      'Batal'
+    );
+    if (!isConfirmed) return;
+
+    try {
+      await api.delete('/peminjaman/admin/bulk-delete', { data: { ids: selectedIds } });
+      Toast.success(`Berhasil menghapus ${selectedIds.length} data pengembalian`);
+      setSelectedIds([]);
+      fetchPengembalian();
+    } catch (err) {
+      Toast.error(err.response?.data?.message || 'Gagal menghapus data');
+    }
+  };
+
   if (loading) {
-    return <Loading fullScreen text="Memuat data..." />;
+    return <Loading fullScreen text="Memuat data pengembalian..." />;
   }
 
   return (
@@ -113,19 +181,19 @@ const Pengembalian = () => {
           Menunggu Verifikasi
         </Button>
         <Button
-          variant={statusFilter === 'Diterima' ? 'success' : 'outline'}
+          variant={statusFilter === 'Sudah Dikembalikan' ? 'primary' : 'outline'}
           size="sm"
-          onClick={() => setStatusFilter('Diterima')}
+          onClick={() => setStatusFilter('Sudah Dikembalikan')}
         >
-          Diterima
+          Sudah Dikembalikan
         </Button>
-        <Button
-          variant={statusFilter === 'Ditolak' ? 'danger' : 'outline'}
-          size="sm"
-          onClick={() => setStatusFilter('Ditolak')}
-        >
-          Ditolak
-        </Button>
+
+        {selectedIds.length > 0 && (
+          <Button variant="danger" size="sm" onClick={handleBulkDelete}>
+            <IoTrash size={16} />
+            Hapus {selectedIds.length} item
+          </Button>
+        )}
       </div>
 
       {pengembalian.length === 0 ? (
@@ -141,12 +209,19 @@ const Pengembalian = () => {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-4 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={pengembalian.length > 0 && selectedIds.length === pengembalian.length}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Siswa</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Barang</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Jumlah</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Kondisi</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Denda</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold">Tgl Dikembalikan</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">Tgl Pinjam</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">Aksi</th>
                 </tr>
@@ -155,21 +230,26 @@ const Pengembalian = () => {
                 {pengembalian.map((item) => (
                   <tr key={item._id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <p className="font-medium">{item.peminjamanId?.userId?.nama}</p>
-                      <p className="text-xs text-gray-500">{item.peminjamanId?.userId?.kelas}</p>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(item._id)}
+                        onChange={() => toggleSelection(item._id)}
+                        className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                      />
                     </td>
-                    <td className="px-4 py-3">{item.peminjamanId?.barangId?.namaBarang}</td>
-                    <td className="px-4 py-3">{item.jumlahDikembalikan} unit</td>
-                    <td className="px-4 py-3">{getKondisiBadge(item.kondisiBarang)}</td>
                     <td className="px-4 py-3">
-                      <span className={item.denda > 0 ? 'text-red-600 font-semibold' : 'text-gray-600'}>
-                        Rp {item.denda.toLocaleString('id-ID')}
-                      </span>
+                      <p className="font-medium">{item.userId?.nama}</p>
+                      <p className="text-xs text-gray-500">{item.userId?.kelas}</p>
+                    </td>
+                    <td className="px-4 py-3">{item.barangId?.namaBarang}</td>
+                    <td className="px-4 py-3">{item.jumlahPinjam} unit</td>
+                    <td className="px-4 py-3">
+                      {item.kondisiPengembalian ? getKondisiBadge(item.kondisiPengembalian) : '-'}
                     </td>
                     <td className="px-4 py-3 text-sm">
-                      {format(new Date(item.tanggalDikembalikan), 'dd MMM yyyy', { locale: id })}
+                      {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
                     </td>
-                    <td className="px-4 py-3">{getStatusBadge(item.statusVerifikasi)}</td>
+                    <td className="px-4 py-3">{getStatusBadge(item.statusPengembalian)}</td>
                     <td className="px-4 py-3">
                       <Button variant="primary" size="sm" onClick={() => handleShowDetail(item._id)}>
                         <IoEye size={18} />
@@ -187,7 +267,10 @@ const Pengembalian = () => {
       {/* Modal Detail */}
       <Modal
         isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
+        onClose={() => {
+          setShowDetailModal(false);
+          setDenda(0);
+        }}
         title="Detail Pengembalian"
         size="lg"
       >
@@ -199,21 +282,27 @@ const Pengembalian = () => {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-gray-600">Siswa:</p>
-                  <p className="font-medium">{selectedPengembalian.peminjamanId?.userId?.nama}</p>
-                  <p className="text-xs text-gray-500">{selectedPengembalian.peminjamanId?.userId?.kelas}</p>
+                  <p className="font-medium">{selectedPengembalian.userId?.nama}</p>
+                  <p className="text-xs text-gray-500">{selectedPengembalian.userId?.kelas}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Barang:</p>
-                  <p className="font-medium">{selectedPengembalian.peminjamanId?.barangId?.namaBarang}</p>
+                  <p className="font-medium">{selectedPengembalian.barangId?.namaBarang}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Jumlah Dipinjam:</p>
-                  <p className="font-medium">{selectedPengembalian.peminjamanId?.jumlahPinjam} unit</p>
+                  <p className="font-medium">{selectedPengembalian.jumlahPinjam} unit</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Tanggal Pinjam:</p>
+                  <p className="font-medium">
+                    {format(new Date(selectedPengembalian.tanggalPinjam), 'dd MMMM yyyy', { locale: id })}
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-600">Tanggal Kembali:</p>
                   <p className="font-medium">
-                    {format(new Date(selectedPengembalian.peminjamanId?.tanggalKembali), 'dd MMMM yyyy', { locale: id })}
+                    {format(new Date(selectedPengembalian.tanggalKembali), 'dd MMMM yyyy', { locale: id })}
                   </p>
                 </div>
               </div>
@@ -223,45 +312,81 @@ const Pengembalian = () => {
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-800">Informasi Pengembalian</h3>
 
-              <div className="flex justify-between">
-                <span className="text-gray-600">Jumlah Dikembalikan:</span>
-                <span className="font-semibold">{selectedPengembalian.jumlahDikembalikan} unit</span>
-              </div>
+              {selectedPengembalian.kondisiPengembalian && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Kondisi Barang:</span>
+                  {getKondisiBadge(selectedPengembalian.kondisiPengembalian)}
+                </div>
+              )}
 
-              <div className="flex justify-between">
-                <span className="text-gray-600">Kondisi Barang:</span>
-                {getKondisiBadge(selectedPengembalian.kondisiBarang)}
-              </div>
+              {/* Warning untuk Rusak Ringan */}
+              {selectedPengembalian.kondisiPengembalian === 'rusak ringan' && selectedPengembalian.statusPengembalian === 'Menunggu Verifikasi' && (
+                <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <IoWarning className="text-yellow-600 mt-0.5 flex-shrink-0" size={20} />
+                  <div className="text-sm text-yellow-800">
+                    <p className="font-semibold">Peringatan!</p>
+                    <p>Barang dikembalikan dalam kondisi rusak ringan. Berikan peringatan kepada siswa untuk lebih berhati-hati kedepannya.</p>
+                  </div>
+                </div>
+              )}
 
-              <div className="flex justify-between">
-                <span className="text-gray-600">Tanggal Dikembalikan:</span>
-                <span className="font-semibold">
-                  {format(new Date(selectedPengembalian.tanggalDikembalikan), 'dd MMMM yyyy HH:mm', { locale: id })}
-                </span>
-              </div>
+              {/* Denda untuk Rusak Berat */}
+              {selectedPengembalian.kondisiPengembalian === 'rusak berat' && selectedPengembalian.statusPengembalian === 'Menunggu Verifikasi' && (
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <IoWarning className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
+                    <div className="text-sm text-red-800">
+                      <p className="font-semibold">Denda Diperlukan!</p>
+                      <p>Barang dikembalikan dalam kondisi rusak berat. Harap masukkan jumlah denda yang harus dibayar siswa.</p>
+                    </div>
+                  </div>
+                  <Input
+                    label="Jumlah Denda (Rp)"
+                    type="number"
+                    value={denda === 0 ? '' : denda}
+                    onChange={(e) => setDenda(Number(e.target.value))}
+                    placeholder="Masukkan jumlah denda"
+                    required
+                  />
+                </div>
+              )}
 
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Denda:</span>
-                <span className={`font-bold text-lg ${selectedPengembalian.denda > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                  Rp {selectedPengembalian.denda.toLocaleString('id-ID')}
-                </span>
-              </div>
-
-              {selectedPengembalian.catatanPengembalian && (
+              {selectedPengembalian.fotoPengembalian && (
                 <div className="pt-3 border-t">
-                  <p className="text-gray-600 mb-2">Catatan Pengembalian:</p>
-                  <p className="text-gray-800 bg-gray-50 p-3 rounded">{selectedPengembalian.catatanPengembalian}</p>
+                  <p className="text-gray-600 mb-2">Foto Kondisi Barang:</p>
+                  <div className="relative group">
+                    <img
+                      src={getImageUrl(selectedPengembalian.fotoPengembalian)}
+                      alt="Foto Pengembalian"
+                      className="w-full max-h-96 object-contain rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setShowPhotoModal(true)}
+                    />
+                    <button
+                      onClick={() => setShowPhotoModal(true)}
+                      className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-3 py-1 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+                    >
+                      <IoImage size={16} />
+                      Lihat Detail
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {selectedPengembalian.catatanAdmin && (
+                <div className="pt-3 border-t">
+                  <p className="text-gray-600 mb-2">Catatan Admin:</p>
+                  <p className="text-gray-800 bg-gray-50 p-3 rounded">{selectedPengembalian.catatanAdmin}</p>
                 </div>
               )}
 
               <div className="flex justify-between pt-3 border-t">
-                <span className="text-gray-600">Status Verifikasi:</span>
-                {getStatusBadge(selectedPengembalian.statusVerifikasi)}
+                <span className="text-gray-600">Status Pengembalian:</span>
+                {getStatusBadge(selectedPengembalian.statusPengembalian)}
               </div>
             </div>
 
             {/* Actions */}
-            {selectedPengembalian.statusVerifikasi === 'Menunggu Verifikasi' && (
+            {selectedPengembalian.statusPengembalian === 'Menunggu Verifikasi' && (
               <div className="flex gap-3 pt-4 border-t">
                 <Button
                   variant="success"
@@ -284,15 +409,42 @@ const Pengembalian = () => {
               </div>
             )}
 
-            {selectedPengembalian.statusVerifikasi !== 'Menunggu Verifikasi' && (
+            {selectedPengembalian.statusPengembalian !== 'Menunggu Verifikasi' && (
               <Button
                 variant="secondary"
                 fullWidth
-                onClick={() => setShowDetailModal(false)}
+                onClick={() => {
+                  setShowDetailModal(false);
+                  setDenda(0);
+                }}
               >
                 Tutup
               </Button>
             )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Photo Detail Modal */}
+      <Modal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        title="Detail Foto Kondisi Barang"
+        size="full"
+      >
+        {selectedPengembalian?.fotoPengembalian && (
+          <div className="relative flex items-center justify-center bg-gray-100 rounded-lg p-4 min-h-[70vh]">
+            <img
+              src={getImageUrl(selectedPengembalian.fotoPengembalian)}
+              alt="Detail Foto Pengembalian"
+              className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-lg"
+            />
+            <button
+              onClick={() => setShowPhotoModal(false)}
+              className="absolute top-6 right-6 bg-black bg-opacity-70 hover:bg-opacity-90 text-white p-3 rounded-full transition-all"
+            >
+              <IoCloseCircle size={24} />
+            </button>
           </div>
         )}
       </Modal>

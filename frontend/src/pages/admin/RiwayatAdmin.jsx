@@ -8,9 +8,11 @@ import {
     IoSearch,
     IoFilter,
     IoPerson,
-    IoLibrary
+    IoLibrary,
+    IoTrash
 } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
+import { Alert } from '../../components/ui/Alert';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -36,6 +38,7 @@ const RiwayatAdmin = () => {
         ditolak: 0,
         selesai: 0
     });
+    const [selectedIds, setSelectedIds] = useState([]);
 
     useEffect(() => {
         fetchRiwayat();
@@ -95,6 +98,42 @@ const RiwayatAdmin = () => {
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm, filterStatus]);
+
+    const toggleSelection = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const toggleSelectAll = () => {
+        const currentPageIds = paginatedRiwayat.map(p => p._id);
+        const allSelected = currentPageIds.every(id => selectedIds.includes(id));
+
+        if (allSelected) {
+            setSelectedIds(prev => prev.filter(id => !currentPageIds.includes(id)));
+        } else {
+            setSelectedIds(prev => [...new Set([...prev, ...currentPageIds])]);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        const isConfirmed = await Alert.confirm(
+            `Hapus ${selectedIds.length} riwayat peminjaman yang dipilih?`,
+            'Konfirmasi Hapus Massal',
+            'Hapus',
+            'Batal'
+        );
+        if (!isConfirmed) return;
+
+        try {
+            await api.delete('/peminjaman/admin/bulk-delete', { data: { ids: selectedIds } });
+            Toast.success(`Berhasil menghapus ${selectedIds.length} riwayat`);
+            setSelectedIds([]);
+            fetchRiwayat();
+        } catch (err) {
+            Toast.error(err.response?.data?.message || 'Gagal menghapus riwayat');
+        }
+    };
 
     if (loading) {
         return <Loading fullScreen text="Memuat riwayat..." />;
@@ -177,14 +216,39 @@ const RiwayatAdmin = () => {
                         />
                     </div>
                 </div>
+
+                {selectedIds.length > 0 && (
+                    <div className="mt-3 flex justify-end">
+                        <button
+                            onClick={handleBulkDelete}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg flex items-center gap-2 transition-colors"
+                        >
+                            <IoTrash size={16} />
+                            Hapus {selectedIds.length} item
+                        </button>
+                    </div>
+                )}
             </Card>
 
             {/* Riwayat List */}
             <Card>
                 <Card.Header className="p-4 border-b">
-                    <Card.Title className="text-base">
-                        Daftar Riwayat ({filteredRiwayat.length} data)
-                    </Card.Title>
+                    <div className="flex items-center justify-between">
+                        <Card.Title className="text-base">
+                            Daftar Riwayat ({filteredRiwayat.length} data)
+                        </Card.Title>
+                        {paginatedRiwayat.length > 0 && (
+                            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={paginatedRiwayat.every(p => selectedIds.includes(p._id))}
+                                    onChange={toggleSelectAll}
+                                    className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+                                />
+                                Pilih Semua
+                            </label>
+                        )}
+                    </div>
                 </Card.Header>
                 <Card.Content className="p-0">
                     {filteredRiwayat.length === 0 ? (
@@ -202,6 +266,12 @@ const RiwayatAdmin = () => {
                             {paginatedRiwayat.map((item) => (
                                 <div key={item._id} className="p-4 hover:bg-gray-50 transition-colors">
                                     <div className="flex gap-4">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.includes(item._id)}
+                                            onChange={() => toggleSelection(item._id)}
+                                            className="w-4 h-4 mt-1 text-indigo-600 rounded focus:ring-indigo-500 flex-shrink-0"
+                                        />
                                         {/* Image */}
                                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                                             <img
