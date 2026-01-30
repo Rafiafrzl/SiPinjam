@@ -226,7 +226,7 @@ const Barang = () => {
                           ? 'bg-green-500 text-white'
                           : 'bg-red-500 text-white'
                           }`}>
-                          {item.jumlahTersedia > 0 ? 'Tersedia' : 'Habis'}
+                          {item.jumlahTersedia > 0 ? 'Tersedia' : 'Barang tidak tersedia'}
                         </span>
                       )}
                     </div>
@@ -262,7 +262,7 @@ const Barang = () => {
                           : 'bg-neutral-700 text-gray-500 cursor-not-allowed'
                           }`}
                       >
-                        {isRusak ? 'Tidak Tersedia' : canBorrow ? 'Pinjam' : 'Habis'}
+                        {isRusak ? 'Tidak Tersedia' : canBorrow ? 'Pinjam' : 'Barang tidak tersedia'}
                       </button>
                     </div>
                   </div>

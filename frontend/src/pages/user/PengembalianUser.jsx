@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { IoReturnDownBack, IoCheckmarkCircle, IoCalendar, IoLayers, IoSearch, IoAlertCircle } from 'react-icons/io5';
+import { IoReturnDownBack, IoCheckmarkCircle, IoCalendar, IoLayers, IoSearch, IoAlertCircle, IoCloudUpload, IoClose, IoImage, IoTimeOutline } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
+import { Alert } from '../../components/ui/Alert';
 import Loading from '../../components/ui/Loading';
+import Modal from '../../components/ui/Modal';
+import Button from '../../components/ui/Button';
+import Select from '../../components/ui/Select';
 import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
@@ -14,6 +18,16 @@ const PengembalianUser = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [returningId, setReturningId] = useState(null);
 
+    // Modal states
+    const [showReturnModal, setShowReturnModal] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [kondisi, setKondisi] = useState('baik');
+    const [foto, setFoto] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [showPhotoDetail, setShowPhotoDetail] = useState(false);
+
     useEffect(() => {
         fetchPengembalian();
     }, []);
@@ -24,9 +38,12 @@ const PengembalianUser = () => {
             const response = await api.get('/peminjaman/user/my-peminjaman');
             const allData = response.data.data || [];
 
-            // Filter only items that are approved (Disetujui) and haven't been returned (not Selesai)
-            // Note: Backend might have a specific endpoint for items to return, but we filter here for now
-            const toReturn = allData.filter(p => p.status === 'Disetujui');
+            // Filter only items that are approved (Disetujui) OR have been returned (Selesai)
+            // This allows users to see history of returned items on this page
+            const toReturn = allData.filter(p =>
+                (p.status === 'Disetujui') ||
+                (p.status === 'Selesai' && p.statusPengembalian === 'Sudah Dikembalikan')
+            );
             setPengembalian(toReturn);
         } catch (err) {
             Toast.error('Gagal memuat data pengembalian');
@@ -35,80 +52,130 @@ const PengembalianUser = () => {
         }
     };
 
-    const handleReturn = async (id) => {
-        if (!window.confirm('Apakah Anda yakin ingin mengembalikan barang ini?')) return;
+    const handleReturnClick = (item) => {
+        setSelectedItem(item);
+        setKondisi('baik');
+        setFoto(null);
+        setImagePreview(null);
+        setShowReturnModal(true);
+    };
 
-        try {
-            setReturningId(id);
-            await api.put(`/peminjaman/kembalikan/${id}`);
-            Toast.success('Permintaan pengembalian berhasil dikirim');
-            fetchPengembalian();
-        } catch (err) {
-            Toast.error(err.response?.data?.message || 'Gagal melakukan pengembalian');
-        } finally {
-            setReturningId(null);
+    const handleFileUpload = (file) => {
+        if (file && file.type.startsWith('image/')) {
+            setFoto(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        } else if (file) {
+            Alert.error("File yang dipilih bukan format gambar. Harap pilih file PNG, JPG, atau GIF.", "Format File Tidak Valid");
         }
     };
 
-    const filteredData = pengembalian.filter(item =>
-        item.barangId?.namaBarang.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleDragEnter = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            handleFileUpload(files[0]);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setFoto(null);
+        setImagePreview(null);
+    };
+
+    const handleSubmitReturn = async () => {
+        if (!selectedItem?._id) return;
+        if (!foto) {
+            Alert.warning("Mohon unggah foto bukti kondisi barang sebelum mengembalikan.", "Foto Wajib Diunggah");
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            const formData = new FormData();
+            formData.append('kondisi', kondisi);
+            formData.append('foto', foto);
+
+            await api.put(`/peminjaman/user/${selectedItem._id}/submit-return`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            Toast.success('Permintaan pengembalian berhasil dikirim');
+            setShowReturnModal(false);
+            fetchPengembalian(); // Refresh data
+        } catch (err) {
+            Toast.error(err.response?.data?.message || 'Gagal mengirim permintaan pengembalian');
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center min-h-[400px]">
-                <Loading size="lg" text="Memuat data pengembalian..." />
-            </div>
-        );
+        return <Loading fullScreen theme="dark" text="Memuat data pengembalian..." />;
     }
 
+    const filteredData = pengembalian.filter(item =>
+        item.barangId?.namaBarang?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
-        <div className="max-w-[1600px] mx-auto px-6 py-8 sm:py-12">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-            >
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-white tracking-tight">Pengembalian Barang</h1>
-                        <p className="text-gray-500 text-sm">Kembalikan barang yang telah selesai Anda gunakan.</p>
-                    </div>
-
-                    <div className="relative group">
-                        <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-purple-400 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Cari barang..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full md:w-80 bg-black/40 border border-white/5 rounded-xl py-2.5 pl-11 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all"
-                        />
-                    </div>
+        <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8">
+            <div className="max-w-7xl mx-auto space-y-8">
+                {/* Header Section */}
+                <div>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-400 to-purple-600 bg-clip-text text-transparent mb-2">
+                        Pengembalian Barang
+                    </h1>
+                    <p className="text-gray-400">Kelola dan kembalikan barang yang sedang Anda pinjam</p>
                 </div>
 
-                {/* Info Card */}
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex gap-4 items-start">
-                    <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 flex-shrink-0">
-                        <IoAlertCircle size={20} />
+                {/* Main Content */}
+                <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden backdrop-blur-sm">
+                    {/* Search Bar */}
+                    <div className="p-4 border-b border-white/5 flex gap-4">
+                        <div className="relative flex-1 max-w-md">
+                            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                            <input
+                                type="text"
+                                placeholder="Cari barang yang dipinjam..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-purple-500/50 transition-colors"
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <h4 className="text-sm font-bold text-blue-400">Penting</h4>
-                        <p className="text-xs text-blue-300/70 leading-relaxed">Setelah Anda mengeklik tombol "Kembalikan", admin akan memverifikasi kondisi barang sebelum status berubah menjadi "Selesai". Pastikan barang dalam kondisi baik.</p>
-                    </div>
-                </div>
 
-                {/* Table Section */}
-                <div className="bg-neutral-900/30 border border-white/5 rounded-2xl overflow-hidden">
+                    {/* Table */}
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-white/5 bg-white/[0.02]">
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Barang & Kategori</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 text-center">Jumlah</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Tgl Pinjam</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 text-center">Aksi</th>
+                        <table className="w-full">
+                            <thead className="bg-black/20 border-b border-white/5">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Barang</th>
+                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Jumlah</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Tanggal Pinjam</th>
+                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
@@ -133,7 +200,14 @@ const PengembalianUser = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <span className="text-sm font-medium text-gray-300">{item.jumlahPinjam} Units</span>
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-sm font-medium text-gray-300">{item.jumlahPinjam} Unit</span>
+                                                    {item.denda > 0 && (
+                                                        <span className="text-[10px] font-bold text-red-400 mt-1 px-2 py-0.5 bg-red-500/10 border border-red-500/20 rounded-full">
+                                                            Denda: Rp {item.denda.toLocaleString('id-ID')}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-400">
                                                 <div className="flex items-center gap-2">
@@ -143,14 +217,25 @@ const PengembalianUser = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-center">
-                                                    <button
-                                                        onClick={() => handleReturn(item._id)}
-                                                        disabled={returningId === item._id}
-                                                        className="flex items-center gap-2 px-4 py-1.5 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-white border border-cyan-500/20 rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed group/btn"
-                                                    >
-                                                        <IoReturnDownBack className="group-hover/btn:-translate-x-1 transition-transform" />
-                                                        {returningId === item._id ? 'Memproses...' : 'Kembalikan'}
-                                                    </button>
+                                                    {item.statusPengembalian === 'Sudah Dikembalikan' ? (
+                                                        <span className="flex items-center gap-2 px-4 py-1.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded-lg text-xs font-bold">
+                                                            <IoCheckmarkCircle />
+                                                            Selesai
+                                                        </span>
+                                                    ) : item.statusPengembalian === 'Menunggu Verifikasi' ? (
+                                                        <span className="flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-lg text-xs font-bold">
+                                                            <IoTimeOutline />
+                                                            Menunggu Verifikasi
+                                                        </span>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleReturnClick(item)}
+                                                            className="flex items-center gap-2 px-4 py-1.5 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white border border-purple-500/20 rounded-lg text-xs font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed group/btn"
+                                                        >
+                                                            <IoReturnDownBack className="group-hover/btn:-translate-x-1 transition-transform" />
+                                                            Kembalikan
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -160,7 +245,148 @@ const PengembalianUser = () => {
                         </table>
                     </div>
                 </div>
-            </motion.div>
+
+                {/* Return Modal */}
+                <Modal
+                    isOpen={showReturnModal}
+                    onClose={() => setShowReturnModal(false)}
+                    title="Pengembalian Barang"
+                    size="md"
+                    theme="dark"
+                >
+                    {selectedItem && (
+                        <div className="space-y-4">
+                            {/* Item Info */}
+                            <div className="bg-neutral-900/50 border border-white/5 rounded-xl p-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-neutral-800 border border-white/5">
+                                        <img src={getImageUrl(selectedItem.barangId?.foto)} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-white">{selectedItem.barangId?.namaBarang}</p>
+                                        <p className="text-xs text-gray-500 uppercase font-semibold">{selectedItem.barangId?.kategori}</p>
+                                        <p className="text-xs text-gray-400 mt-1">Jumlah: {selectedItem.jumlahPinjam} unit</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Kondisi Select */}
+                            <div>
+                                <Select
+                                    label="Kondisi Barang Saat Dikembalikan"
+                                    value={kondisi}
+                                    onChange={(e) => setKondisi(e.target.value)}
+                                    options={[
+                                        { value: 'baik', label: 'Baik' },
+                                        { value: 'rusak ringan', label: 'Rusak Ringan' },
+                                        { value: 'rusak berat', label: 'Rusak Berat' },
+                                    ]}
+                                    required
+                                    theme="dark"
+                                />
+                            </div>
+
+                            {/* Photo Upload */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">
+                                    Foto Kondisi Barang <span className="text-red-500">*</span>
+                                </label>
+                                {imagePreview ? (
+                                    <div className="relative">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            onClick={() => setShowPhotoDetail(true)}
+                                            className="w-full h-48 object-cover rounded-lg border-2 border-white/10 cursor-pointer hover:opacity-90 transition-opacity"
+                                            title="Klik untuk melihat detail"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveImage}
+                                            className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-all shadow-lg z-10"
+                                        >
+                                            <IoClose size={20} />
+                                        </button>
+                                        <div className="absolute bottom-2 left-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">
+                                            Klik untuk melihat detail
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <label
+                                        className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer transition-all ${isDragging
+                                            ? 'border-purple-500 bg-purple-500/10'
+                                            : 'border-white/10 bg-neutral-900/50 hover:bg-neutral-900/70'
+                                            }`}
+                                        onDragEnter={handleDragEnter}
+                                        onDragLeave={handleDragLeave}
+                                        onDragOver={handleDragOver}
+                                        onDrop={handleDrop}
+                                    >
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <IoCloudUpload size={48} className={`mb-3 ${isDragging ? 'text-purple-400' : 'text-gray-500'}`} />
+                                            <p className="mb-2 text-sm text-gray-400">
+                                                <span className="font-semibold">Klik untuk upload</span> atau drag & drop
+                                            </p>
+                                            <p className="text-xs text-gray-600">PNG, JPG, GIF (Max: 5MB)</p>
+                                        </div>
+                                        <input
+                                            type="file"
+                                            onChange={(e) => handleFileUpload(e.target.files[0])}
+                                            accept="image/*"
+                                            className="hidden"
+                                        />
+                                    </label>
+                                )}
+                            </div>
+
+                            {/* Buttons */}
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    onClick={() => setShowReturnModal(false)}
+                                    disabled={submitting}
+                                    className="flex-1 px-4 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-white/10"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={handleSubmitReturn}
+                                    disabled={submitting}
+                                    className="flex-1 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        'Konfirmasi Pengembalian'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </Modal>
+
+                {/* Photo Detail Modal */}
+                <Modal
+                    isOpen={showPhotoDetail}
+                    onClose={() => setShowPhotoDetail(false)}
+                    title="Detail Foto"
+                    size="lg"
+                    theme="dark"
+                >
+                    <div className="flex items-center justify-center">
+                        <img
+                            src={imagePreview}
+                            alt="Detail Foto"
+                            className="max-w-full max-h-[70vh] object-contain rounded-lg"
+                        />
+                    </div>
+                </Modal>
+            </div>
         </div>
     );
 };

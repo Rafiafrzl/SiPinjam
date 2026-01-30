@@ -25,7 +25,7 @@ const Bantuan = () => {
         {
             id: 2,
             question: 'Berapa lama proses persetujuan peminjaman?',
-            answer: 'Proses persetujuan biasanya memakan waktu 1-2 hari kerja. Anda akan mendapat notifikasi ketika peminjaman disetujui atau ditolak.'
+            answer: 'Proses persetujuan biasanya memakan waktu 30 menit. Anda akan mendapat notifikasi ketika peminjaman disetujui atau ditolak.'
         },
         {
             id: 3,
