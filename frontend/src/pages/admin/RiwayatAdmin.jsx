@@ -19,6 +19,8 @@ import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import Loading from '../../components/ui/Loading';
 import Pagination from '../../components/ui/Pagination';
+import Modal from '../../components/ui/Modal';
+import Button from '../../components/ui/Button';
 import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
@@ -30,7 +32,7 @@ const RiwayatAdmin = () => {
     const [riwayat, setRiwayat] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('semua');
+    const [filterStatus, setFilterStatus] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [stats, setStats] = useState({
         total: 0,
@@ -39,6 +41,12 @@ const RiwayatAdmin = () => {
         selesai: 0
     });
     const [selectedIds, setSelectedIds] = useState([]);
+
+    // Detail Modal State
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [returnDetail, setReturnDetail] = useState(null);
+    const [detailLoading, setDetailLoading] = useState(false);
 
     useEffect(() => {
         fetchRiwayat();
@@ -65,6 +73,24 @@ const RiwayatAdmin = () => {
         }
     };
 
+    const handleShowDetail = async (item) => {
+        setSelectedItem(item);
+        setShowDetailModal(true);
+        setReturnDetail(null);
+
+        if (item.status === 'Selesai' || item.statusPengembalian === 'Menunggu Verifikasi') {
+            try {
+                setDetailLoading(true);
+                const response = await api.get(`/pengembalian/peminjaman/${item._id}`);
+                setReturnDetail(response.data.data);
+            } catch (err) {
+                console.log('Return detail not found for admin riwayat');
+            } finally {
+                setDetailLoading(false);
+            }
+        }
+    };
+
     const getStatusBadge = (status) => {
         const variants = {
             'Menunggu': 'warning',
@@ -82,7 +108,7 @@ const RiwayatAdmin = () => {
             item.userId?.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             item.userId?.kelas?.toLowerCase().includes(searchTerm.toLowerCase());
 
-        const matchStatus = filterStatus === 'semua' || item.status === filterStatus;
+        const matchStatus = filterStatus === '' || item.status === filterStatus;
 
         return matchSearch && matchStatus;
     });
@@ -203,10 +229,10 @@ const RiwayatAdmin = () => {
                     </div>
                     <div className="flex items-center gap-2 min-w-[200px]">
                         <Select
+                            placeholder="Semua Status"
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                             options={[
-                                { value: "semua", label: "Semua Status" },
                                 { value: "Menunggu", label: "Menunggu" },
                                 { value: "Disetujui", label: "Disetujui" },
                                 { value: "Ditolak", label: "Ditolak" },
@@ -256,7 +282,7 @@ const RiwayatAdmin = () => {
                             <IoTime className="mx-auto mb-4 text-gray-300" size={48} />
                             <h3 className="text-lg font-bold text-gray-700 mb-1">Tidak ada data</h3>
                             <p className="text-sm text-gray-500">
-                                {searchTerm || filterStatus !== 'semua'
+                                {searchTerm || filterStatus !== ''
                                     ? 'Coba ubah filter pencarian'
                                     : 'Belum ada riwayat peminjaman'}
                             </p>
@@ -264,20 +290,26 @@ const RiwayatAdmin = () => {
                     ) : (
                         <div className="divide-y divide-gray-100">
                             {paginatedRiwayat.map((item) => (
-                                <div key={item._id} className="p-4 hover:bg-gray-50 transition-colors">
+                                <div
+                                    key={item._id}
+                                    className="p-4 hover:bg-gray-50 transition-colors cursor-pointer group"
+                                    onClick={() => handleShowDetail(item)}
+                                >
                                     <div className="flex gap-4">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedIds.includes(item._id)}
-                                            onChange={() => toggleSelection(item._id)}
-                                            className="w-4 h-4 mt-1 text-indigo-600 rounded focus:ring-indigo-500 flex-shrink-0"
-                                        />
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedIds.includes(item._id)}
+                                                onChange={() => toggleSelection(item._id)}
+                                                className="w-4 h-4 mt-1 text-indigo-600 rounded focus:ring-indigo-500 flex-shrink-0"
+                                            />
+                                        </div>
                                         {/* Image */}
                                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                                             <img
                                                 src={getImageUrl(item.barangId?.foto, 'https://via.placeholder.com/80')}
                                                 alt={item.barangId?.namaBarang}
-                                                className="w-full h-full object-cover"
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                             />
                                         </div>
 
@@ -285,14 +317,17 @@ const RiwayatAdmin = () => {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-start justify-between gap-2 mb-2">
                                                 <div>
-                                                    <h3 className="font-semibold text-gray-800 text-sm">
+                                                    <h3 className="font-semibold text-gray-800 text-sm group-hover:text-indigo-600 transition-colors">
                                                         {item.barangId?.namaBarang || 'Barang tidak ditemukan'}
                                                     </h3>
                                                     <p className="text-xs text-gray-500">
                                                         {item.jumlahPinjam} unit • {item.barangId?.kategori}
                                                     </p>
                                                 </div>
-                                                {getStatusBadge(item.status)}
+                                                <div className="flex items-center gap-2">
+                                                    {getStatusBadge(item.status)}
+                                                    <IoEye size={16} className="text-gray-300 group-hover:text-indigo-400 transition-colors opacity-0 group-hover:opacity-100" />
+                                                </div>
                                             </div>
 
                                             {/* User Info */}
@@ -319,22 +354,11 @@ const RiwayatAdmin = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Alasan jika ditolak */}
+                                            {/* Quick Preview of Rejection */}
                                             {item.status === 'Ditolak' && item.alasanPenolakan && (
-                                                <div className="mt-2 p-2 bg-red-50 rounded-lg">
-                                                    <p className="text-xs text-red-600">
-                                                        <span className="font-medium">Alasan: </span>
-                                                        {item.alasanPenolakan}
-                                                    </p>
+                                                <div className="mt-2 text-xs text-red-500 italic line-clamp-1">
+                                                    Alasan: {item.alasanPenolakan}
                                                 </div>
-                                            )}
-
-                                            {/* Keperluan */}
-                                            {item.keperluan && (
-                                                <p className="mt-2 text-xs text-gray-500 line-clamp-1">
-                                                    <span className="font-medium">Keperluan: </span>
-                                                    {item.keperluan}
-                                                </p>
                                             )}
                                         </div>
                                     </div>
@@ -351,6 +375,163 @@ const RiwayatAdmin = () => {
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
             />
+
+            {/* Detail Modal */}
+            <Modal
+                isOpen={showDetailModal}
+                onClose={() => setShowDetailModal(false)}
+                title="Detail Peminjaman & Pengembalian"
+                size="lg"
+            >
+                {selectedItem && (
+                    <div className="space-y-6">
+                        {/* Status Banner */}
+                        <div className={`p-4 rounded-xl border flex items-center justify-between ${selectedItem.status === 'Selesai' ? 'bg-blue-50 border-blue-100' :
+                            selectedItem.status === 'Disetujui' ? 'bg-green-50 border-green-100' :
+                                selectedItem.status === 'Ditolak' ? 'bg-red-50 border-red-100' : 'bg-amber-50 border-amber-100'
+                            }`}>
+                            <div className="flex items-center gap-3">
+                                {selectedItem.status === 'Selesai' ? <IoCheckmarkCircle className="text-blue-500" size={24} /> :
+                                    selectedItem.status === 'Disetujui' ? <IoCheckmarkCircle className="text-green-500" size={24} /> :
+                                        selectedItem.status === 'Ditolak' ? <IoClose className="text-red-500" size={24} /> : <IoTime className="text-amber-500" size={24} />
+                                }
+                                <div>
+                                    <p className="text-sm font-bold text-gray-800">Status: {selectedItem.status}</p>
+                                    <p className="text-xs text-gray-600">ID: {selectedItem._id}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Left: Barang and User Info */}
+                            <div className="space-y-6">
+                                <div>
+                                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Informasi Barang</h4>
+                                    <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                                            <img src={getImageUrl(selectedItem.barangId?.foto)} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-800">{selectedItem.barangId?.namaBarang}</p>
+                                            <p className="text-xs text-gray-500">{selectedItem.barangId?.kategori}</p>
+                                            <p className="text-xs font-medium text-indigo-600 mt-1">{selectedItem.jumlahPinjam} Unit dipinjam</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Peminjam</h4>
+                                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                        <p className="text-sm font-bold text-gray-800">{selectedItem.userId?.nama}</p>
+                                        <p className="text-xs text-gray-500">{selectedItem.userId?.kelas} • {selectedItem.userId?.email}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right: Dates and Notes */}
+                            <div className="space-y-6">
+                                <div>
+                                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Waktu Peminjaman</h4>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm py-2 border-b border-gray-50">
+                                            <span className="text-gray-500">Tgl Pinjam</span>
+                                            <span className="font-medium">{format(new Date(selectedItem.tanggalPinjam), 'dd MMMM yyyy', { locale: id })}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm py-2 border-b border-gray-50">
+                                            <span className="text-gray-500">Tgl Kembali</span>
+                                            <span className="font-medium text-amber-600">{format(new Date(selectedItem.tanggalKembali), 'dd MMMM yyyy', { locale: id })}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm py-2">
+                                            <span className="text-gray-500">Lama Pinjam</span>
+                                            <span className="font-medium">{selectedItem.waktuPinjam}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Keperluan</h4>
+                                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100 min-h-[60px]">
+                                        {selectedItem.keperluan || '-'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Pengembalian Detail Section */}
+                        {(selectedItem.status === 'Selesai' || selectedItem.statusPengembalian === 'Menunggu Verifikasi') && (
+                            <div className="pt-6 border-t border-gray-100">
+                                <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                    <IoTime className="text-indigo-600" />
+                                    Data Pengembalian
+                                </h3>
+
+                                {detailLoading ? (
+                                    <div className="py-8 flex flex-col items-center justify-center gap-2">
+                                        <Loading size="sm" />
+                                        <p className="text-xs text-gray-500">Memuat detail pengembalian...</p>
+                                    </div>
+                                ) : returnDetail ? (
+                                    <div className="bg-indigo-50/30 rounded-2xl p-4 border border-indigo-100 space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Kondisi</p>
+                                                <Badge variant={
+                                                    returnDetail.kondisiBarang === 'baik' ? 'success' :
+                                                        returnDetail.kondisiBarang === 'rusak ringan' ? 'warning' : 'danger'
+                                                }>
+                                                    {returnDetail.kondisiBarang?.toUpperCase()}
+                                                </Badge>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Denda</p>
+                                                <p className={`text-sm font-bold ${returnDetail.denda > 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                                    Rp {returnDetail.denda?.toLocaleString('id-ID') || 0}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {returnDetail.fotoPengembalian && (
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Foto Dokumentasi</p>
+                                                <div className="w-full max-h-64 rounded-xl overflow-hidden border border-gray-200">
+                                                    <img src={getImageUrl(returnDetail.fotoPengembalian)} className="w-full h-full object-contain bg-black" />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {returnDetail.catatanPengembalian && (
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Catatan Siswa</p>
+                                                <p className="text-sm text-gray-700 italic">"{returnDetail.catatanPengembalian}"</p>
+                                            </div>
+                                        )}
+
+                                        {returnDetail.catatanAdmin && (
+                                            <div className="pt-3 border-t border-indigo-100/50">
+                                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Catatan Verifikasi</p>
+                                                <p className="text-sm text-indigo-700">{returnDetail.catatanAdmin}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center">
+                                        <p className="text-xs text-gray-500 italic">Detail pengembalian tidak ditemukan di server.</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="pt-4 flex justify-end">
+                            <Button
+                                variant="secondary"
+                                onClick={() => setShowDetailModal(false)}
+                            >
+                                Tutup
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 };

@@ -14,7 +14,8 @@ import {
   IoClose,
   IoChevronDown,
   IoSearch,
-  IoHelpCircle,
+  IoKey,
+  IoHelpCircle
 } from "react-icons/io5";
 import useAuth from "../../hooks/useAuth";
 import logoSiPinjam from "../../assets/logo/sipinjam.png";
@@ -91,16 +92,16 @@ const UserLayout = () => {
             {/* Logo */}
             <Link
               to="/beranda"
-              className="flex items-center gap-3 flex-shrink-0"
+              className="flex items-center gap-3 transition-transform active:scale-95"
             >
               <img
                 src={logoSiPinjam}
                 alt="Logo SiPinjam"
-                className="w-10 h-10 object-contain"
+                className="w-10 h-10 object-contain drop-shadow-2xl"
               />
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-white leading-tight">SiPinjam</h1>
-                <p className="text-[10px] text-gray-400">Peminjaman Barang</p>
+              <div className="flex flex-col">
+                <h1 className="text-lg font-black text-white leading-none tracking-tight">SiPinjam</h1>
+                <p className="text-[10px] text-purple-400 font-bold uppercase tracking-wider lg:hidden">Mobile</p>
               </div>
             </Link>
 
@@ -278,84 +279,59 @@ const UserLayout = () => {
                 </button>
               </div>
 
-              {/* Mobile Search */}
-              <div className="p-4 border-b border-white/5">
-                <form onSubmit={handleSearch} className="relative group">
-                  <IoSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search anything..."
-                    className="w-full bg-white/5 border border-white/5 text-white text-sm rounded-xl pl-11 pr-4 py-3 outline-none focus:border-purple-500/50 transition-all"
-                  />
-                </form>
-              </div>
+              <nav className="flex-1 overflow-y-auto p-6 space-y-4">
+                <p className="text-purple-400 font-black tracking-widest uppercase text-[10px] sm:text-sm mb-4 bg-purple-500/10 inline-block px-3 py-1 rounded-full border border-purple-500/20 backdrop-blur-md">
+                  Selamat Datang, {user?.nama}!
+                </p>
+                <Link
+                  to="/profile"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 overflow-hidden border border-purple-500/20">
+                    {user?.foto ? (
+                      <img
+                        src={getImageUrl(user.foto)}
+                        alt={user?.nama}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <IoPerson size={22} />
+                    )}
+                  </div>
+                  Profile Saya
+                </Link>
 
-              <nav className="flex-1 overflow-y-auto p-4 space-y-2">
-                <div className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 ml-4">Main Menu</div>
-                {navLinks.map((link) => {
-                  const Icon = link.icon;
-                  return (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      onClick={() => setShowMobileMenu(false)}
-                      className={`flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold transition-all ${isActive(link.path)
-                        ? "bg-purple-600 text-white shadow-xl shadow-purple-600/20"
-                        : "text-gray-400 hover:bg-white/5 hover:text-white"
-                        }`}
-                    >
-                      <Icon size={20} className={isActive(link.path) ? "text-white" : "text-gray-500"} />
-                      {link.label}
-                    </Link>
-                  );
-                })}
+                <Link
+                  to="/riwayat"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 border border-white/10">
+                    <IoTime size={22} />
+                  </div>
+                  Riwayat Peminjaman
+                </Link>
 
-                <div className="pt-8 mb-4 border-t border-white/5">
-                  <div className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4 ml-4">Account</div>
-                  <Link
-                    to="/profile"
-                    onClick={() => setShowMobileMenu(false)}
-                    className="flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 overflow-hidden">
-                      {user?.foto ? (
-                        <img
-                          src={getImageUrl(user.foto)}
-                          alt={user?.nama}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <IoPerson size={20} />
-                      )}
-                    </div>
-                    Profile Saya
-                  </Link>
-                  <Link
-                    to="/riwayat"
-                    onClick={() => setShowMobileMenu(false)}
-                    className="flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
-                  >
-                    <IoTime size={20} className="text-gray-500" />
-                    Riwayat Peminjaman
-                  </Link>
-                  <Link
-                    to="/bantuan"
-                    onClick={() => setShowMobileMenu(false)}
-                    className="flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
-                  >
-                    <IoHelpCircle size={20} className="text-gray-500" />
-                    Bantuan & Panduan
-                  </Link>
-                </div>
+                <Link
+                  to="/bantuan"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-bold text-gray-400 hover:bg-white/5 hover:text-white transition-all"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 border border-white/10">
+                    <IoHelpCircle size={22} />
+                  </div>
+                  Bantuan & Panduan
+                </Link>
 
-                <div className="pt-4 pb-12">
+                <div className="pt-6 mt-6 border-t border-white/10">
                   <button
                     onClick={() => { handleLogout(); setShowMobileMenu(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl text-sm font-bold text-red-400 hover:bg-red-500/10 transition-all border border-red-500/20"
+                    className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl text-base font-bold text-red-500 hover:bg-red-500/10 transition-all border border-red-500/20"
                   >
-                    <IoLogOut size={20} />
+                    <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                      <IoLogOut size={22} />
+                    </div>
                     Keluar
                   </button>
                 </div>
@@ -366,9 +342,52 @@ const UserLayout = () => {
       </header>
 
       {/* Main Content */}
-      <main className={`flex-1 ${location.pathname === '/beranda' ? '' : 'pt-24 lg:pt-28'}`}>
+      <main className={`flex-1 transition-all duration-300 ${location.pathname === '/beranda' ? '' : 'pt-24 lg:pt-28'} pb-24 lg:pb-0`}>
         <Outlet />
       </main>
+
+      {/* Bottom Navigation (Mobile Only) */}
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm">
+        <nav className="bg-black/60 backdrop-blur-2xl border border-white/10 px-6 py-4 flex items-center justify-around rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-t border-white/20">
+          {[
+            { path: "/beranda", label: "Beranda", icon: IoHome },
+            { path: "/barang", label: "Katalog", icon: IoLibrary },
+            { path: "/peminjaman", label: "Pinjam", icon: IoList },
+            { path: "/pengembalian", label: "Kembali", icon: IoCheckmarkCircle },
+            { path: "/profile", label: "Profil", icon: IoPerson },
+          ].map((link) => {
+            const Icon = link.icon;
+            const active = isActive(link.path);
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`relative flex flex-col items-center group transition-all duration-300 ${active ? "text-purple-400" : "text-gray-500"
+                  }`}
+              >
+                {active && (
+                  <motion.div
+                    layoutId="nav-glow"
+                    className="absolute -top-4 w-12 h-12 bg-purple-500/20 blur-xl rounded-full -z-10"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  />
+                )}
+                <div className={`transition-transform duration-300 ${active ? "scale-125 -translate-y-1" : "group-active:scale-90"}`}>
+                  <Icon size={24} />
+                </div>
+                {active && (
+                  <motion.div
+                    layoutId="nav-dot"
+                    className="absolute -bottom-2 w-1 h-1 bg-purple-400 rounded-full"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
 
       {/* Footer */}
       <footer className="bg-neutral-950 border-t border-white/5">

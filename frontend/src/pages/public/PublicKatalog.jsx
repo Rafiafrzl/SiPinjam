@@ -191,15 +191,18 @@ const PublicKatalog = () => {
                         {/* Product Grid */}
                         <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                             {paginatedBarang.map((item) => {
-                                const isRusak = item.kondisi === 'rusak ringan' || item.kondisi === 'rusak berat';
-                                const canBorrow = item.jumlahTersedia > 0 && !isRusak;
+                                const isRusakRingan = item.kondisi === 'rusak ringan';
+                                const isRusakBerat = item.kondisi === 'rusak berat';
+                                const canBorrow = item.jumlahTersedia > 0 && !isRusakBerat;
 
                                 return (
                                     <div
                                         key={item._id}
-                                        className={`flex flex-col bg-neutral-900 rounded-xl overflow-hidden border transition-colors group ${isRusak
-                                            ? 'border-orange-500/30 opacity-70'
-                                            : 'border-neutral-800 hover:border-purple-500/30'
+                                        className={`flex flex-col bg-neutral-900 rounded-xl overflow-hidden border transition-colors group ${isRusakBerat
+                                            ? 'border-red-500/30 opacity-70'
+                                            : isRusakRingan
+                                                ? 'border-orange-500/30'
+                                                : 'border-neutral-800 hover:border-purple-500/30'
                                             }`}
                                     >
                                         {/* Image */}
@@ -210,8 +213,8 @@ const PublicKatalog = () => {
                                             <img
                                                 src={getImageUrl(item.foto)}
                                                 alt={item.namaBarang}
-                                                className={`w-full h-full object-cover ${!isRusak && 'group-hover:scale-105'
-                                                    } transition-transform duration-300`}
+                                                className={`w-full h-full object-cover ${!isRusakBerat && 'group-hover:scale-105'
+                                                    } transition-transform duration-300 ${isRusakBerat ? 'grayscale' : ''}`}
                                             />
 
                                             {/* Expand Icon */}
@@ -221,16 +224,20 @@ const PublicKatalog = () => {
 
                                             {/* Status Badge */}
                                             <div className="absolute top-2 left-2">
-                                                {isRusak ? (
-                                                    <span className="px-2 py-1 text-xs font-medium rounded bg-orange-500 text-white">
-                                                        Rusak
+                                                {isRusakBerat ? (
+                                                    <span className="px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded bg-red-500 text-white">
+                                                        Rusak Berat
+                                                    </span>
+                                                ) : isRusakRingan ? (
+                                                    <span className="px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded bg-orange-500 text-white">
+                                                        Rusak Ringan
                                                     </span>
                                                 ) : (
-                                                    <span className={`px-2 py-1 text-xs font-medium rounded ${item.jumlahTersedia > 0
-                                                        ? 'bg-green-500 text-white'
+                                                    <span className={`px-2 py-1 text-[10px] font-black uppercase tracking-widest rounded ${item.jumlahTersedia > 0
+                                                        ? 'bg-emerald-500 text-white'
                                                         : 'bg-red-500 text-white'
                                                         }`}>
-                                                        {item.jumlahTersedia > 0 ? 'Tersedia' : 'Barang tidak tersedia'}
+                                                        {item.jumlahTersedia > 0 ? 'Tersedia' : 'Kosong'}
                                                     </span>
                                                 )}
                                             </div>
@@ -253,6 +260,16 @@ const PublicKatalog = () => {
                                         <div className="p-3 flex flex-col flex-1">
                                             <h3 className="font-medium text-white text-sm truncate">{item.namaBarang}</h3>
                                             <p className="text-gray-600 text-xs capitalize">{item.kategori}</p>
+                                            {isRusakBerat && (
+                                                <p className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded mt-2 font-bold">
+                                                    ⚠️ Tidak dapat dipinjam
+                                                </p>
+                                            )}
+                                            {isRusakRingan && (
+                                                <p className="text-[10px] text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-1 rounded mt-2 font-bold">
+                                                    ℹ️ Rusak ringan
+                                                </p>
+                                            )}
                                             {item.lokasi && (
                                                 <p className="text-gray-600 text-xs flex items-center gap-1 mt-1">
                                                     <IoLocation size={12} />

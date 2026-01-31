@@ -33,22 +33,10 @@ const Pengembalian = () => {
   const fetchPengembalian = async () => {
     try {
       setLoading(true);
-      // Fetch from peminjaman endpoint with statusPengembalian filter
-      const response = await api.get('/peminjaman/admin/all');
-      let data = response.data.data || response.data || [];
-
-      // Filter by status pengembalian
-      data = data.filter(item => {
-        // Only show items with Menunggu Verifikasi or Sudah Dikembalikan status
-        return item.statusPengembalian === 'Menunggu Verifikasi' ||
-          item.statusPengembalian === 'Sudah Dikembalikan';
-      });
-
-      // Apply status filter if selected
-      if (statusFilter) {
-        data = data.filter(item => item.statusPengembalian === statusFilter);
-      }
-
+      const params = {};
+      if (statusFilter) params.status = statusFilter;
+      const response = await api.get('/pengembalian', { params });
+      const data = response.data.data || [];
       setPengembalian(data);
     } catch (err) {
       Toast.error(err.response?.data?.message || 'Gagal memuat data pengembalian');
@@ -79,7 +67,7 @@ const Pengembalian = () => {
         statusVerifikasi,
         denda: selectedPengembalian?.kondisiPengembalian === 'rusak berat' ? denda : 0
       };
-      await api.put(`/peminjaman/admin/${id}/verify-return`, payload);
+      await api.put(`/pengembalian/${id}/verifikasi`, payload);
       Toast.success(`Pengembalian berhasil ${statusVerifikasi.toLowerCase()}`);
       setShowDetailModal(false);
       setDenda(0);
@@ -93,7 +81,7 @@ const Pengembalian = () => {
 
   const handleShowDetail = async (id) => {
     try {
-      const response = await api.get(`/peminjaman/${id}`);
+      const response = await api.get(`/pengembalian/${id}`);
       setSelectedPengembalian(response.data.data);
       setDenda(0); // Reset denda
       setShowDetailModal(true);
@@ -277,7 +265,7 @@ const Pengembalian = () => {
                       <td className="px-4 py-3">{item.barangId?.namaBarang}</td>
                       <td className="px-4 py-3">{item.jumlahPinjam} unit</td>
                       <td className="px-4 py-3">
-                        {item.kondisiPengembalian ? getKondisiBadge(item.kondisiPengembalian) : '-'}
+                        {item.kondisiBarang ? getKondisiBadge(item.kondisiBarang) : '-'}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
@@ -346,15 +334,15 @@ const Pengembalian = () => {
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-800">Informasi Pengembalian</h3>
 
-              {selectedPengembalian.kondisiPengembalian && (
+              {selectedPengembalian.kondisiBarang && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Kondisi Barang:</span>
-                  {getKondisiBadge(selectedPengembalian.kondisiPengembalian)}
+                  {getKondisiBadge(selectedPengembalian.kondisiBarang)}
                 </div>
               )}
 
               {/* Warning untuk Rusak Ringan */}
-              {selectedPengembalian.kondisiPengembalian === 'rusak ringan' && selectedPengembalian.statusPengembalian === 'Menunggu Verifikasi' && (
+              {selectedPengembalian.kondisiBarang === 'rusak ringan' && selectedPengembalian.statusVerifikasi === 'Menunggu Verifikasi' && (
                 <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <IoWarning className="text-yellow-600 mt-0.5 flex-shrink-0" size={20} />
                   <div className="text-sm text-yellow-800">
@@ -365,7 +353,7 @@ const Pengembalian = () => {
               )}
 
               {/* Denda untuk Rusak Berat */}
-              {selectedPengembalian.kondisiPengembalian === 'rusak berat' && selectedPengembalian.statusPengembalian === 'Menunggu Verifikasi' && (
+              {selectedPengembalian.kondisiBarang === 'rusak berat' && selectedPengembalian.statusVerifikasi === 'Menunggu Verifikasi' && (
                 <div className="space-y-2">
                   <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                     <IoWarning className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
@@ -415,12 +403,12 @@ const Pengembalian = () => {
 
               <div className="flex justify-between pt-3 border-t">
                 <span className="text-gray-600">Status Pengembalian:</span>
-                {getStatusBadge(selectedPengembalian.statusPengembalian)}
+                {getStatusBadge(selectedPengembalian.statusVerifikasi)}
               </div>
             </div>
 
             {/* Actions */}
-            {selectedPengembalian.statusPengembalian === 'Menunggu Verifikasi' && (
+            {selectedPengembalian.statusVerifikasi === 'Menunggu Verifikasi' && (
               <div className="flex gap-3 pt-4 border-t">
                 <Button
                   variant="success"
@@ -443,7 +431,7 @@ const Pengembalian = () => {
               </div>
             )}
 
-            {selectedPengembalian.statusPengembalian !== 'Menunggu Verifikasi' && (
+            {selectedPengembalian.statusVerifikasi !== 'Menunggu Verifikasi' && (
               <Button
                 variant="secondary"
                 fullWidth

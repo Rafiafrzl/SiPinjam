@@ -223,7 +223,7 @@ const Profile = () => {
         </div>
 
         {/* Profile Info */}
-        <div className="bg-neutral-900 rounded-2xl p-4 sm:p-6 border border-neutral-800">
+        <div className="bg-neutral-900/40 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/5 shadow-2xl">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-purple-600 rounded-full inline-block"></span>
             Informasi Profil
@@ -329,7 +329,7 @@ const Profile = () => {
         </div>
 
         {/* Change Password */}
-        <div className="bg-neutral-900 rounded-2xl p-4 sm:p-6 border border-neutral-800 shadow-xl shadow-black/5">
+        <div className="bg-neutral-900/40 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-white/5 shadow-2xl shadow-black/20">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-rose-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-rose-600/20">

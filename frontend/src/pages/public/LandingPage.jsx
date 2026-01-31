@@ -203,7 +203,7 @@ const LandingPage = () => {
                             Kenapa Pakai SiPinjam?
                         </h2>
                         <p className="text-gray-500">
-                            Keuntungan menggunakan sistem peminjaman online
+                            Keuntungan menggunakan sistem peminjaman
                         </p>
                     </div>
 

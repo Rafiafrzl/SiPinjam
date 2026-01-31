@@ -39,7 +39,7 @@ const FormPeminjaman = () => {
             const response = await api.get(`/barang/${id}`);
             const data = response.data.data;
 
-            if (data.jumlahTersedia === 0 || data.kondisi.includes('rusak')) {
+            if (data.jumlahTersedia === 0 || data.kondisi === 'rusak berat') {
                 Toast.error('Barang tidak tersedia untuk dipinjam');
                 navigate('/barang');
                 return;

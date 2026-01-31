@@ -1,6 +1,16 @@
 @import "react-toastify/dist/ReactToastify.css";
 @import "tailwindcss";
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
 html,
 body {
     overscroll-behavior: none;
