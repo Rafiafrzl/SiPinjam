@@ -31,6 +31,7 @@ const Barang = () => {
 
   // Modal states
   const [previewImage, setPreviewImage] = useState(null);
+  const [warningModal, setWarningModal] = useState({ show: false, item: null });
 
   // Fetch data ketika search atau kategori berubah
   useEffect(() => {
@@ -54,7 +55,19 @@ const Barang = () => {
   };
 
   const handlePinjamClick = (item) => {
-    navigate(`/pinjam/${item._id}`);
+    // Jika rusak ringan, tampilkan modal peringatan
+    if (item.kondisi === 'rusak ringan') {
+      setWarningModal({ show: true, item });
+    } else {
+      navigate(`/pinjam/${item._id}`);
+    }
+  };
+
+  const handleConfirmBorrow = () => {
+    if (warningModal.item) {
+      navigate(`/pinjam/${warningModal.item._id}`);
+    }
+    setWarningModal({ show: false, item: null });
   };
 
   const categories = [
@@ -187,15 +200,18 @@ const Barang = () => {
         <>
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {paginatedBarang.map((item) => {
-              const isRusak = item.kondisi === 'rusak ringan' || item.kondisi === 'rusak berat';
-              const canBorrow = item.jumlahTersedia > 0 && !isRusak;
+              const isRusakBerat = item.kondisi === 'rusak berat';
+              const isRusakRingan = item.kondisi === 'rusak ringan';
+              const canBorrow = item.jumlahTersedia > 0 && !isRusakBerat;
 
               return (
                 <div
                   key={item._id}
-                  className={`flex flex-col bg-neutral-900 rounded-xl overflow-hidden border transition-colors group ${isRusak
-                    ? 'border-orange-500/30 opacity-70'
-                    : 'border-neutral-800 hover:border-purple-500/30'
+                  className={`flex flex-col bg-neutral-900 rounded-xl overflow-hidden border transition-colors group ${isRusakBerat
+                    ? 'border-red-500/30 opacity-60'
+                    : isRusakRingan
+                      ? 'border-orange-500/30'
+                      : 'border-neutral-800 hover:border-purple-500/30'
                     }`}
                 >
                   {/* Image */}
@@ -206,7 +222,7 @@ const Barang = () => {
                     <img
                       src={getImageUrl(item.foto)}
                       alt={item.namaBarang}
-                      className={`w-full h-full object-cover ${!isRusak && 'group-hover:scale-105'
+                      className={`w-full h-full object-cover ${!isRusakBerat && 'group-hover:scale-105'
                         } transition-transform duration-300`}
                     />
 
@@ -217,9 +233,13 @@ const Barang = () => {
 
                     {/* Status Badge */}
                     <div className="absolute top-2 left-2">
-                      {isRusak ? (
+                      {isRusakBerat ? (
+                        <span className="px-2 py-1 text-xs font-medium rounded bg-red-500 text-white">
+                          Rusak Berat
+                        </span>
+                      ) : isRusakRingan ? (
                         <span className="px-2 py-1 text-xs font-medium rounded bg-orange-500 text-white">
-                          {item.kondisi === 'rusak berat' ? 'Rusak Berat' : 'Rusak Ringan'}
+                          Rusak Ringan
                         </span>
                       ) : (
                         <span className={`px-2 py-1 text-xs font-medium rounded ${item.jumlahTersedia > 0
@@ -243,9 +263,14 @@ const Barang = () => {
                       </p>
                     )}
 
-                    {isRusak && (
-                      <p className="text-[10px] text-orange-400 bg-orange-500/10 px-2 py-1 rounded mt-2">
+                    {isRusakBerat && (
+                      <p className="text-[10px] text-red-400 bg-red-500/10 px-2 py-1 rounded mt-2">
                         ⚠️ Tidak dapat dipinjam
+                      </p>
+                    )}
+                    {isRusakRingan && (
+                      <p className="text-[10px] text-orange-400 bg-orange-500/10 px-2 py-1 rounded mt-2">
+                        ⚠️ Kondisi rusak ringan
                       </p>
                     )}
 
@@ -258,11 +283,13 @@ const Barang = () => {
                         onClick={() => handlePinjamClick(item)}
                         disabled={!canBorrow}
                         className={`w-full px-3 py-2 text-xs font-semibold rounded-lg transition-all ${canBorrow
-                          ? 'bg-purple-600 text-white hover:bg-purple-500 active:scale-95'
+                          ? isRusakRingan
+                            ? 'bg-orange-600 text-white hover:bg-orange-500 active:scale-95'
+                            : 'bg-purple-600 text-white hover:bg-purple-500 active:scale-95'
                           : 'bg-neutral-700 text-gray-500 cursor-not-allowed'
                           }`}
                       >
-                        {isRusak ? 'Tidak Tersedia' : canBorrow ? 'Pinjam' : 'Barang tidak tersedia'}
+                        {isRusakBerat ? 'Tidak Tersedia' : canBorrow ? 'Pinjam' : 'Barang tidak tersedia'}
                       </button>
                     </div>
                   </div>
@@ -325,6 +352,70 @@ const Barang = () => {
             className="max-w-full max-h-full object-contain rounded-lg"
             onClick={(e) => e.stopPropagation()}
           />
+        </div>
+      )}
+
+      {/* Warning Modal for Rusak Ringan */}
+      {warningModal.show && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-200"
+          onClick={() => setWarningModal({ show: false, item: null })}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-neutral-900 border border-orange-500/30 rounded-xl p-8 max-w-md w-full relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setWarningModal({ show: false, item: null })}
+              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+            >
+              <IoClose size={24} />
+            </button>
+
+            {/* Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-orange-500/20 rounded-full flex items-center justify-center">
+                <span className="text-4xl">⚠️</span>
+              </div>
+            </div>
+
+            {/* Header */}
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-bold text-white mb-2">Peringatan Kondisi Barang</h3>
+              <p className="text-sm text-gray-400">
+                Barang dalam kondisi rusak ringan
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 mb-6 text-center">
+              <p className="text-sm text-orange-200 mb-2">
+                Barang <span className="font-semibold text-orange-300">{warningModal.item?.namaBarang}</span> memiliki kondisi <span className="font-semibold">rusak ringan</span>.
+              </p>
+              <p className="text-sm text-gray-400">
+                Anda masih dapat meminjam barang ini, namun harap berhati-hati dalam penggunaannya.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setWarningModal({ show: false, item: null })}
+                className="flex-1 px-4 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-medium rounded-lg transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmBorrow}
+                className="flex-1 px-4 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-medium rounded-lg transition-colors"
+              >
+                Lanjut Pinjam
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
     </motion.div>

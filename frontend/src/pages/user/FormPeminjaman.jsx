@@ -21,6 +21,7 @@ const FormPeminjaman = () => {
     const [barang, setBarang] = useState(null);
     const [loading, setLoading] = useState(true);
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [dateError, setDateError] = useState('');
     const [formData, setFormData] = useState({
         jumlahPinjam: 1,
         tanggalPinjam: '',
@@ -55,12 +56,35 @@ const FormPeminjaman = () => {
         }
     };
 
+    const validateDates = (tanggalPinjam, tanggalKembali) => {
+        if (tanggalPinjam && tanggalKembali) {
+            const borrowDate = new Date(tanggalPinjam);
+            const returnDate = new Date(tanggalKembali);
+
+            if (returnDate < borrowDate) {
+                setDateError('Estimasi kembali tidak boleh lebih awal dari tanggal pinjam');
+                return false;
+            }
+        }
+        setDateError('');
+        return true;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validate quantity
         if (formData.jumlahPinjam > barang.jumlahTersedia) {
             Toast.error('Jumlah melebihi stok tersedia');
             return;
         }
+
+        // Validate dates
+        if (!validateDates(formData.tanggalPinjam, formData.tanggalKembali)) {
+            Toast.error('Estimasi kembali tidak boleh lebih awal dari tanggal pinjam');
+            return;
+        }
+
         try {
             setSubmitLoading(true);
             await api.post('/peminjaman', {
@@ -174,7 +198,11 @@ const FormPeminjaman = () => {
                                         <input
                                             type="date"
                                             value={formData.tanggalPinjam}
-                                            onChange={(e) => setFormData({ ...formData, tanggalPinjam: e.target.value })}
+                                            onChange={(e) => {
+                                                const newValue = e.target.value;
+                                                setFormData({ ...formData, tanggalPinjam: newValue });
+                                                validateDates(newValue, formData.tanggalKembali);
+                                            }}
                                             className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:outline-none focus:border-purple-500 transition-all text-sm [color-scheme:dark]"
                                             required
                                         />
@@ -206,11 +234,23 @@ const FormPeminjaman = () => {
                                         <input
                                             type="date"
                                             value={formData.tanggalKembali}
-                                            onChange={(e) => setFormData({ ...formData, tanggalKembali: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:outline-none focus:border-purple-500 transition-all text-sm [color-scheme:dark]"
+                                            min={formData.tanggalPinjam}
+                                            onChange={(e) => {
+                                                const newValue = e.target.value;
+                                                setFormData({ ...formData, tanggalKembali: newValue });
+                                                validateDates(formData.tanggalPinjam, newValue);
+                                            }}
+                                            className={`w-full pl-12 pr-4 py-3 bg-neutral-800 border rounded-xl text-white focus:outline-none transition-all text-sm [color-scheme:dark] ${dateError ? 'border-red-500 focus:border-red-500' : 'border-neutral-700 focus:border-purple-500'
+                                                }`}
                                             required
                                         />
                                     </div>
+                                    {dateError && (
+                                        <p className="text-red-400 text-xs mt-2 ml-1 flex items-center gap-1">
+                                            <IoAlertCircle size={14} />
+                                            {dateError}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
