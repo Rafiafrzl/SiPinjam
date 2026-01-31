@@ -124,9 +124,41 @@ const deleteNotifikasi = async (req, res) => {
   }
 };
 
+// Hapus banyak notifikasi sekaligus
+const bulkDeleteNotifikasi = async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'IDs notifikasi tidak valid'
+      });
+    }
+
+    // Hapus hanya notifikasi milik user yang login
+    const result = await Notifikasi.deleteMany({
+      _id: { $in: ids },
+      userId: req.user._id
+    });
+
+    res.json({
+      success: true,
+      message: `${result.deletedCount} notifikasi berhasil dihapus`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 export {
   getNotifikasiUser,
   markAsRead,
   markAllAsRead,
-  deleteNotifikasi
+  deleteNotifikasi,
+  bulkDeleteNotifikasi
 };

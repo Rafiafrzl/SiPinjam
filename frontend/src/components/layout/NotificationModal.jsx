@@ -7,9 +7,12 @@ import {
     IoTime,
     IoClose,
     IoTrash,
-    IoAlert
+    IoAlert,
+    IoCheckbox,
+    IoSquareOutline
 } from 'react-icons/io5';
 import Toast from '../ui/Toast';
+import { Alert } from '../ui/Alert';
 import Loading from '../ui/Loading';
 import api from '../../utils/api';
 import { format } from 'date-fns';
@@ -19,6 +22,8 @@ const NotificationModal = ({ isOpen, onClose }) => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -63,10 +68,55 @@ const NotificationModal = ({ isOpen, onClose }) => {
         try {
             await api.delete(`/notifikasi/${id}`);
             setNotifications(prev => prev.filter(n => n._id !== id));
+            setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
             Toast.success('Notifikasi dihapus');
         } catch (err) {
             Toast.error('Gagal menghapus notifikasi');
         }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.length === 0) return;
+
+        const confirmed = await Alert.confirm(
+            `Apakah Anda yakin ingin menghapus ${selectedIds.length} notifikasi yang dipilih? Tindakan ini tidak dapat dibatalkan.`,
+            'Konfirmasi Hapus',
+            'Hapus',
+            'Batal'
+        );
+
+        if (!confirmed) return;
+
+        try {
+            setIsDeleting(true);
+            await api.delete('/notifikasi/bulk', {
+                data: { ids: selectedIds }
+            });
+            setNotifications(prev => prev.filter(n => !selectedIds.includes(n._id)));
+            setSelectedIds([]);
+            window.dispatchEvent(new Event('notificationUpdated'));
+            Toast.success(`${selectedIds.length} notifikasi berhasil dihapus`);
+        } catch (err) {
+            Toast.error('Gagal menghapus notifikasi');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === filteredNotifications.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filteredNotifications.map(n => n._id));
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id)
+                ? prev.filter(selectedId => selectedId !== id)
+                : [...prev, id]
+        );
     };
 
     const getIcon = (type) => {
@@ -147,8 +197,8 @@ const NotificationModal = ({ isOpen, onClose }) => {
                                         key={tab.value}
                                         onClick={() => setFilter(tab.value)}
                                         className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${filter === tab.value
-                                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20'
-                                                : 'text-gray-400 hover:text-white'
+                                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20'
+                                            : 'text-gray-400 hover:text-white'
                                             }`}
                                     >
                                         {tab.label}
@@ -157,15 +207,43 @@ const NotificationModal = ({ isOpen, onClose }) => {
                             </div>
 
                             {/* Actions */}
-                            {unreadCount > 0 && (
-                                <button
-                                    onClick={handleMarkAllRead}
-                                    className="w-full mb-6 py-3 border border-purple-500/30 bg-purple-500/5 text-purple-400 text-xs font-bold rounded-xl hover:bg-purple-500/10 transition-all flex items-center justify-center gap-2"
-                                >
-                                    <IoCheckmarkDone size={18} />
-                                    Tandai Semua Dibaca
-                                </button>
-                            )}
+                            <div className="space-y-3 mb-6">
+                                {unreadCount > 0 && (
+                                    <button
+                                        onClick={handleMarkAllRead}
+                                        className="w-full py-3 border border-purple-500/30 bg-purple-500/5 text-purple-400 text-xs font-bold rounded-xl hover:bg-purple-500/10 transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <IoCheckmarkDone size={18} />
+                                        Tandai Semua Dibaca
+                                    </button>
+                                )}
+
+                                {filteredNotifications.length > 0 && (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={toggleSelectAll}
+                                            className="flex-1 py-3 border border-neutral-700 bg-neutral-800/50 text-gray-300 text-xs font-bold rounded-xl hover:bg-neutral-700 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            {selectedIds.length === filteredNotifications.length ? (
+                                                <><IoCheckbox size={18} /> Batal Pilih Semua</>
+                                            ) : (
+                                                <><IoSquareOutline size={18} /> Pilih Semua</>
+                                            )}
+                                        </button>
+
+                                        {selectedIds.length > 0 && (
+                                            <button
+                                                onClick={handleBulkDelete}
+                                                disabled={isDeleting}
+                                                className="flex-1 py-3 border border-red-500/30 bg-red-500/5 text-red-400 text-xs font-bold rounded-xl hover:bg-red-500/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <IoTrash size={16} />
+                                                {isDeleting ? 'Menghapus...' : `Hapus (${selectedIds.length})`}
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 
                             {loading ? (
                                 <div className="flex flex-col items-center justify-center py-20">
@@ -186,56 +264,73 @@ const NotificationModal = ({ isOpen, onClose }) => {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {filteredNotifications.map((item) => (
-                                        <motion.div
-                                            layout
-                                            key={item._id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className={`group p-4 rounded-2xl border transition-all duration-300 ${item.isRead
-                                                    ? 'bg-white/[0.02] border-white/5'
-                                                    : 'bg-purple-500/5 border-purple-500/20 shadow-lg shadow-purple-500/5'
-                                                }`}
-                                        >
-                                            <div className="flex gap-4">
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.isRead ? 'bg-white/5' : 'bg-purple-600 shadow-lg shadow-purple-600/20'
-                                                    }`}>
-                                                    {getIcon(item.type)}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-start justify-between gap-2 mb-1">
-                                                        <h4 className={`text-sm tracking-tight ${item.isRead ? 'text-gray-400' : 'font-bold text-white'}`}>
-                                                            {item.judul}
-                                                        </h4>
-                                                        <span className="text-[10px] text-gray-500 whitespace-nowrap">
-                                                            {format(new Date(item.createdAt), 'dd MMM', { locale: id })}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xs text-gray-500 leading-relaxed mb-3">
-                                                        {item.pesan}
-                                                    </p>
-                                                    <div className="flex items-center gap-4">
-                                                        {!item.isRead && (
-                                                            <button
-                                                                onClick={() => handleMarkAsRead(item._id)}
-                                                                className="text-[10px] text-purple-400 font-bold hover:text-purple-300 flex items-center gap-1"
-                                                            >
-                                                                <IoCheckmarkDone size={14} />
-                                                                Baca
-                                                            </button>
+                                    {filteredNotifications.map((item) => {
+                                        const isSelected = selectedIds.includes(item._id);
+                                        return (
+                                            <motion.div
+                                                layout
+                                                key={item._id}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className={`group p-4 rounded-2xl border transition-all duration-300 ${isSelected
+                                                    ? 'bg-purple-500/10 border-purple-500/40 shadow-lg shadow-purple-500/10'
+                                                    : item.isRead
+                                                        ? 'bg-white/[0.02] border-white/5'
+                                                        : 'bg-purple-500/5 border-purple-500/20 shadow-lg shadow-purple-500/5'
+                                                    }`}
+                                            >
+                                                <div className="flex gap-4">
+                                                    {/* Checkbox */}
+                                                    <button
+                                                        onClick={() => toggleSelect(item._id)}
+                                                        className="flex-shrink-0 w-5 h-5 mt-1"
+                                                    >
+                                                        {isSelected ? (
+                                                            <IoCheckbox className="text-purple-500" size={20} />
+                                                        ) : (
+                                                            <IoSquareOutline className="text-gray-600 group-hover:text-gray-400" size={20} />
                                                         )}
-                                                        <button
-                                                            onClick={() => handleDelete(item._id)}
-                                                            className="text-[10px] text-red-500/70 font-bold hover:text-red-400 flex items-center gap-1"
-                                                        >
-                                                            <IoTrash size={12} />
-                                                            Hapus
-                                                        </button>
+                                                    </button>
+
+                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${item.isRead ? 'bg-white/5' : 'bg-purple-600 shadow-lg shadow-purple-600/20'
+                                                        }`}>
+                                                        {getIcon(item.type)}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-start justify-between gap-2 mb-1">
+                                                            <h4 className={`text-sm tracking-tight ${item.isRead ? 'text-gray-400' : 'font-bold text-white'}`}>
+                                                                {item.judul}
+                                                            </h4>
+                                                            <span className="text-[10px] text-gray-500 whitespace-nowrap">
+                                                                {format(new Date(item.createdAt), 'dd MMM', { locale: id })}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                                                            {item.pesan}
+                                                        </p>
+                                                        <div className="flex items-center gap-4">
+                                                            {!item.isRead && (
+                                                                <button
+                                                                    onClick={() => handleMarkAsRead(item._id)}
+                                                                    className="text-[10px] text-purple-400 font-bold hover:text-purple-300 flex items-center gap-1"
+                                                                >
+                                                                    <IoCheckmarkDone size={14} />
+                                                                    Baca
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                onClick={() => handleDelete(item._id)}
+                                                                className="text-[10px] text-red-500/70 font-bold hover:text-red-400 flex items-center gap-1"
+                                                            >
+                                                                <IoTrash size={12} />
+                                                                Hapus
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </motion.div>
-                                    ))}
+                                            </motion.div>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
