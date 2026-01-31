@@ -130,7 +130,7 @@ const PeminjamanUser = () => {
                 </div>
 
                 {/* Table Section */}
-                <div className="bg-neutral-900/30 border border-white/5 rounded-2xl overflow-hidden">
+                <div className="bg-neutral-900/50 border border-white/5 rounded-2xl overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>

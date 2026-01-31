@@ -133,7 +133,11 @@ const PengembalianUser = () => {
     };
 
     if (loading) {
-        return <Loading fullScreen theme="dark" text="Memuat data pengembalian..." />;
+        return (
+            <div className="flex justify-center items-center min-h-[400px]">
+                <Loading size="lg" text="Memuat data pengembalian..." />
+            </div>
+        );
     }
 
     const filteredData = pengembalian.filter(item =>
@@ -142,10 +146,10 @@ const PengembalianUser = () => {
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8">
-            <div className="max-w-7xl mx-auto space-y-8">
+            <div className="max-w-[1600px] mx-auto space-y-8">
                 {/* Header Section */}
                 <div>
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-violet-400 to-purple-600 bg-clip-text text-transparent mb-2">
+                    <h1 className="text-3xl font-bold text-white mb-2">
                         Pengembalian Barang
                     </h1>
                     <p className="text-gray-400">Kelola dan kembalikan barang yang sedang Anda pinjam</p>
