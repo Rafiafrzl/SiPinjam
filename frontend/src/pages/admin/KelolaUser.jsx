@@ -31,7 +31,7 @@ const KelolaUser = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [search, setSearch] = useState('');
-    const [filterStatus, setFilterStatus] = useState('all');
+    const [filterStatus, setFilterStatus] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [pagination, setPagination] = useState({});
 
@@ -56,7 +56,7 @@ const KelolaUser = () => {
                 limit: 10
             };
             if (search) params.search = search;
-            if (filterStatus !== 'all') params.isActive = filterStatus;
+            if (filterStatus !== '') params.isActive = filterStatus;
 
             const response = await api.get('/users', { params });
             setUsers(response.data.data);
@@ -188,13 +188,13 @@ const KelolaUser = () => {
                 <div className="flex justify-end">
                     <div className="w-full md:w-56">
                         <Select
+                            placeholder="Semua Status Akun"
                             value={filterStatus}
                             onChange={(e) => {
                                 setFilterStatus(e.target.value);
                                 setCurrentPage(1);
                             }}
                             options={[
-                                { value: "all", label: "Semua Status Akun" },
                                 { value: "true", label: "Hanya User Aktif" },
                                 { value: "false", label: "Hanya User Nonaktif" }
                             ]}

@@ -370,10 +370,10 @@ const KelolaBarang = () => {
             icon={<IoSearch size={20} />}
           />
           <Select
+            placeholder="Semua Kategori"
             value={kategoriFilter}
             onChange={(e) => setKategoriFilter(e.target.value)}
             options={[
-              { value: "", label: "Semua Kategori" },
               { value: "elektronik", label: "Elektronik" },
               { value: "olahraga", label: "Olahraga" },
             ]}
@@ -488,7 +488,13 @@ const KelolaBarang = () => {
                   </td>
                   <td className="px-4 py-3">
                     <Badge
-                      variant={item.kondisi === "baik" ? "success" : "warning"}
+                      variant={
+                        item.kondisi === "baik"
+                          ? "success"
+                          : item.kondisi === "rusak ringan"
+                            ? "warning"
+                            : "danger"
+                      }
                     >
                       {item.kondisi}
                     </Badge>
