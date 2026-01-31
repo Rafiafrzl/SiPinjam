@@ -13,8 +13,14 @@ const pengembalianSchema = new mongoose.Schema({
   },
   kondisiBarang: {
     type: String,
-    enum: ['Baik', 'Rusak Ringan', 'Rusak Berat', 'Hilang'],
-    required: true
+    enum: ['baik', 'rusak ringan', 'rusak berat', 'hilang'],
+    required: true,
+    trim: true,
+    lowercase: true
+  },
+  fotoPengembalian: {
+    type: String,
+    trim: true
   },
   jumlahDikembalikan: {
     type: Number,
@@ -23,7 +29,8 @@ const pengembalianSchema = new mongoose.Schema({
   },
   catatanPengembalian: {
     type: String,
-    default: ''
+    default: '',
+    trim: true
   },
   denda: {
     type: Number,
@@ -39,6 +46,10 @@ const pengembalianSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
+  },
+  catatanAdmin: {
+    type: String,
+    trim: true
   },
   statusVerifikasi: {
     type: String,

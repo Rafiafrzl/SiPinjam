@@ -43,15 +43,6 @@ const peminjamanSchema = new mongoose.Schema({
     enum: ['Belum Dikembalikan', 'Menunggu Verifikasi', 'Sudah Dikembalikan'],
     default: 'Belum Dikembalikan'
   },
-  kondisiPengembalian: {
-    type: String,
-    enum: ['baik', 'rusak ringan', 'rusak berat'],
-    trim: true
-  },
-  fotoPengembalian: {
-    type: String,
-    trim: true
-  },
   denda: {
     type: Number,
     default: 0,

@@ -6,56 +6,54 @@ import Notifikasi from '../models/Notifikasi.js';
 // Create pengembalian (User mengembalikan barang)
 const createPengembalian = async (req, res) => {
   try {
-    const { peminjamanId, kondisiBarang, jumlahDikembalikan, catatanPengembalian } = req.body;
-    const userId = req.user.id;
+    const { peminjamanId, kondisiBarang, catatanPengembalian } = req.body;
+    const userId = req.user._id;
 
     // Cek apakah peminjaman ada dan milik user ini
     const peminjaman = await Peminjaman.findById(peminjamanId).populate('barangId');
     if (!peminjaman) {
-      return res.status(404).json({ message: 'Peminjaman tidak ditemukan' });
+      return res.status(404).json({
+        success: false,
+        message: 'Peminjaman tidak ditemukan'
+      });
     }
 
-    if (peminjaman.userId.toString() !== userId) {
-      return res.status(403).json({ message: 'Anda tidak memiliki akses ke peminjaman ini' });
+    if (peminjaman.userId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Anda tidak memiliki akses ke peminjaman ini'
+      });
     }
 
     if (peminjaman.status !== 'Disetujui') {
-      return res.status(400).json({ message: 'Peminjaman belum disetujui' });
+      return res.status(400).json({
+        success: false,
+        message: 'Hanya peminjaman yang disetujui yang bisa dikembalikan'
+      });
     }
 
     // Cek apakah sudah ada pengembalian untuk peminjaman ini
     const existingPengembalian = await Pengembalian.findOne({ peminjamanId });
-    if (existingPengembalian) {
-      return res.status(400).json({ message: 'Pengembalian untuk peminjaman ini sudah ada' });
-    }
-
-    // Validasi jumlah dikembalikan
-    if (jumlahDikembalikan > peminjaman.jumlahPinjam) {
+    if (existingPengembalian && existingPengembalian.statusVerifikasi !== 'Ditolak') {
       return res.status(400).json({
-        message: 'Jumlah yang dikembalikan melebihi jumlah yang dipinjam'
+        success: false,
+        message: 'Pengembalian untuk peminjaman ini sudah ada atau sedang diproses'
       });
-    }
-
-    // Hitung denda hanya jika kondisi rusak atau hilang (tidak ada denda untuk keterlambatan)
-    let denda = 0;
-
-    if (kondisiBarang === 'Rusak Ringan') {
-      denda = 10000;
-    } else if (kondisiBarang === 'Rusak Berat') {
-      denda = 50000;
-    } else if (kondisiBarang === 'Hilang') {
-      denda = 100000;
     }
 
     // Buat pengembalian
     const pengembalian = new Pengembalian({
       peminjamanId,
-      kondisiBarang,
-      jumlahDikembalikan,
+      kondisiBarang: kondisiBarang.toLowerCase(),
+      jumlahDikembalikan: peminjaman.jumlahPinjam,
       catatanPengembalian,
-      denda,
       dikembalikanOleh: userId
     });
+
+    // Handle foto pengembalian
+    if (req.file) {
+      pengembalian.fotoPengembalian = req.file.path;
+    }
 
     await pengembalian.save();
 
@@ -63,21 +61,25 @@ const createPengembalian = async (req, res) => {
     peminjaman.statusPengembalian = 'Menunggu Verifikasi';
     await peminjaman.save();
 
-    // Buat notifikasi untuk admin
+    // Buat notifikasi untuk user
     await Notifikasi.create({
-      userId: peminjaman.disetujuiOleh || peminjaman.userId, // Kirim ke admin yang approve
-      peminjamanId,
-      judul: 'Pengembalian Barang Baru',
-      pesan: `User ${req.user.nama} telah mengembalikan ${peminjaman.barangId.namaBarang}. Mohon verifikasi.`,
-      tipe: 'pengembalian'
+      userId: userId,
+      peminjamanId: peminjaman._id,
+      judul: 'Permintaan Pengembalian Dikirim',
+      pesan: `Permintaan pengembalian ${peminjaman.barangId.namaBarang} telah dikirim. Menunggu verifikasi admin.`,
+      tipe: 'info'
     });
 
     res.status(201).json({
-      message: 'Pengembalian berhasil dibuat. Menunggu verifikasi admin.',
+      success: true,
+      message: 'Permintaan pengembalian berhasil dikirim',
       data: pengembalian
     });
   } catch (error) {
-    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -85,27 +87,41 @@ const createPengembalian = async (req, res) => {
 const verifikasiPengembalian = async (req, res) => {
   try {
     const { id } = req.params;
-    const { statusVerifikasi, catatanAdmin } = req.body;
-    const adminId = req.user.id;
+    const { statusVerifikasi, catatanAdmin, denda } = req.body;
+    const adminId = req.user._id;
 
     const pengembalian = await Pengembalian.findById(id).populate('peminjamanId');
     if (!pengembalian) {
-      return res.status(404).json({ message: 'Pengembalian tidak ditemukan' });
+      return res.status(404).json({
+        success: false,
+        message: 'Pengembalian tidak ditemukan'
+      });
     }
 
     if (pengembalian.statusVerifikasi !== 'Menunggu Verifikasi') {
-      return res.status(400).json({ message: 'Pengembalian sudah diverifikasi' });
+      return res.status(400).json({
+        success: false,
+        message: 'Pengembalian sudah diverifikasi sebelumnya'
+      });
     }
 
     pengembalian.statusVerifikasi = statusVerifikasi;
+    pengembalian.catatanAdmin = catatanAdmin;
     pengembalian.diverifikasiOleh = adminId;
+
+    if (denda) {
+      pengembalian.denda = denda;
+    }
+
     await pengembalian.save();
 
-    const peminjaman = pengembalian.peminjamanId;
+    const peminjaman = await Peminjaman.findById(pengembalian.peminjamanId).populate('barangId userId');
 
     if (statusVerifikasi === 'Diterima') {
-      // Update status pengembalian di peminjaman
+      // Update status di peminjaman
       peminjaman.statusPengembalian = 'Sudah Dikembalikan';
+      peminjaman.status = 'Selesai';
+      if (denda > 0) peminjaman.denda = denda;
       await peminjaman.save();
 
       // Kembalikan stok barang
@@ -116,16 +132,23 @@ const verifikasiPengembalian = async (req, res) => {
       }
 
       // Buat notifikasi untuk user
+      let pesanNotif = `Pengembalian ${peminjaman.barangId.namaBarang} telah diterima dan diverifikasi.`;
+      if (pengembalian.kondisiBarang === 'rusak ringan') {
+        pesanNotif += ' ⚠️ Peringatan: Barang dikembalikan dalam kondisi rusak ringan.';
+      } else if (pengembalian.kondisiBarang === 'rusak berat' && denda > 0) {
+        pesanNotif += ` ❌ Barang dikembalikan dalam kondisi rusak berat. Denda: Rp ${denda.toLocaleString('id-ID')}`;
+      }
+
       await Notifikasi.create({
         userId: pengembalian.dikembalikanOleh,
         peminjamanId: peminjaman._id,
         judul: 'Pengembalian Diterima',
-        pesan: `Pengembalian barang Anda telah diterima${pengembalian.denda > 0 ? ` dengan denda Rp ${pengembalian.denda.toLocaleString('id-ID')}` : ''}.`,
-        tipe: 'pengembalian'
+        pesan: pesanNotif,
+        tipe: pengembalian.kondisiBarang === 'rusak berat' ? 'warning' : 'success'
       });
     } else if (statusVerifikasi === 'Ditolak') {
-      // Update status pengembalian di peminjaman
-      peminjaman.statusPengembalian = 'Dipinjam';
+      // Update status pengembalian di peminjaman agar bisa ajukan ulang
+      peminjaman.statusPengembalian = 'Belum Dikembalikan';
       await peminjaman.save();
 
       // Buat notifikasi untuk user
@@ -133,17 +156,21 @@ const verifikasiPengembalian = async (req, res) => {
         userId: pengembalian.dikembalikanOleh,
         peminjamanId: peminjaman._id,
         judul: 'Pengembalian Ditolak',
-        pesan: `Pengembalian barang Anda ditolak. ${catatanAdmin || 'Silakan hubungi admin.'}`,
-        tipe: 'pengembalian'
+        pesan: `Pengembalian ${peminjaman.barangId.namaBarang} ditolak. ${catatanAdmin || 'Silakan ajukan kembali dengan data yang benar.'}`,
+        tipe: 'error'
       });
     }
 
     res.json({
+      success: true,
       message: `Pengembalian berhasil ${statusVerifikasi.toLowerCase()}`,
       data: pengembalian
     });
   } catch (error) {
-    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 

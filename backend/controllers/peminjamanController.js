@@ -24,6 +24,13 @@ const createPeminjaman = async (req, res) => {
       });
     }
 
+    if (barang.kondisi === 'rusak berat') {
+      return res.status(400).json({
+        success: false,
+        message: 'Barang dalam kondisi rusak berat dan tidak dapat dipinjam'
+      });
+    }
+
     // Buat peminjaman
     const peminjaman = await Peminjaman.create({
       userId: req.user._id,
@@ -336,7 +343,7 @@ const markAsReturned = async (req, res) => {
       });
     }
 
-    if (peminjaman.status !== 'disetujui') {
+    if (peminjaman.status !== 'Disetujui') {
       return res.status(400).json({
         success: false,
         message: 'Hanya peminjaman yang disetujui yang bisa dikembalikan'
@@ -346,8 +353,8 @@ const markAsReturned = async (req, res) => {
     const today = new Date();
     const tanggalKembali = new Date(peminjaman.tanggalKembali);
 
-    peminjaman.status = 'selesai';
-    peminjaman.statusPengembalian = today > tanggalKembali ? 'terlambat' : 'sudah-kembali';
+    peminjaman.status = 'Selesai';
+    peminjaman.statusPengembalian = 'Sudah Dikembalikan';
     peminjaman.tanggalDikembalikan = today;
 
     await peminjaman.save();
@@ -362,8 +369,8 @@ const markAsReturned = async (req, res) => {
       userId: peminjaman.userId._id,
       peminjamanId: peminjaman._id,
       judul: 'Pengembalian Dikonfirmasi',
-      pesan: `Pengembalian ${peminjaman.barangId.namaBarang} telah dikonfirmasi. ${peminjaman.statusPengembalian === 'terlambat' ? 'Lain kali, mohon kembalikan tepat waktu ya.' : 'Terima kasih telah mengembalikan tepat waktu!'}`,
-      tipe: peminjaman.statusPengembalian === 'terlambat' ? 'warning' : 'success'
+      pesan: `Pengembalian ${peminjaman.barangId.namaBarang} telah dikonfirmasi. Terima kasih telah mengembalikan barang!`,
+      tipe: 'success'
     });
 
     res.json({
@@ -379,169 +386,6 @@ const markAsReturned = async (req, res) => {
   }
 };
 
-// User submit permintaan pengembalian dengan kondisi dan foto
-const submitReturn = async (req, res) => {
-  try {
-    const { kondisi } = req.body;
-    const peminjaman = await Peminjaman.findById(req.params.id).populate('barangId userId');
-
-    if (!peminjaman) {
-      return res.status(404).json({
-        success: false,
-        message: 'Peminjaman tidak ditemukan'
-      });
-    }
-
-
-    if (peminjaman.userId._id.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Anda tidak memiliki akses untuk mengembalikan peminjaman ini'
-      });
-    }
-
-    // Cek status hanya yang disetujui yang bisa dikembalikan
-    if (peminjaman.status !== 'Disetujui') {
-      return res.status(400).json({
-        success: false,
-        message: 'Hanya peminjaman yang disetujui yang bisa dikembalikan'
-      });
-    }
-
-    // Cek apakah sudah pernah submit pengembalian
-    if (peminjaman.statusPengembalian === 'Menunggu Verifikasi' || peminjaman.statusPengembalian === 'Sudah Dikembalikan') {
-      return res.status(400).json({
-        success: false,
-        message: 'Pengembalian sudah diproses sebelumnya'
-      });
-    }
-
-
-    // Simpan kondisi pengembalian
-    peminjaman.kondisiPengembalian = kondisi;
-
-    // Simpan foto jika ada - Cloudinary menggunakan req.file.path untuk URL
-    if (req.file) {
-      peminjaman.fotoPengembalian = req.file.path; // URL lengkap dari Cloudinary
-    }
-
-    // Update status pengembalian
-    peminjaman.statusPengembalian = 'Menunggu Verifikasi';
-
-    await peminjaman.save();
-
-    // Buat notifikasi untuk user
-    await Notifikasi.create({
-      userId: peminjaman.userId._id,
-      peminjamanId: peminjaman._id,
-      judul: 'Permintaan Pengembalian Dikirim',
-      pesan: `Permintaan pengembalian ${peminjaman.barangId.namaBarang} telah dikirim. Menunggu verifikasi admin.`,
-      tipe: 'info'
-    });
-
-    res.json({
-      success: true,
-      message: 'Permintaan pengembalian berhasil dikirim',
-      data: peminjaman
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// Admin verifikasi permintaan pengembalian
-const verifyReturn = async (req, res) => {
-  try {
-    const { statusVerifikasi, catatanAdmin, denda } = req.body;
-    const peminjaman = await Peminjaman.findById(req.params.id).populate('barangId userId');
-
-    if (!peminjaman) {
-      return res.status(404).json({
-        success: false,
-        message: 'Peminjaman tidak ditemukan'
-      });
-    }
-
-    // Cek apakah sudah menunggu verifikasi
-    if (peminjaman.statusPengembalian !== 'Menunggu Verifikasi') {
-      return res.status(400).json({
-        success: false,
-        message: 'Pengembalian ini tidak dalam status menunggu verifikasi'
-      });
-    }
-
-    if (statusVerifikasi === 'Diterima') {
-      // Terima pengembalian - kembalikan stok dan ubah status
-      peminjaman.statusPengembalian = 'Sudah Dikembalikan';
-      peminjaman.status = 'Selesai';
-
-      // Simpan denda jika ada
-      if (denda && denda > 0) {
-        peminjaman.denda = denda;
-      }
-
-      // Kembalikan jumlah tersedia barang
-      const barang = await Barang.findById(peminjaman.barangId);
-      if (barang) {
-        barang.jumlahTersedia += peminjaman.jumlahPinjam;
-        await barang.save();
-      }
-
-      // Buat notifikasi untuk user
-      let pesanNotif = `Pengembalian ${peminjaman.barangId.namaBarang} telah diterima dan diverifikasi.`;
-
-      if (peminjaman.kondisiPengembalian === 'rusak ringan') {
-        pesanNotif += ' ⚠️ Peringatan: Barang dikembalikan dalam kondisi rusak ringan. Harap lebih berhati-hati dalam menggunakan barang kedepannya.';
-      } else if (peminjaman.kondisiPengembalian === 'rusak berat' && denda > 0) {
-        pesanNotif += ` ❌ Barang dikembalikan dalam kondisi rusak berat. Denda: Rp ${denda.toLocaleString('id-ID')}`;
-      }
-
-      if (catatanAdmin) {
-        pesanNotif += ` Catatan: ${catatanAdmin}`;
-      }
-
-      await Notifikasi.create({
-        userId: peminjaman.userId._id,
-        peminjamanId: peminjaman._id,
-        judul: 'Pengembalian Diterima',
-        pesan: pesanNotif,
-        tipe: peminjaman.kondisiPengembalian === 'rusak berat' ? 'warning' : 'success'
-      });
-    } else if (statusVerifikasi === 'Ditolak') {
-      // Tolak pengembalian - kembalikan status ke belum dikembalikan
-      peminjaman.statusPengembalian = 'Belum Dikembalikan';
-
-      // Buat notifikasi untuk user
-      await Notifikasi.create({
-        userId: peminjaman.userId._id,
-        peminjamanId: peminjaman._id,
-        judul: 'Pengembalian Ditolak',
-        pesan: `Pengembalian ${peminjaman.barangId.namaBarang} ditolak. ${catatanAdmin ? `Alasan: ${catatanAdmin}` : 'Silakan ajukan kembali dengan data yang benar.'}`,
-        tipe: 'error'
-      });
-    }
-
-    if (catatanAdmin) {
-      peminjaman.catatanAdmin = catatanAdmin;
-    }
-
-    await peminjaman.save();
-
-    res.json({
-      success: true,
-      message: `Pengembalian berhasil ${statusVerifikasi.toLowerCase()}`,
-      data: peminjaman
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
 
 // Bulk delete peminjaman (admin)
 const bulkDeletePeminjaman = async (req, res) => {
@@ -579,7 +423,5 @@ export {
   approvePeminjaman,
   rejectPeminjaman,
   markAsReturned,
-  submitReturn,
-  verifyReturn,
   bulkDeletePeminjaman
 };
