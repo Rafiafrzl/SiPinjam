@@ -7,6 +7,13 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Nama harus diisi'],
     trim: true
   },
+  nis: {
+    type: String,
+    unique: true,
+    sparse: true,
+    trim: true,
+    match: [/^\d+$/, 'NIS hanya boleh berisi angka']
+  },
   email: {
     type: String,
     required: [true, 'Email harus diisi'],

@@ -13,7 +13,7 @@ const Login = () => {
   const { login } = useAuth();
 
   const [loading, setLoading] = useState(false);
-  const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [loginData, setLoginData] = useState({ identifier: "", password: "" });
 
   useEffect(() => {
     if (location.state?.message) {
@@ -23,7 +23,12 @@ const Login = () => {
   }, [location]);
 
   const handleLoginChange = (e) => {
-    setLoginData({ ...loginData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    // Jika input adalah identifier dan hanya mengandung angka (atau sedang diketik), kita bisa biarkan.
+    // Namun untuk NIS spesifik, biasanya kita batasi.
+    // Tapi karena ini Hybrid (Email/NIS), kita tidak bisa melarang huruf sama sekali.
+    // Kita berikan validasi saat submit saja atau biarkan sistem backend yang handle.
+    setLoginData({ ...loginData, [name]: value });
   };
 
   const handleLoginSubmit = async (e) => {
@@ -87,20 +92,21 @@ const Login = () => {
 
               {/* Form */}
               <form onSubmit={handleLoginSubmit} className="space-y-5">
-                {/* Email */}
+                {/* Identifier (Email/NIS) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email <span className="text-red-500">*</span>
+                    NIS / Email <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="email"
-                    name="email"
-                    value={loginData.email}
+                    type="text"
+                    name="identifier"
+                    value={loginData.identifier}
                     onChange={handleLoginChange}
-                    placeholder="Masukkan email anda"
+                    placeholder="Masukkan NIS atau Email"
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:outline-none transition-all text-gray-900 placeholder-gray-400"
                   />
+
                 </div>
 
                 {/* Password */}

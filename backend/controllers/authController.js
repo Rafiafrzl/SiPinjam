@@ -4,20 +4,32 @@ import generateToken from "../utils/generateToken.js";
 // Register user baru
 const registerUser = async (req, res) => {
   try {
-    const { nama, email, password, kelas, noTelepon } = req.body;
+    const { nama, nis, email, password, kelas, noTelepon } = req.body;
 
     // Cek apakah email sudah terdaftar
-    const userExists = await User.findOne({ email });
-    if (userExists) {
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
       return res.status(400).json({
         success: false,
         message: "Email sudah terdaftar",
       });
     }
 
+    // Cek apakah NIS sudah terdaftar (jika diisi)
+    if (nis) {
+      const nisExists = await User.findOne({ nis });
+      if (nisExists) {
+        return res.status(400).json({
+          success: false,
+          message: "NIS sudah terdaftar",
+        });
+      }
+    }
+
     // Buat user baru
     const user = await User.create({
       nama,
+      nis,
       email,
       password,
       kelas,
@@ -33,6 +45,7 @@ const registerUser = async (req, res) => {
           id: user._id,
           nama: user.nama,
           email: user.email,
+          nis: user.nis,
           kelas: user.kelas,
           noTelepon: user.noTelepon,
           foto: user.foto,
@@ -52,15 +65,27 @@ const registerUser = async (req, res) => {
 // Login user/admin
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    // Cari user berdasarkan email
-    const user = await User.findOne({ email });
+    if (!identifier || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "NIS/Email dan password harus diisi",
+      });
+    }
+
+    // Cari user berdasarkan email atau NIS
+    const user = await User.findOne({
+      $or: [
+        { email: identifier.toLowerCase() },
+        { nis: identifier }
+      ]
+    });
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Email atau password salah",
+        message: "Email/NIS atau password salah",
       });
     }
 
@@ -70,7 +95,7 @@ const loginUser = async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(401).json({
         success: false,
-        message: "Email atau password salah",
+        message: "Email/NIS atau password salah",
       });
     }
 
@@ -89,6 +114,7 @@ const loginUser = async (req, res) => {
         id: user._id,
         nama: user.nama,
         email: user.email,
+        nis: user.nis,
         kelas: user.kelas,
         noTelepon: user.noTelepon,
         foto: user.foto,
