@@ -10,7 +10,8 @@ import {
     IoSchool,
     IoClose,
     IoCheckbox,
-    IoSquareOutline
+    IoSquareOutline,
+    IoIdCard
 } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import Card from '../../components/ui/Card';
@@ -176,7 +177,7 @@ const KelolaUser = () => {
 
                 <form onSubmit={handleSearch} className="w-full">
                     <Input
-                        placeholder="Cari nama, email, atau kelas..."
+                        placeholder="Cari nama, email, NIS, atau kelas..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         icon={<IoSearch size={20} />}
@@ -284,6 +285,12 @@ const KelolaUser = () => {
                                                 <IoMail size={14} />
                                                 {user.email}
                                             </span>
+                                            {user.nis && (
+                                                <span className="flex items-center gap-1">
+                                                    <IoIdCard size={14} />
+                                                    {user.nis}
+                                                </span>
+                                            )}
                                             {user.kelas && (
                                                 <span className="flex items-center gap-1">
                                                     <IoSchool size={14} />

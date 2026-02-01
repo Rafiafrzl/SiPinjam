@@ -18,6 +18,7 @@ export const getAllUsers = async (req, res) => {
             query.$or = [
                 { nama: { $regex: search, $options: 'i' } },
                 { email: { $regex: search, $options: 'i' } },
+                { nis: { $regex: search, $options: 'i' } },
                 { kelas: { $regex: search, $options: 'i' } }
             ];
         }
