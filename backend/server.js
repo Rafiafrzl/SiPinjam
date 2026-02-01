@@ -29,6 +29,11 @@ app.use('/api/notifikasi', notifikasiRoutes);
 app.use('/api/statistik', statistikRoutes);
 app.use('/api/users', userRoutes);
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to API Peminjaman Barang Sekolah',
@@ -50,3 +55,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV}`);
 });
+
+export default app;
