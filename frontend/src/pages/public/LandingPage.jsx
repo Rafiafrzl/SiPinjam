@@ -27,7 +27,7 @@ const LandingPage = () => {
 
     const heroSlides = [
         { image: hero1, title: 'Akses Peralatan\nSekolah Kamu.', subtitle: 'Temukan, pinjam, dan kelola perlengkapan belajar kamu dengan sistem yang modern dan terintegrasi.' },
-        { image: hero2, title: 'Eksplorasi Ilmu\nTanpa Batas.', subtitle: 'Koleksi buku dan referensi lengkap siap mendukung perjalanan akademik Anda di perpustakaan.' },
+        { image: hero2, title: 'Eksplorasi Ilmu\nTanpa Batas.', subtitle: 'Koleksi peralatan dan perlengkapan lengkap siap mendukung perjalanan akademik Anda.' },
         { image: hero3, title: 'Teknologi Unggul\nUntuk Masa Depan.', subtitle: 'Pinjam perangkat elektronik terbaru untuk kebutuhan proyek dan penelitian inovatif kamu.' }
     ];
 
