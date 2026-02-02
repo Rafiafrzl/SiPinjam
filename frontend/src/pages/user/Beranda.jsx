@@ -23,6 +23,7 @@ import hero1 from '../../assets/hero/hero1.jpg';
 import hero2 from '../../assets/hero/hero2.png';
 import hero3 from '../../assets/hero/hero3.png';
 import { AnimatePresence } from 'framer-motion';
+import usePolling from '../../hooks/usePolling';
 
 const Beranda = () => {
   const { user } = useAuth();
@@ -49,37 +50,34 @@ const Beranda = () => {
   useEffect(() => {
     let isMounted = true;
 
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        const [statsRes, peminjamanRes, barangRes] = await Promise.all([
-          api.get('/statistik/user'),
-          api.get('/peminjaman/user/my-peminjaman', { params: { limit: 3 } }),
-          api.get('/barang', { params: { limit: 10 } })
-        ]);
-
-        if (isMounted) {
-          setStats(statsRes.data.data);
-          setRecentPeminjaman(peminjamanRes.data.data || []);
-          setFeaturedBarang(barangRes.data.data || []);
-        }
-      } catch (err) {
-        if (isMounted) {
-          Toast.error('Gagal memuat data');
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
     fetchDashboardData();
 
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const fetchDashboardData = async (silent = false) => {
+    try {
+      if (!silent) setLoading(true);
+      const [statsRes, peminjamanRes, barangRes] = await Promise.all([
+        api.get('/statistik/user'),
+        api.get('/peminjaman/user/my-peminjaman', { params: { limit: 3 } }),
+        api.get('/barang', { params: { limit: 10 } })
+      ]);
+
+      setStats(statsRes.data.data);
+      setRecentPeminjaman(peminjamanRes.data.data || []);
+      setFeaturedBarang(barangRes.data.data || []);
+    } catch (err) {
+      if (!silent) Toast.error('Gagal memuat data');
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  // Auto-refresh stats every 5 seconds silently
+  usePolling(() => fetchDashboardData(true), 5000);
 
   const getStatusBadge = (status) => {
     const variants = {

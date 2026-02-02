@@ -11,6 +11,7 @@ import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
 import { format, addDays } from 'date-fns';
 import { id } from 'date-fns/locale';
+import usePolling from '../../hooks/usePolling';
 
 const PeminjamanUser = () => {
     const [peminjaman, setPeminjaman] = useState([]);
@@ -33,9 +34,9 @@ const PeminjamanUser = () => {
         fetchPeminjaman();
     }, []);
 
-    const fetchPeminjaman = async () => {
+    const fetchPeminjaman = async (silent = false) => {
         try {
-            setLoading(true);
+            if (!silent) setLoading(true);
             const response = await api.get('/peminjaman/user/my-peminjaman');
             const allData = response.data.data || [];
 
@@ -49,12 +50,15 @@ const PeminjamanUser = () => {
                 total: activeData.length
             });
         } catch (err) {
-            Toast.error('Gagal memuat data peminjaman');
+            if (!silent) Toast.error('Gagal memuat data peminjaman');
             console.error(err);
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
+
+    // Auto-refresh data every 5 seconds to get updates from admin
+    usePolling(() => fetchPeminjaman(true), 5000);
 
     const handleOpenExtModal = (item) => {
         setSelectedExtItem(item);

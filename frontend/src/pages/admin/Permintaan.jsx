@@ -12,6 +12,7 @@ import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import usePolling from '../../hooks/usePolling';
 
 const Permintaan = () => {
   const [peminjaman, setPeminjaman] = useState([]);
@@ -33,21 +34,26 @@ const Permintaan = () => {
     fetchPeminjaman();
   }, [statusFilter]);
 
-  const fetchPeminjaman = async () => {
+  const fetchPeminjaman = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const params = statusFilter ? { status: statusFilter } : {};
       const response = await api.get('/peminjaman/admin/all', { params });
       const data = response.data.data || response.data || [];
       setPeminjaman(Array.isArray(data) ? data : []);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Gagal memuat permintaan peminjaman';
-      Toast.error(errorMessage);
+      if (!silent) {
+        const errorMessage = err.response?.data?.message || 'Gagal memuat permintaan peminjaman';
+        Toast.error(errorMessage);
+      }
       setPeminjaman([]);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
+
+  // Auto-refresh every 5 seconds
+  usePolling(() => fetchPeminjaman(true), 5000);
 
   const handleApprove = (item) => {
     const processedStatuses = ['Disetujui', 'Ditolak', 'Selesai'];

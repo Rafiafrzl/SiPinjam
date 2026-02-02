@@ -14,6 +14,7 @@ import Loading from "../../components/ui/Loading";
 import api from "../../utils/api";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import usePolling from "../../hooks/usePolling";
 
 const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -23,17 +24,19 @@ const AdminDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const response = await api.get("/statistik/admin");
       setStats(response.data.data);
     } catch (err) {
-      Toast.error("Gagal memuat data dashboard");
+      if (!silent) Toast.error("Gagal memuat data dashboard");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
+
+  usePolling(() => fetchDashboardData(true), 10000); // Poll every 10 seconds for general stats
 
   const getStatusBadge = (status) => {
     const variants = {

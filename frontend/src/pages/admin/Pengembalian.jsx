@@ -12,6 +12,7 @@ import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import usePolling from '../../hooks/usePolling';
 
 const Pengembalian = () => {
   const [pengembalian, setPengembalian] = useState([]);
@@ -30,20 +31,23 @@ const Pengembalian = () => {
     fetchPengembalian();
   }, [statusFilter]);
 
-  const fetchPengembalian = async () => {
+  const fetchPengembalian = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const params = {};
       if (statusFilter) params.status = statusFilter;
       const response = await api.get('/pengembalian', { params });
       const data = response.data.data || [];
       setPengembalian(data);
     } catch (err) {
-      Toast.error(err.response?.data?.message || 'Gagal memuat data pengembalian');
+      if (!silent) Toast.error(err.response?.data?.message || 'Gagal memuat data pengembalian');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
+
+  // Auto-refresh every 5 seconds
+  usePolling(() => fetchPengembalian(true), 5000);
 
   const handleVerify = async (id, statusVerifikasi) => {
     // Validasi denda jika kondisi rusak berat

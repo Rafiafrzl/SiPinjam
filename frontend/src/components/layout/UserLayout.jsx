@@ -22,6 +22,7 @@ import logoSiPinjam from "../../assets/logo/sipinjam.png";
 import api from "../../utils/api";
 import NotificationModal from "./NotificationModal";
 import { getImageUrl } from "../../utils/imageHelper";
+import usePolling from "../../hooks/usePolling";
 
 const UserLayout = () => {
   const location = useLocation();
@@ -56,6 +57,8 @@ const UserLayout = () => {
       console.error("Error fetching notif count:", error);
     }
   };
+
+  usePolling(fetchNotifCount, 5000);
 
   const handleLogout = () => {
     logout();

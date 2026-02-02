@@ -17,6 +17,7 @@ import Loading from '../ui/Loading';
 import api from '../../utils/api';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import usePolling from '../../hooks/usePolling';
 
 const NotificationModal = ({ isOpen, onClose }) => {
     const [notifications, setNotifications] = useState([]);
@@ -31,17 +32,20 @@ const NotificationModal = ({ isOpen, onClose }) => {
         }
     }, [isOpen]);
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = async (silent = false) => {
         try {
-            setLoading(true);
+            if (!silent) setLoading(true);
             const response = await api.get('/notifikasi');
             setNotifications(response.data.data);
         } catch (err) {
-            Toast.error('Gagal memuat notifikasi');
+            if (!silent) Toast.error('Gagal memuat notifikasi');
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
+
+    // Auto-refresh notifications every 10 seconds when drawer is open
+    usePolling(() => fetchNotifications(true), isOpen ? 10000 : null);
 
     const handleMarkAsRead = async (id) => {
         try {
