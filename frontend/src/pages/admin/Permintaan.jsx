@@ -63,6 +63,20 @@ const Permintaan = () => {
     setShowModal(true);
   };
 
+  const handleApproveExtension = (item) => {
+    setModalType('approveExtension');
+    setSelectedItem(item);
+    setCatatan('');
+    setShowModal(true);
+  };
+
+  const handleRejectExtension = (item) => {
+    setModalType('rejectExtension');
+    setSelectedItem(item);
+    setCatatan('');
+    setShowModal(true);
+  };
+
   const handleReject = (item) => {
     const processedStatuses = ['Disetujui', 'Ditolak', 'Selesai'];
     if (processedStatuses.includes(item.status)) {
@@ -112,9 +126,15 @@ const Permintaan = () => {
           catatanAdmin: catatan.trim()
         };
 
-        await api.put(`/peminjaman/admin/${selectedItem._id}/approve`, requestData);
-        Toast.success('Peminjaman berhasil disetujui');
-      } else {
+        await api.put(`/peminjaman/admin/${selectedItem._id}/reject`, requestData);
+        Toast.success('Peminjaman berhasil ditolak');
+      } else if (modalType === 'approveExtension') {
+        const requestData = {
+          catatanAdmin: catatan.trim()
+        };
+        await api.put(`/peminjaman/admin/${selectedItem._id}/approve-extension`, requestData);
+        Toast.success('Perpanjangan berhasil disetujui');
+      } else if (modalType === 'rejectExtension') {
         if (!catatan.trim()) {
           Toast.error('Alasan penolakan harus diisi');
           setSubmitting(false);
@@ -123,9 +143,8 @@ const Permintaan = () => {
         const requestData = {
           alasanPenolakan: catatan.trim()
         };
-
-        await api.put(`/peminjaman/admin/${selectedItem._id}/reject`, requestData);
-        Toast.success('Peminjaman berhasil ditolak');
+        await api.put(`/peminjaman/admin/${selectedItem._id}/reject-extension`, requestData);
+        Toast.success('Perpanjangan berhasil ditolak');
       }
 
       setShowModal(false);
@@ -297,6 +316,11 @@ const Permintaan = () => {
                     <div className="flex flex-wrap gap-x-3 text-xs text-gray-400">
                       <span>Pinjam: {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
                       <span>Kembali: {format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
+                      {item.isExtensionRequested && item.extensionStatus === 'Menunggu' && (
+                        <span className="text-amber-600 font-bold ml-2 animate-pulse">
+                          (Ada Permintaan Perpanjangan!)
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -332,6 +356,31 @@ const Permintaan = () => {
                       </Button>
                     </div>
                   )}
+
+                  {/* Extension Buttons */}
+                  {item.status === 'Disetujui' && item.isExtensionRequested && item.extensionStatus === 'Menunggu' && (
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button
+                        variant="warning"
+                        size="sm"
+                        onClick={() => handleApproveExtension(item)}
+                        disabled={submitting}
+                      >
+                        <IoCheckmark size={16} />
+                        ACC Perpanjang
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-red-500 text-red-500 hover:bg-red-50"
+                        onClick={() => handleRejectExtension(item)}
+                        disabled={submitting}
+                      >
+                        <IoClose size={16} />
+                        Tolak
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </Card>
             ))}
@@ -342,7 +391,12 @@ const Permintaan = () => {
       <Modal
         isOpen={showModal}
         onClose={handleCloseModal}
-        title={modalType === 'approve' ? 'Setujui Peminjaman' : 'Tolak Peminjaman'}
+        title={
+          modalType === 'approve' ? 'Setujui Peminjaman' :
+            modalType === 'reject' ? 'Tolak Peminjaman' :
+              modalType === 'approveExtension' ? 'Setujui Perpanjangan' :
+                'Tolak Perpanjangan'
+        }
       >
         <div className="space-y-4">
           {selectedItem && (
@@ -464,6 +518,28 @@ const Permintaan = () => {
               <p className="text-sm text-gray-700">{detailItem.alasanPeminjaman || '-'}</p>
             </div>
 
+            {/* Extension Info */}
+            {detailItem.isExtensionRequested && (
+              <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                <h4 className="font-semibold text-purple-700 mb-2">Permintaan Perpanjangan</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm mb-2">
+                  <div>
+                    <p className="text-purple-600/70">Waktu Baru</p>
+                    <p className="font-bold text-purple-800">
+                      {format(new Date(detailItem.newTanggalKembali), 'dd MMMM yyyy', { locale: id })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-purple-600/70">Status</p>
+                    <p className="font-bold text-purple-800">{detailItem.extensionStatus}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-purple-700">
+                  <span className="font-semibold">Alasan:</span> {detailItem.alasanExtension || '-'}
+                </p>
+              </div>
+            )}
+
             {/* Alasan Penolakan jika ditolak */}
             {detailItem.status === 'Ditolak' && detailItem.alasanPenolakan && (
               <div className="bg-red-50 p-3 rounded-lg">
@@ -499,10 +575,39 @@ const Permintaan = () => {
                 </Button>
               </div>
             )}
+
+            {/* Tombol Aksi Extension */}
+            {detailItem.status === 'Disetujui' && detailItem.isExtensionRequested && detailItem.extensionStatus === 'Menunggu' && (
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="warning"
+                  fullWidth
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    handleApproveExtension(detailItem);
+                  }}
+                >
+                  <IoCheckmark size={18} />
+                  Setujui Perpanjangan
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-red-500 text-red-500 hover:bg-red-50"
+                  fullWidth
+                  onClick={() => {
+                    setShowDetailModal(false);
+                    handleRejectExtension(detailItem);
+                  }}
+                >
+                  <IoClose size={18} />
+                  Tolak Perpanjangan
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </Modal>
-    </div>
+    </div >
   );
 };
 

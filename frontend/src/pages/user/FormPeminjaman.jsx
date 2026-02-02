@@ -25,10 +25,13 @@ const FormPeminjaman = () => {
     const [formData, setFormData] = useState({
         jumlahPinjam: 1,
         tanggalPinjam: '',
-        waktuPinjam: '',
+        waktuPinjam: '07:00',
         tanggalKembali: '',
+        waktuKembali: '07:00',
         alasanPeminjaman: ''
     });
+
+    const today = new Date().toISOString().split('T')[0];
 
     useEffect(() => {
         fetchBarangDetail();
@@ -56,7 +59,7 @@ const FormPeminjaman = () => {
         }
     };
 
-    const validateDates = (tanggalPinjam, tanggalKembali) => {
+    const validateDates = (tanggalPinjam, tanggalKembali, waktuPinjam, waktuKembali) => {
         if (tanggalPinjam && tanggalKembali) {
             const borrowDate = new Date(tanggalPinjam);
             const returnDate = new Date(tanggalKembali);
@@ -64,6 +67,14 @@ const FormPeminjaman = () => {
             if (returnDate < borrowDate) {
                 setDateError('Estimasi kembali tidak boleh lebih awal dari tanggal pinjam');
                 return false;
+            }
+
+            // Jika tanggal sama, cek waktunya
+            if (tanggalPinjam === tanggalKembali && waktuPinjam && waktuKembali) {
+                if (waktuKembali <= waktuPinjam) {
+                    setDateError('Waktu kembali harus setelah waktu ambil pada hari yang sama');
+                    return false;
+                }
             }
         }
         setDateError('');
@@ -79,9 +90,22 @@ const FormPeminjaman = () => {
             return;
         }
 
-        // Validate dates
-        if (!validateDates(formData.tanggalPinjam, formData.tanggalKembali)) {
-            Toast.error('Estimasi kembali tidak boleh lebih awal dari tanggal pinjam');
+        // Validate dates and times
+        if (!validateDates(formData.tanggalPinjam, formData.tanggalKembali, formData.waktuPinjam, formData.waktuKembali)) {
+            Toast.error(dateError || 'Periksa kembali tanggal dan waktu peminjaman');
+            return;
+        }
+
+        // Validate time (07:00 - 15:00)
+        const [jamAmbil, menitAmbil] = formData.waktuPinjam.split(':').map(Number);
+        if (jamAmbil < 7 || jamAmbil >= 15) {
+            Toast.error('Waktu pengambilan hanya diperbolehkan antara 07:00 - 15:00');
+            return;
+        }
+
+        const [jamKembali, menitKembali] = formData.waktuKembali.split(':').map(Number);
+        if (jamKembali < 7 || jamKembali >= 15) {
+            Toast.error('Waktu pengembalian hanya diperbolehkan antara 07:00 - 15:00');
             return;
         }
 
@@ -115,7 +139,6 @@ const FormPeminjaman = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="mx-auto"
             >
-                {/* Header */}
                 <div className="flex items-center gap-4 mb-5">
                     <button
                         onClick={() => navigate('/barang')}
@@ -130,7 +153,6 @@ const FormPeminjaman = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    {/* Item Preview */}
                     <div className="lg:col-span-2">
                         <div className="bg-neutral-900 rounded-2xl p-4 border border-neutral-800 h-full flex flex-col">
                             <div className="aspect-square rounded-xl overflow-hidden mb-4 bg-neutral-800">
@@ -167,13 +189,12 @@ const FormPeminjaman = () => {
                         </div>
                     </div>
 
-                    {/* Form */}
                     <div className="lg:col-span-3">
                         <form onSubmit={handleSubmit} className="bg-neutral-900 rounded-2xl p-6 border border-neutral-800 space-y-4 h-full flex flex-col">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-2 ml-1">
-                                        Jumlah Pinjam
+                                    <label className="block text-sm font-bold text-gray-400 mb-2 ml-1">
+                                        Jumlah Pinjam <span className="text-red-500">*</span>
                                     </label>
                                     <div className="relative">
                                         <input
@@ -182,81 +203,112 @@ const FormPeminjaman = () => {
                                             max={barang.jumlahTersedia}
                                             value={formData.jumlahPinjam}
                                             onChange={(e) => setFormData({ ...formData, jumlahPinjam: parseInt(e.target.value) })}
-                                            className="w-full pl-4 pr-16 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all text-sm"
+                                            className="w-full pl-5 pr-16 py-3.5 bg-neutral-800 border border-neutral-700 rounded-2xl text-white focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all text-sm font-bold shadow-inner"
                                             required
                                         />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs uppercase font-bold tracking-widest pointer-events-none">unit</span>
+                                        <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 text-[10px] uppercase font-black tracking-widest pointer-events-none">unit</span>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-2 ml-1">
-                                        Tanggal Pinjam
-                                    </label>
-                                    <div className="relative">
-                                        <IoCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                                        <input
-                                            type="date"
-                                            value={formData.tanggalPinjam}
-                                            onChange={(e) => {
-                                                const newValue = e.target.value;
-                                                setFormData({ ...formData, tanggalPinjam: newValue });
-                                                validateDates(newValue, formData.tanggalKembali);
-                                            }}
-                                            className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:outline-none focus:border-purple-500 transition-all text-sm [color-scheme:dark]"
-                                            required
-                                        />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-white/[0.03]">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-400 mb-2 ml-1">
+                                            Tanggal Pinjam <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <IoCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-500" size={18} />
+                                            <input
+                                                type="date"
+                                                value={formData.tanggalPinjam}
+                                                min={today}
+                                                onChange={(e) => {
+                                                    const newValue = e.target.value;
+                                                    setFormData({ ...formData, tanggalPinjam: newValue });
+                                                    validateDates(newValue, formData.tanggalKembali, formData.waktuPinjam, formData.waktuKembali);
+                                                }}
+                                                className="w-full pl-12 pr-4 py-3.5 bg-neutral-800 border border-neutral-700 rounded-2xl text-white focus:outline-none focus:border-purple-500 transition-all text-sm [color-scheme:dark] font-medium"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-400 mb-2 ml-1">
+                                            Waktu Ambil <span className="text-red-500">*</span> <span className="text-[10px] text-purple-400 font-extrabold ml-1 uppercase tracking-wider">(07:00 - 15:00)</span>
+                                        </label>
+                                        <div className="relative">
+                                            <IoTime className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-500" size={18} />
+                                            <input
+                                                type="time"
+                                                value={formData.waktuPinjam}
+                                                min="07:00"
+                                                max="15:00"
+                                                onChange={(e) => {
+                                                    const newValue = e.target.value;
+                                                    setFormData({ ...formData, waktuPinjam: newValue });
+                                                    validateDates(formData.tanggalPinjam, formData.tanggalKembali, newValue, formData.waktuKembali);
+                                                }}
+                                                className="w-full pl-12 pr-4 py-3.5 bg-neutral-800 border border-neutral-700 rounded-2xl text-white focus:outline-none focus:border-purple-500 transition-all text-sm [color-scheme:dark] font-medium"
+                                                required
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-2 ml-1">
-                                        Waktu Ambil
-                                    </label>
-                                    <div className="relative">
-                                        <IoTime className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                                        <input
-                                            type="time"
-                                            value={formData.waktuPinjam}
-                                            onChange={(e) => setFormData({ ...formData, waktuPinjam: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-3 bg-neutral-800 border border-neutral-700 rounded-xl text-white focus:outline-none focus:border-purple-500 transition-all text-sm [color-scheme:dark]"
-                                            required
-                                        />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-white/[0.03]">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-400 mb-2 ml-1">
+                                            Estimasi Kembali <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <IoCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" size={18} />
+                                            <input
+                                                type="date"
+                                                value={formData.tanggalKembali}
+                                                min={formData.tanggalPinjam}
+                                                onChange={(e) => {
+                                                    const newValue = e.target.value;
+                                                    setFormData({ ...formData, tanggalKembali: newValue });
+                                                    validateDates(formData.tanggalPinjam, newValue, formData.waktuPinjam, formData.waktuKembali);
+                                                }}
+                                                className={`w-full pl-12 pr-4 py-3.5 bg-neutral-800 border rounded-2xl text-white focus:outline-none transition-all text-sm [color-scheme:dark] font-medium ${dateError ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-500/10' : 'border-neutral-700 focus:border-purple-500'
+                                                    }`}
+                                                required
+                                            />
+                                        </div>
+                                        {dateError && (
+                                            <p className="text-red-400 text-[10px] font-bold mt-2 ml-1 flex items-center gap-1">
+                                                <IoAlertCircle size={14} />
+                                                {dateError}
+                                            </p>
+                                        )}
                                     </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-2 ml-1">
-                                        Estimasi Kembali
-                                    </label>
-                                    <div className="relative">
-                                        <IoCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                                        <input
-                                            type="date"
-                                            value={formData.tanggalKembali}
-                                            min={formData.tanggalPinjam}
-                                            onChange={(e) => {
-                                                const newValue = e.target.value;
-                                                setFormData({ ...formData, tanggalKembali: newValue });
-                                                validateDates(formData.tanggalPinjam, newValue);
-                                            }}
-                                            className={`w-full pl-12 pr-4 py-3 bg-neutral-800 border rounded-xl text-white focus:outline-none transition-all text-sm [color-scheme:dark] ${dateError ? 'border-red-500 focus:border-red-500' : 'border-neutral-700 focus:border-purple-500'
-                                                }`}
-                                            required
-                                        />
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-400 mb-2 ml-1">
+                                            Waktu Kembali <span className="text-red-500">*</span> <span className="text-[10px] text-purple-400 font-extrabold ml-1 uppercase tracking-wider">(07:00 - 15:00)</span>
+                                        </label>
+                                        <div className="relative">
+                                            <IoTime className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" size={18} />
+                                            <input
+                                                type="time"
+                                                value={formData.waktuKembali}
+                                                min="07:00"
+                                                max="15:00"
+                                                onChange={(e) => {
+                                                    const newValue = e.target.value;
+                                                    setFormData({ ...formData, waktuKembali: newValue });
+                                                    validateDates(formData.tanggalPinjam, formData.tanggalKembali, formData.waktuPinjam, newValue);
+                                                }}
+                                                className="w-full pl-12 pr-4 py-3.5 bg-neutral-800 border border-neutral-700 rounded-2xl text-white focus:outline-none focus:border-purple-500 transition-all text-sm [color-scheme:dark] font-medium"
+                                                required
+                                            />
+                                        </div>
                                     </div>
-                                    {dateError && (
-                                        <p className="text-red-400 text-xs mt-2 ml-1 flex items-center gap-1">
-                                            <IoAlertCircle size={14} />
-                                            {dateError}
-                                        </p>
-                                    )}
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-2 ml-1">
-                                    Alasan Peminjaman
+                                <label className="block text-sm font-bold text-gray-400 mb-2 ml-1">
+                                    Alasan Peminjaman <span className="text-red-500">*</span>
                                 </label>
                                 <Textarea
                                     rows="3"

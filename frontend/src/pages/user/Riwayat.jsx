@@ -119,10 +119,11 @@ const Riwayat = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-white/5 bg-white/[0.02]">
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Barang & Kategori</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Tgl Pinjam</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 text-center">Jumlah</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 text-center">Status</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Barang & Kategori</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Jadwal Pinjam</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Jadwal Kembali</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 text-center w-24">Jumlah</th>
+                  <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -147,9 +148,31 @@ const Riwayat = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-400">
-                        <div className="flex items-center gap-2">
-                          <IoCalendar className="text-gray-700" size={14} />
-                          {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-white/[0.03] flex items-center justify-center text-gray-400 border border-white/[0.05]">
+                              <IoCalendar size={14} />
+                            </div>
+                            <span className="text-gray-200 font-bold">{format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
+                          </div>
+                          <div className="flex items-center gap-2 pl-9">
+                            <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                            <span className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">{item.waktuPinjam} WIB</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-400">
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-lg bg-white/[0.03] flex items-center justify-center text-gray-400 border border-white/[0.05]">
+                              <IoCalendar size={14} />
+                            </div>
+                            <span className="text-gray-200 font-bold">{format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
+                          </div>
+                          <div className="flex items-center gap-2 pl-9">
+                            <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                            <span className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">{item.waktuKembali} WIB</span>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">

@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { IoTime, IoCheckmarkCircle, IoCalendar, IoLayers, IoSearch } from 'react-icons/io5';
+import { IoTime, IoCheckmarkCircle, IoCalendar, IoLayers, IoSearch, IoRepeat } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import Loading from '../../components/ui/Loading';
+import Modal from '../../components/ui/Modal';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Textarea from '../../components/ui/Textarea';
 import api from '../../utils/api';
 import { getImageUrl } from '../../utils/imageHelper';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { id } from 'date-fns/locale';
 
 const PeminjamanUser = () => {
@@ -17,6 +21,13 @@ const PeminjamanUser = () => {
         pending: 0,
         total: 0
     });
+
+    // Extension state
+    const [showExtModal, setShowExtModal] = useState(false);
+    const [selectedExtItem, setSelectedExtItem] = useState(null);
+    const [newDate, setNewDate] = useState('');
+    const [extReason, setExtReason] = useState('');
+    const [submittingExt, setSubmittingExt] = useState(false);
 
     useEffect(() => {
         fetchPeminjaman();
@@ -45,6 +56,38 @@ const PeminjamanUser = () => {
         }
     };
 
+    const handleOpenExtModal = (item) => {
+        setSelectedExtItem(item);
+        // Default new return date to 3 days from original return date
+        const currentEndDate = new Date(item.tanggalKembali);
+        const defaultNewDate = format(addDays(currentEndDate, 3), 'yyyy-MM-dd');
+        setNewDate(defaultNewDate);
+        setExtReason('');
+        setShowExtModal(true);
+    };
+
+    const handleRequestExtension = async () => {
+        if (!newDate || !extReason) {
+            Toast.error('Harap isi semua field');
+            return;
+        }
+
+        try {
+            setSubmittingExt(true);
+            await api.put(`/peminjaman/${selectedExtItem._id}/perpanjang`, {
+                newTanggalKembali: newDate,
+                alasanExtension: extReason
+            });
+            Toast.success('Permintaan perpanjangan berhasil dikirim');
+            setShowExtModal(false);
+            fetchPeminjaman();
+        } catch (err) {
+            Toast.error(err.response?.data?.message || 'Gagal mengirim permintaan perpanjangan');
+        } finally {
+            setSubmittingExt(false);
+        }
+    };
+
     const getStatusIndicator = (status) => {
         const colors = {
             'Menunggu': 'bg-amber-500',
@@ -54,8 +97,8 @@ const PeminjamanUser = () => {
         };
         return (
             <div className="flex items-center gap-2">
-                <span className={`w-1.5 h-1.5 rounded-full ${colors[status] || 'bg-gray-500'}`} />
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{status}</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${colors[status] || 'bg-gray-400'}`} />
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{status}</span>
             </div>
         );
     };
@@ -83,7 +126,7 @@ const PeminjamanUser = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-white tracking-tight">Peminjaman Aktif</h1>
-                        <p className="text-gray-500 text-sm">Kelola barang yang sedang Anda pinjam atau dalam proses persetujuan.</p>
+                        <p className="text-gray-300 text-sm">Kelola barang yang sedang Anda pinjam atau dalam proses persetujuan.</p>
                     </div>
 
                     <div className="relative group">
@@ -93,7 +136,7 @@ const PeminjamanUser = () => {
                             placeholder="Cari barang..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full md:w-80 bg-black/40 border border-white/5 rounded-xl py-2.5 pl-11 pr-4 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                            className="w-full md:w-80 bg-black/40 border border-white/5 rounded-xl py-2.5 pl-11 pr-4 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/10 transition-all"
                         />
                     </div>
                 </div>
@@ -106,7 +149,7 @@ const PeminjamanUser = () => {
                         </div>
                         <div>
                             <p className="text-xl font-bold text-white">{stats.total}</p>
-                            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none">Total Aktif</p>
+                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest leading-none">Total Aktif</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4 px-6 py-4 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/[0.03]">
@@ -115,7 +158,7 @@ const PeminjamanUser = () => {
                         </div>
                         <div>
                             <p className="text-xl font-bold text-white">{stats.active}</p>
-                            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none">Disetujui</p>
+                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest leading-none">Disetujui</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4 px-6 py-4 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/[0.03]">
@@ -124,7 +167,7 @@ const PeminjamanUser = () => {
                         </div>
                         <div>
                             <p className="text-xl font-bold text-white">{stats.pending}</p>
-                            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none">Menunggu</p>
+                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest leading-none">Menunggu</p>
                         </div>
                     </div>
                 </div>
@@ -135,16 +178,18 @@ const PeminjamanUser = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-white/5 bg-white/[0.02]">
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Barang & Kategori</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 text-center">Jumlah</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500">Tgl Pinjam</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-500 text-center">Status</th>
+                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Barang & Kategori</th>
+                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 text-center w-24">Jumlah</th>
+                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Jadwal Pinjam</th>
+                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Batas Kembali</th>
+                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 text-center">Status</th>
+                                    <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {filteredData.length === 0 ? (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-12 text-center text-gray-500 italic text-sm">
+                                        <td colSpan="6" className="px-6 py-12 text-center text-gray-500 italic text-sm">
                                             {searchTerm ? 'Barang tidak ditemukan.' : 'Tidak ada peminjaman aktif.'}
                                         </td>
                                     </tr>
@@ -158,7 +203,7 @@ const PeminjamanUser = () => {
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-white text-sm group-hover:text-purple-400 transition-colors">{item.barangId?.namaBarang}</p>
-                                                        <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider">{item.barangId?.kategori}</p>
+                                                        <p className="text-[10px] text-gray-400 uppercase font-black tracking-wider">{item.barangId?.kategori}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -166,14 +211,58 @@ const PeminjamanUser = () => {
                                                 <span className="text-sm font-medium text-gray-300">{item.jumlahPinjam} Units</span>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-400">
-                                                <div className="flex items-center gap-2">
-                                                    <IoCalendar className="text-gray-700" size={14} />
-                                                    {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-7 h-7 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 border border-purple-500/20">
+                                                            <IoCalendar size={14} />
+                                                        </div>
+                                                        <span className="text-gray-200 font-bold">{format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 pl-9">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500/50" />
+                                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">{item.waktuPinjam} WIB</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-400">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                                                            <IoCalendar size={14} />
+                                                        </div>
+                                                        <span className="text-gray-200 font-bold">{format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 pl-9">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
+                                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">{item.waktuKembali} WIB</span>
+                                                    </div>
+                                                    {item.isExtensionRequested && item.extensionStatus === 'Menunggu' && (
+                                                        <span className="text-[8px] text-amber-500 font-black uppercase tracking-widest mt-1 pl-9">
+                                                            (Proses Perpanjangan)
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-center">
                                                     {getStatusIndicator(item.status)}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-center">
+                                                    {item.status === 'Disetujui' && (!item.isExtensionRequested || item.extensionStatus !== 'Menunggu') ? (
+                                                        <Button
+                                                            variant="primary"
+                                                            size="xs"
+                                                            className="h-8 px-3 rounded-lg flex items-center gap-1.5"
+                                                            onClick={() => handleOpenExtModal(item)}
+                                                        >
+                                                            <IoRepeat size={14} />
+                                                            <span>Perpanjang</span>
+                                                        </Button>
+                                                    ) : (
+                                                        <span className="text-xs text-gray-500 italic">No Action</span>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -184,6 +273,59 @@ const PeminjamanUser = () => {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Extension Modal */}
+            <Modal
+                isOpen={showExtModal}
+                onClose={() => setShowExtModal(false)}
+                title="Perpanjang Peminjaman"
+            >
+                <div className="space-y-4">
+                    {selectedExtItem && (
+                        <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                            <p className="text-xs text-gray-500 uppercase font-black tracking-widest mb-1">Barang</p>
+                            <p className="text-white font-bold">{selectedExtItem.barangId?.namaBarang}</p>
+                            <p className="text-xs text-gray-400 mt-2">
+                                Tanggal Kembali Saat Ini: <span className="text-white">{format(new Date(selectedExtItem.tanggalKembali), 'dd MMMM yyyy', { locale: id })}</span>
+                            </p>
+                        </div>
+                    )}
+
+                    <Input
+                        label="Tanggal Kembali Baru"
+                        type="date"
+                        value={newDate}
+                        onChange={(e) => setNewDate(e.target.value)}
+                        min={selectedExtItem ? format(addDays(new Date(selectedExtItem.tanggalKembali), 1), 'yyyy-MM-dd') : ''}
+                    />
+
+                    <Textarea
+                        label="Alasan Perpanjangan"
+                        placeholder="Jelaskan alasan Anda perlu memperpanjang peminjaman ini..."
+                        value={extReason}
+                        onChange={(e) => setExtReason(e.target.value)}
+                        rows={3}
+                    />
+
+                    <div className="flex gap-3 pt-2">
+                        <Button
+                            variant="secondary"
+                            fullWidth
+                            onClick={() => setShowExtModal(false)}
+                        >
+                            Batal
+                        </Button>
+                        <Button
+                            variant="primary"
+                            fullWidth
+                            loading={submittingExt}
+                            onClick={handleRequestExtension}
+                        >
+                            Kirim Permintaan
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

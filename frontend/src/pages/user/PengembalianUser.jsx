@@ -152,7 +152,7 @@ const PengembalianUser = () => {
                     <h1 className="text-3xl font-bold text-white mb-2">
                         Pengembalian Barang
                     </h1>
-                    <p className="text-gray-400">Kelola dan kembalikan barang yang sedang Anda pinjam</p>
+                    <p className="text-gray-300">Kelola dan kembalikan barang yang sedang Anda pinjam</p>
                 </div>
 
                 {/* Main Content */}
@@ -166,7 +166,7 @@ const PengembalianUser = () => {
                                 placeholder="Cari barang yang dipinjam..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-purple-500/50 transition-colors"
+                                className="w-full bg-black/20 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
                             />
                         </div>
                     </div>
@@ -175,17 +175,18 @@ const PengembalianUser = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead className="bg-black/20 border-b border-white/5">
-                                <tr>
-                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Barang</th>
-                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Jumlah</th>
-                                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Tanggal Pinjam</th>
-                                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Aksi</th>
+                                <tr className="border-b border-white/5 bg-white/[0.02]">
+                                    <th className="px-6 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Barang & Kategori</th>
+                                    <th className="px-6 py-5 text-center text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 w-24">Jumlah</th>
+                                    <th className="px-6 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Jadwal Pinjam</th>
+                                    <th className="px-6 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Batas Kembali</th>
+                                    <th className="px-6 py-5 text-center text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {filteredData.length === 0 ? (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-12 text-center text-gray-500 italic text-sm">
+                                        <td colSpan="5" className="px-6 py-12 text-center text-gray-500 italic text-sm">
                                             {searchTerm ? 'Barang tidak ditemukan.' : 'Tidak ada barang yang perlu dikembalikan.'}
                                         </td>
                                     </tr>
@@ -199,7 +200,7 @@ const PengembalianUser = () => {
                                                     </div>
                                                     <div>
                                                         <p className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors">{item.barangId?.namaBarang}</p>
-                                                        <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider">{item.barangId?.kategori}</p>
+                                                        <p className="text-[10px] text-gray-400 uppercase font-black tracking-wider">{item.barangId?.kategori}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -214,9 +215,31 @@ const PengembalianUser = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-gray-400">
-                                                <div className="flex items-center gap-2">
-                                                    <IoCalendar className="text-gray-700" size={14} />
-                                                    {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20">
+                                                            <IoCalendar size={14} />
+                                                        </div>
+                                                        <span className="text-gray-200 font-bold">{format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 pl-9">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-500/50" />
+                                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">{item.waktuPinjam} WIB</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-400">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+                                                            <IoCalendar size={14} />
+                                                        </div>
+                                                        <span className="text-gray-200 font-bold">{format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 pl-9">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
+                                                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">{item.waktuKembali} WIB</span>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
