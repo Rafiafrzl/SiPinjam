@@ -76,6 +76,14 @@ const FormPeminjaman = () => {
                     return false;
                 }
             }
+            // Validasi Durasi Maksimal 7 Hari
+            const diffTime = Math.abs(returnDate - borrowDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 7) {
+                setDateError('Durasi peminjaman maksimal adalah 7 hari');
+                return false;
+            }
         }
         setDateError('');
         return true;
@@ -265,6 +273,11 @@ const FormPeminjaman = () => {
                                                 type="date"
                                                 value={formData.tanggalKembali}
                                                 min={formData.tanggalPinjam}
+                                                max={formData.tanggalPinjam ? (() => {
+                                                    const d = new Date(formData.tanggalPinjam);
+                                                    d.setDate(d.getDate() + 7);
+                                                    return d.toISOString().split('T')[0];
+                                                })() : ''}
                                                 onChange={(e) => {
                                                     const newValue = e.target.value;
                                                     setFormData({ ...formData, tanggalKembali: newValue });

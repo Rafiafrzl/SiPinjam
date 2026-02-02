@@ -330,7 +330,7 @@ const Permintaan = () => {
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-gray-800 text-sm truncate">{item.barangId?.namaBarang}</h3>
-                      <Badge size="sm" variant={item.status === 'Menunggu' ? 'warning' : item.status === 'Disetujui' ? 'success' : 'danger'}>
+                      <Badge size="sm" variant={item.status === 'Menunggu' ? 'warning' : item.status === 'Disetujui' ? 'success' : item.status === 'Selesai' ? 'primary' : 'danger'}>
                         {item.status}
                       </Badge>
                     </div>
@@ -483,7 +483,7 @@ const Permintaan = () => {
                 <p className="text-sm text-gray-500">{detailItem.barangId?.kategori}</p>
                 <Badge
                   className="mt-2"
-                  variant={detailItem.status === 'Menunggu' ? 'warning' : detailItem.status === 'Disetujui' ? 'success' : detailItem.status === 'Ditolak' ? 'danger' : 'info'}
+                  variant={detailItem.status === 'Menunggu' ? 'warning' : detailItem.status === 'Disetujui' ? 'success' : detailItem.status === 'Ditolak' ? 'danger' : 'primary'}
                 >
                   {detailItem.status}
                 </Badge>

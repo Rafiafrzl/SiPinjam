@@ -115,10 +115,11 @@ const PengembalianUser = () => {
         setSubmitting(true);
         try {
             const formData = new FormData();
-            formData.append('kondisi', kondisi);
+            formData.append('peminjamanId', selectedItem._id);
+            formData.append('kondisiBarang', kondisi);
             formData.append('foto', foto);
 
-            await api.put(`/peminjaman/user/${selectedItem._id}/submit-return`, formData, {
+            await api.post('/pengembalian', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
@@ -245,7 +246,7 @@ const PengembalianUser = () => {
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-center">
                                                     {item.statusPengembalian === 'Sudah Dikembalikan' ? (
-                                                        <span className="flex items-center gap-2 px-4 py-1.5 bg-green-500/10 text-green-400 border border-green-500/20 rounded-lg text-xs font-bold">
+                                                        <span className="flex items-center gap-2 px-4 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold">
                                                             <IoCheckmarkCircle />
                                                             Selesai
                                                         </span>

@@ -47,7 +47,7 @@ const Pengembalian = () => {
 
   const handleVerify = async (id, statusVerifikasi) => {
     // Validasi denda jika kondisi rusak berat
-    if (statusVerifikasi === 'Diterima' && selectedPengembalian?.kondisiPengembalian === 'rusak berat') {
+    if (statusVerifikasi === 'Diterima' && selectedPengembalian?.kondisiBarang === 'rusak berat') {
       if (!denda || denda <= 0) {
         Toast.error('Harap masukkan jumlah denda untuk barang rusak berat');
         return;
@@ -65,7 +65,7 @@ const Pengembalian = () => {
       setVerifyLoading(true);
       const payload = {
         statusVerifikasi,
-        denda: selectedPengembalian?.kondisiPengembalian === 'rusak berat' ? denda : 0
+        denda: selectedPengembalian?.kondisiBarang === 'rusak berat' ? denda : 0
       };
       await api.put(`/pengembalian/${id}/verifikasi`, payload);
       Toast.success(`Pengembalian berhasil ${statusVerifikasi.toLowerCase()}`);
@@ -259,18 +259,18 @@ const Pengembalian = () => {
                         </button>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-medium">{item.userId?.nama}</p>
-                        <p className="text-xs text-gray-500">{item.userId?.kelas}</p>
+                        <p className="font-medium">{item.peminjamanId?.userId?.nama || item.dikembalikanOleh?.nama}</p>
+                        <p className="text-xs text-gray-500">{item.peminjamanId?.userId?.kelas || item.dikembalikanOleh?.kelas}</p>
                       </td>
-                      <td className="px-4 py-3">{item.barangId?.namaBarang}</td>
-                      <td className="px-4 py-3">{item.jumlahPinjam} unit</td>
+                      <td className="px-4 py-3">{item.peminjamanId?.barangId?.namaBarang}</td>
+                      <td className="px-4 py-3">{item.jumlahDikembalikan || item.peminjamanId?.jumlahPinjam} unit</td>
                       <td className="px-4 py-3">
                         {item.kondisiBarang ? getKondisiBadge(item.kondisiBarang) : '-'}
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}
+                        {item.peminjamanId?.tanggalPinjam ? format(new Date(item.peminjamanId.tanggalPinjam), 'dd MMM yyyy', { locale: id }) : '-'}
                       </td>
-                      <td className="px-4 py-3">{getStatusBadge(item.statusPengembalian)}</td>
+                      <td className="px-4 py-3">{getStatusBadge(item.statusVerifikasi)}</td>
                       <td className="px-4 py-3">
                         <Button variant="primary" size="sm" onClick={() => handleShowDetail(item._id)}>
                           <IoEye size={18} />
@@ -304,27 +304,27 @@ const Pengembalian = () => {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-gray-600">Siswa:</p>
-                  <p className="font-medium">{selectedPengembalian.userId?.nama}</p>
-                  <p className="text-xs text-gray-500">{selectedPengembalian.userId?.kelas}</p>
+                  <p className="font-medium">{selectedPengembalian.peminjamanId?.userId?.nama || selectedPengembalian.dikembalikanOleh?.nama}</p>
+                  <p className="text-xs text-gray-500">{selectedPengembalian.peminjamanId?.userId?.kelas || selectedPengembalian.dikembalikanOleh?.kelas}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Barang:</p>
-                  <p className="font-medium">{selectedPengembalian.barangId?.namaBarang}</p>
+                  <p className="font-medium">{selectedPengembalian.peminjamanId?.barangId?.namaBarang}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Jumlah Dipinjam:</p>
-                  <p className="font-medium">{selectedPengembalian.jumlahPinjam} unit</p>
+                  <p className="font-medium">{selectedPengembalian.jumlahDikembalikan || selectedPengembalian.peminjamanId?.jumlahPinjam} unit</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Tanggal Pinjam:</p>
                   <p className="font-medium">
-                    {format(new Date(selectedPengembalian.tanggalPinjam), 'dd MMMM yyyy', { locale: id })}
+                    {selectedPengembalian.peminjamanId?.tanggalPinjam ? format(new Date(selectedPengembalian.peminjamanId.tanggalPinjam), 'dd MMMM yyyy', { locale: id }) : '-'}
                   </p>
                 </div>
                 <div>
                   <p className="text-gray-600">Tanggal Kembali:</p>
                   <p className="font-medium">
-                    {format(new Date(selectedPengembalian.tanggalKembali), 'dd MMMM yyyy', { locale: id })}
+                    {selectedPengembalian.peminjamanId?.tanggalKembali ? format(new Date(selectedPengembalian.peminjamanId.tanggalKembali), 'dd MMMM yyyy', { locale: id }) : '-'}
                   </p>
                 </div>
               </div>

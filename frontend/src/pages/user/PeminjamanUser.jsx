@@ -72,6 +72,17 @@ const PeminjamanUser = () => {
             return;
         }
 
+        // Validasi Durasi Maksimal 3 Hari
+        const currentEndDate = new Date(selectedExtItem.tanggalKembali);
+        const requestedDate = new Date(newDate);
+        const diffTime = Math.abs(requestedDate - currentEndDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 3) {
+            Toast.error('Durasi perpanjangan maksimal adalah 3 hari');
+            return;
+        }
+
         try {
             setSubmittingExt(true);
             await api.put(`/peminjaman/${selectedExtItem._id}/perpanjang`, {
@@ -255,7 +266,7 @@ const PeminjamanUser = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex justify-center">
-                                                    {item.status === 'Disetujui' && (!item.isExtensionRequested || item.extensionStatus !== 'Menunggu') ? (
+                                                    {item.status === 'Disetujui' && (!item.isExtensionRequested || item.extensionStatus !== 'Menunggu') && (item.extensionCount || 0) < 1 ? (
                                                         <Button
                                                             variant="primary"
                                                             size="xs"
@@ -322,6 +333,7 @@ const PeminjamanUser = () => {
                                         value={newDate}
                                         onChange={(e) => setNewDate(e.target.value)}
                                         min={selectedExtItem ? format(addDays(new Date(selectedExtItem.tanggalKembali), 1), 'yyyy-MM-dd') : ''}
+                                        max={selectedExtItem ? format(addDays(new Date(selectedExtItem.tanggalKembali), 3), 'yyyy-MM-dd') : ''}
                                         className="w-full pl-12 pr-4 py-3.5 bg-neutral-800 border border-neutral-700 rounded-2xl text-white focus:outline-none focus:border-purple-500 transition-all text-sm [color-scheme:dark] font-medium"
                                         required
                                     />

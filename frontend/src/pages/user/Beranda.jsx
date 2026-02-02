@@ -86,7 +86,7 @@ const Beranda = () => {
       'Menunggu': 'warning',
       'Disetujui': 'success',
       'Ditolak': 'danger',
-      'Selesai': 'info'
+      'Selesai': 'primary'
     };
     return <Badge variant={variants[status]}>{status}</Badge>;
   };
