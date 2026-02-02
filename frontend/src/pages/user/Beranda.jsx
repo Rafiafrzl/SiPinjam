@@ -384,6 +384,9 @@ const Beranda = () => {
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-white text-sm truncate">{item.barangId?.namaBarang}</h4>
                     <p className="text-xs text-gray-500">{item.jumlahPinjam} unit</p>
+                    {item.status === 'Disetujui' && new Date(item.tanggalKembali) < new Date() && (
+                      <p className="text-[10px] text-red-500 font-bold">TERLAMBAT!</p>
+                    )}
                   </div>
                   {getStatusBadge(item.status)}
                 </div>

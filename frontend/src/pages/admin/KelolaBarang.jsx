@@ -282,6 +282,12 @@ const KelolaBarang = () => {
       return;
     }
 
+    // Validate Lokasi
+    if (!formData.lokasi || formData.lokasi.trim() === "") {
+      Alert.error("Lokasi barang wajib diisi. Silakan isi lokasi penyimpanan barang.", "Lokasi Barang Kosong");
+      return;
+    }
+
     // Validate photo is uploaded
     if (!formData.foto && !imagePreview) {
       Alert.error("Foto barang wajib diupload. Silakan pilih foto terlebih dahulu.", "Foto Belum Diupload");
@@ -593,6 +599,7 @@ const KelolaBarang = () => {
             value={formData.lokasi}
             onChange={handleFormChange}
             placeholder="Contoh: Lab Komputer, Gudang Olahraga"
+            required
           />
 
           {/* Image Upload with Preview */}

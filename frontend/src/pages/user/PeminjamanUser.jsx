@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { IoTime, IoCheckmarkCircle, IoCalendar, IoLayers, IoSearch, IoRepeat } from 'react-icons/io5';
+import { IoTime, IoCheckmarkCircle, IoCalendar, IoLayers, IoSearch, IoRepeat, IoWarning, IoAlertCircle, IoInformationCircle } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import Loading from '../../components/ui/Loading';
 import Modal from '../../components/ui/Modal';
@@ -231,6 +231,11 @@ const PeminjamanUser = () => {
                                                             <IoCalendar size={14} />
                                                         </div>
                                                         <span className="text-gray-200 font-bold">{format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
+                                                        {item.status === 'Disetujui' && new Date(item.tanggalKembali) < new Date() && (
+                                                            <span className="ml-2 px-1.5 py-0.5 rounded-sm bg-red-500/10 text-red-500 text-[10px] font-black border border-red-500/20">
+                                                                TERLAMBAT!
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <div className="flex items-center gap-2 pl-9">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
@@ -279,52 +284,94 @@ const PeminjamanUser = () => {
                 isOpen={showExtModal}
                 onClose={() => setShowExtModal(false)}
                 title="Perpanjang Peminjaman"
+                theme="dark"
             >
-                <div className="space-y-4">
-                    {selectedExtItem && (
-                        <div className="bg-white/5 p-4 rounded-xl border border-white/5">
-                            <p className="text-xs text-gray-500 uppercase font-black tracking-widest mb-1">Barang</p>
-                            <p className="text-white font-bold">{selectedExtItem.barangId?.namaBarang}</p>
-                            <p className="text-xs text-gray-400 mt-2">
-                                Tanggal Kembali Saat Ini: <span className="text-white">{format(new Date(selectedExtItem.tanggalKembali), 'dd MMMM yyyy', { locale: id })}</span>
+                {selectedExtItem && (
+                    <div className="space-y-4">
+                        <div className="bg-neutral-800/40 p-5 rounded-2xl border border-white/[0.05] space-y-4">
+                            <div className="flex items-center gap-2.5 text-purple-400 font-black text-[10px] uppercase tracking-[0.2em]">
+                                <IoInformationCircle size={16} />
+                                Barang yang Dipinjam
+                            </div>
+                            <div className="flex items-center gap-5">
+                                <div className="w-16 h-16 rounded-xl bg-neutral-900 overflow-hidden border border-white/10 flex-shrink-0 shadow-2xl">
+                                    <img src={getImageUrl(selectedExtItem.barangId?.foto)} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-white font-bold text-base truncate tracking-tight">{selectedExtItem.barangId?.namaBarang}</p>
+                                    <div className="flex items-center gap-2 mt-1.5">
+                                        <div className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                                            <p className="text-[9px] text-emerald-400 uppercase font-black tracking-widest leading-none">
+                                                Batas: {format(new Date(selectedExtItem.tanggalKembali), 'dd MMM yyyy', { locale: id })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-400 mb-2 ml-1">
+                                    Tanggal Kembali Baru <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <IoCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" size={18} />
+                                    <input
+                                        type="date"
+                                        value={newDate}
+                                        onChange={(e) => setNewDate(e.target.value)}
+                                        min={selectedExtItem ? format(addDays(new Date(selectedExtItem.tanggalKembali), 1), 'yyyy-MM-dd') : ''}
+                                        className="w-full pl-12 pr-4 py-3.5 bg-neutral-800 border border-neutral-700 rounded-2xl text-white focus:outline-none focus:border-purple-500 transition-all text-sm [color-scheme:dark] font-medium"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-400 mb-2 ml-1">
+                                    Alasan Perpanjangan <span className="text-red-500">*</span>
+                                </label>
+                                <Textarea
+                                    rows="3"
+                                    value={extReason}
+                                    onChange={(e) => setExtReason(e.target.value)}
+                                    placeholder="Jelaskan alasan Anda perlu memperpanjang peminjaman ini..."
+                                    className="bg-neutral-800 border-neutral-700 text-white placeholder-gray-600 focus:border-purple-500 rounded-xl"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="bg-amber-500/[0.03] p-4 rounded-2xl border border-amber-500/10 space-y-2">
+                            <div className="flex items-center gap-2 text-amber-500 font-black text-[10px] uppercase tracking-[0.2em]">
+                                <IoAlertCircle size={16} />
+                                Informasi Penting
+                            </div>
+                            <p className="text-[11px] text-gray-500 leading-relaxed font-medium">
+                                Permintaan perpanjangan akan ditinjau oleh administrator. Pastikan alasan Anda jelas dan valid agar tidak ditolak oleh sistem.
                             </p>
                         </div>
-                    )}
 
-                    <Input
-                        label="Tanggal Kembali Baru"
-                        type="date"
-                        value={newDate}
-                        onChange={(e) => setNewDate(e.target.value)}
-                        min={selectedExtItem ? format(addDays(new Date(selectedExtItem.tanggalKembali), 1), 'yyyy-MM-dd') : ''}
-                    />
-
-                    <Textarea
-                        label="Alasan Perpanjangan"
-                        placeholder="Jelaskan alasan Anda perlu memperpanjang peminjaman ini..."
-                        value={extReason}
-                        onChange={(e) => setExtReason(e.target.value)}
-                        rows={3}
-                    />
-
-                    <div className="flex gap-3 pt-2">
-                        <Button
-                            variant="secondary"
-                            fullWidth
-                            onClick={() => setShowExtModal(false)}
-                        >
-                            Batal
-                        </Button>
-                        <Button
-                            variant="primary"
-                            fullWidth
-                            loading={submittingExt}
-                            onClick={handleRequestExtension}
-                        >
-                            Kirim Permintaan
-                        </Button>
+                        <div className="flex gap-3 pt-2">
+                            <Button
+                                variant="secondary"
+                                fullWidth
+                                onClick={() => setShowExtModal(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                variant="primary"
+                                fullWidth
+                                loading={submittingExt}
+                                onClick={handleRequestExtension}
+                            >
+                                Kirim Permintaan
+                            </Button>
+                        </div>
                     </div>
-                </div>
+                )}
             </Modal>
         </div>
     );

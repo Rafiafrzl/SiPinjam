@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { IoList, IoCheckmark, IoClose, IoEye, IoCalendar, IoPerson, IoTrash, IoCheckbox, IoSquareOutline } from 'react-icons/io5';
+import { IoList, IoCheckmark, IoClose, IoEye, IoCalendar, IoPerson, IoTrash, IoCheckbox, IoSquareOutline, IoWarning } from 'react-icons/io5';
 import Toast from '../../components/ui/Toast';
 import { Alert } from '../../components/ui/Alert';
 import Card from '../../components/ui/Card';
@@ -110,8 +110,20 @@ const Permintaan = () => {
     }
 
     const processedStatuses = ['Disetujui', 'Ditolak', 'Selesai'];
-    if (processedStatuses.includes(selectedItem.status)) {
+    const isExtensionAction = modalType.toLowerCase().includes('extension');
+
+    // For non-extension actions, block if already processed
+    if (!isExtensionAction && processedStatuses.includes(selectedItem.status)) {
       Toast.error('Peminjaman sudah diproses sebelumnya');
+      setShowModal(false);
+      setSelectedItem(null);
+      fetchPeminjaman();
+      return;
+    }
+
+    // For extension actions, verify it hasn't been processed yet
+    if (isExtensionAction && selectedItem.extensionStatus !== 'Menunggu') {
+      Toast.error('Permintaan perpanjangan sudah diproses sebelumnya');
       setShowModal(false);
       setSelectedItem(null);
       fetchPeminjaman();
@@ -124,6 +136,18 @@ const Permintaan = () => {
       if (modalType === 'approve') {
         const requestData = {
           catatanAdmin: catatan.trim()
+        };
+
+        await api.put(`/peminjaman/admin/${selectedItem._id}/approve`, requestData);
+        Toast.success('Peminjaman berhasil disetujui');
+      } else if (modalType === 'reject') {
+        if (!catatan.trim()) {
+          Toast.error('Alasan penolakan harus diisi');
+          setSubmitting(false);
+          return;
+        }
+        const requestData = {
+          alasanPenolakan: catatan.trim()
         };
 
         await api.put(`/peminjaman/admin/${selectedItem._id}/reject`, requestData);
@@ -316,8 +340,14 @@ const Permintaan = () => {
                     <div className="flex flex-wrap gap-x-3 text-xs text-gray-400">
                       <span>Pinjam: {format(new Date(item.tanggalPinjam), 'dd MMM yyyy', { locale: id })}</span>
                       <span>Kembali: {format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
+                      {item.status === 'Disetujui' && new Date(item.tanggalKembali) < new Date() && (
+                        <span className="text-red-600 font-bold ml-2 flex items-center gap-1">
+                          <IoWarning size={14} />
+                          TERLAMBAT!
+                        </span>
+                      )}
                       {item.isExtensionRequested && item.extensionStatus === 'Menunggu' && (
-                        <span className="text-amber-600 font-bold ml-2 animate-pulse">
+                        <span className="text-amber-600 font-bold ml-2">
                           (Ada Permintaan Perpanjangan!)
                         </span>
                       )}
@@ -421,12 +451,12 @@ const Permintaan = () => {
             </Button>
             <Button
               type="button"
-              variant={modalType === 'approve' ? 'success' : 'danger'}
+              variant={modalType.toLowerCase().includes('approve') ? 'success' : 'danger'}
               fullWidth
               loading={submitting}
               onClick={handleSubmitAction}
             >
-              {modalType === 'approve' ? 'Setujui' : 'Tolak'} Peminjaman
+              {modalType.toLowerCase().includes('approve') ? 'Setujui' : 'Tolak'} {modalType.toLowerCase().includes('extension') ? 'Perpanjangan' : 'Peminjaman'}
             </Button>
           </div>
         </div>

@@ -168,6 +168,11 @@ const Riwayat = () => {
                               <IoCalendar size={14} />
                             </div>
                             <span className="text-gray-200 font-bold">{format(new Date(item.tanggalKembali), 'dd MMM yyyy', { locale: id })}</span>
+                            {item.status === 'Disetujui' && new Date(item.tanggalKembali) < new Date() && (
+                              <span className="ml-2 px-1.5 py-0.5 rounded-sm bg-red-500/10 text-red-500 text-[10px] font-black border border-red-500/20">
+                                TERLAMBAT!
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 pl-9">
                             <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
