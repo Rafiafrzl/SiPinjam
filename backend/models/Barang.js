@@ -38,6 +38,7 @@ const barangSchema = new mongoose.Schema({
   },
   lokasi: {
     type: String,
+    required: [true, 'Lokasi barang harus diisi'],
     trim: true
   },
   isActive: {

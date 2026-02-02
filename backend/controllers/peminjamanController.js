@@ -2,12 +2,11 @@ import Peminjaman from '../models/Peminjaman.js';
 import Barang from '../models/Barang.js';
 import Notifikasi from '../models/Notifikasi.js';
 
-// Buat peminjaman baru (user)
+
 const createPeminjaman = async (req, res) => {
   try {
-    const { barangId, jumlahPinjam, tanggalPinjam, tanggalKembali, waktuPinjam, alasanPeminjaman } = req.body;
+    const { barangId, jumlahPinjam, tanggalPinjam, tanggalKembali, waktuPinjam, waktuKembali, alasanPeminjaman } = req.body;
 
-    // Cek ketersediaan barang
     const barang = await Barang.findById(barangId);
 
     if (!barang) {
@@ -31,7 +30,46 @@ const createPeminjaman = async (req, res) => {
       });
     }
 
-    // Buat peminjaman
+    const [jamPinjam, menitPinjam] = waktuPinjam.split(':').map(Number);
+    if (jamPinjam < 7 || jamPinjam >= 15) {
+      return res.status(400).json({
+        success: false,
+        message: 'Waktu pengambilan barang hanya diperbolehkan antara pukul 07:00 hingga 15:00'
+      });
+    }
+
+
+    const [jamKembali, menitKembali] = waktuKembali.split(':').map(Number);
+    if (jamKembali < 7 || jamKembali >= 15) {
+      return res.status(400).json({
+        success: false,
+        message: 'Waktu pengembalian barang hanya diperbolehkan antara pukul 07:00 hingga 15:00'
+      });
+    }
+
+    // Validasi Waktu kembali harus setelah waktu pinjam jika tanggalnya sama
+    if (tanggalPinjam === tanggalKembali) {
+      if (waktuKembali <= waktuPinjam) {
+        return res.status(400).json({
+          success: false,
+          message: 'Waktu pengembalian harus setelah waktu pengambilan pada hari yang sama'
+        });
+      }
+    }
+
+    // Validasi Durasi Pinjam Maksimal 7 Hari
+    const tglPinjam = new Date(tanggalPinjam);
+    const tglKembali = new Date(tanggalKembali);
+    const diffTime = Math.abs(tglKembali - tglPinjam);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 7) {
+      return res.status(400).json({
+        success: false,
+        message: 'Durasi peminjaman maksimal adalah 7 hari'
+      });
+    }
+
     const peminjaman = await Peminjaman.create({
       userId: req.user._id,
       barangId,
@@ -39,14 +77,13 @@ const createPeminjaman = async (req, res) => {
       tanggalPinjam,
       tanggalKembali,
       waktuPinjam,
+      waktuKembali,
       alasanPeminjaman
     });
 
-    // Kurangi jumlah tersedia
     barang.jumlahTersedia -= jumlahPinjam;
     await barang.save();
 
-    // Buat notifikasi
     await Notifikasi.create({
       userId: req.user._id,
       peminjamanId: peminjaman._id,
@@ -72,7 +109,6 @@ const createPeminjaman = async (req, res) => {
   }
 };
 
-// Get peminjaman user yang login
 const getPeminjamanUser = async (req, res) => {
   try {
     const { status } = req.query;
@@ -106,7 +142,6 @@ const getPeminjamanUser = async (req, res) => {
   }
 };
 
-// Get riwayat peminjaman user
 const getRiwayatPeminjaman = async (req, res) => {
   try {
     const peminjaman = await Peminjaman.find({
@@ -136,7 +171,6 @@ const getRiwayatPeminjaman = async (req, res) => {
   }
 };
 
-// Get detail peminjaman by ID
 const getPeminjamanById = async (req, res) => {
   try {
     const peminjaman = await Peminjaman.findById(req.params.id)
@@ -151,7 +185,6 @@ const getPeminjamanById = async (req, res) => {
       });
     }
 
-    // Cek authorization
     if (req.user.role === 'user' && peminjaman.userId._id.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
@@ -171,7 +204,6 @@ const getPeminjamanById = async (req, res) => {
   }
 };
 
-// Get semua peminjaman (admin)
 const getAllPeminjaman = async (req, res) => {
   try {
     const { status, kategori } = req.query;
@@ -211,7 +243,6 @@ const getAllPeminjaman = async (req, res) => {
   }
 };
 
-// Approve peminjaman (admin)
 const approvePeminjaman = async (req, res) => {
   try {
     const { catatanAdmin } = req.body;
@@ -247,7 +278,6 @@ const approvePeminjaman = async (req, res) => {
 
     await peminjaman.save();
 
-    // Buat notifikasi untuk user
     await Notifikasi.create({
       userId: peminjaman.userId._id,
       peminjamanId: peminjaman._id,
@@ -269,7 +299,6 @@ const approvePeminjaman = async (req, res) => {
   }
 };
 
-// Reject peminjaman (admin)
 const rejectPeminjaman = async (req, res) => {
   try {
     const { alasanPenolakan } = req.body;
@@ -304,12 +333,10 @@ const rejectPeminjaman = async (req, res) => {
 
     await peminjaman.save();
 
-    // Kembalikan jumlah tersedia barang
     const barang = await Barang.findById(peminjaman.barangId);
     barang.jumlahTersedia += peminjaman.jumlahPinjam;
     await barang.save();
 
-    // Buat notifikasi untuk user
     await Notifikasi.create({
       userId: peminjaman.userId._id,
       peminjamanId: peminjaman._id,
@@ -331,7 +358,6 @@ const rejectPeminjaman = async (req, res) => {
   }
 };
 
-// Tandai sebagai sudah dikembalikan (admin)
 const markAsReturned = async (req, res) => {
   try {
     const peminjaman = await Peminjaman.findById(req.params.id).populate('barangId userId');
@@ -359,12 +385,10 @@ const markAsReturned = async (req, res) => {
 
     await peminjaman.save();
 
-    // Kembalikan jumlah tersedia barang
     const barang = await Barang.findById(peminjaman.barangId);
     barang.jumlahTersedia += peminjaman.jumlahPinjam;
     await barang.save();
 
-    // Buat notifikasi untuk user
     await Notifikasi.create({
       userId: peminjaman.userId._id,
       peminjamanId: peminjaman._id,
@@ -387,7 +411,186 @@ const markAsReturned = async (req, res) => {
 };
 
 
-// Bulk delete peminjaman (admin)
+const requestExtension = async (req, res) => {
+  try {
+    const { newTanggalKembali, alasanExtension } = req.body;
+    const peminjaman = await Peminjaman.findById(req.params.id).populate('barangId');
+
+    if (!peminjaman) {
+      return res.status(404).json({
+        success: false,
+        message: 'Peminjaman tidak ditemukan'
+      });
+    }
+
+    if (peminjaman.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Anda tidak memiliki akses ke peminjaman ini'
+      });
+    }
+
+    // Cek status peminjaman (hanya yang disetujui yang bisa diperpanjang)
+    if (peminjaman.status !== 'Disetujui') {
+      return res.status(400).json({
+        success: false,
+        message: 'Hanya peminjaman yang disetujui yang dapat diperpanjang'
+      });
+    }
+
+    // Cek apakah sudah pernah request extension atau mencapai batas
+    if (peminjaman.extensionCount >= 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Batas perpanjangan sudah tercapai (Maksimal 1x)'
+      });
+    }
+
+    if (peminjaman.isExtensionRequested && peminjaman.extensionStatus === 'Menunggu') {
+      return res.status(400).json({
+        success: false,
+        message: 'Permintaan perpanjangan sedang dalam proses'
+      });
+    }
+
+    // Validasi Durasi Perpanjangan Maksimal 3 Hari dari tanggal kembali sebelumnya
+    const tglKembaliLama = new Date(peminjaman.tanggalKembali);
+    const tglKembaliBaru = new Date(newTanggalKembali);
+    const diffTimeExt = Math.abs(tglKembaliBaru - tglKembaliLama);
+    const diffDaysExt = Math.ceil(diffTimeExt / (1000 * 60 * 60 * 24));
+
+    if (diffDaysExt > 3) {
+      return res.status(400).json({
+        success: false,
+        message: 'Durasi perpanjangan maksimal adalah 3 hari dari jadwal sebelumnya'
+      });
+    }
+
+    peminjaman.isExtensionRequested = true;
+    peminjaman.newTanggalKembali = newTanggalKembali;
+    peminjaman.alasanExtension = alasanExtension;
+    peminjaman.extensionStatus = 'Menunggu';
+
+    await peminjaman.save();
+
+    await Notifikasi.create({
+      userId: req.user._id,
+      peminjamanId: peminjaman._id,
+      judul: 'Permintaan Perpanjangan',
+      pesan: `User mengajukan perpanjangan untuk ${peminjaman.barangId.namaBarang} hingga ${new Date(newTanggalKembali).toLocaleDateString('id-ID')}.`,
+      tipe: 'info'
+    });
+
+    res.json({
+      success: true,
+      message: 'Permintaan perpanjangan berhasil dikirim',
+      data: peminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+const approveExtension = async (req, res) => {
+  try {
+    const { catatanAdmin } = req.body;
+    const peminjaman = await Peminjaman.findById(req.params.id).populate('barangId userId');
+
+    if (!peminjaman) {
+      return res.status(404).json({
+        success: false,
+        message: 'Peminjaman tidak ditemukan'
+      });
+    }
+
+    if (!peminjaman.isExtensionRequested || peminjaman.extensionStatus !== 'Menunggu') {
+      return res.status(400).json({
+        success: false,
+        message: 'Tidak ada permintaan perpanjangan yang aktif'
+      });
+    }
+
+    // Update peminjaman dengan tanggal baru
+    peminjaman.tanggalKembali = peminjaman.newTanggalKembali;
+    peminjaman.extensionStatus = 'Disetujui';
+    peminjaman.isExtensionRequested = false; // Reset request flag
+    peminjaman.extensionCount += 1; // Menambah hitungan perpanjangan
+    peminjaman.tanggalExtensionDisetujui = new Date();
+    if (catatanAdmin) peminjaman.catatanAdmin = catatanAdmin;
+
+    await peminjaman.save();
+
+    await Notifikasi.create({
+      userId: peminjaman.userId._id,
+      peminjamanId: peminjaman._id,
+      judul: 'Perpanjangan Disetujui',
+      pesan: `Permintaan perpanjangan ${peminjaman.barangId.namaBarang} Anda telah disetujui hingga ${new Date(peminjaman.tanggalKembali).toLocaleDateString('id-ID')}.`,
+      tipe: 'success'
+    });
+
+    res.json({
+      success: true,
+      message: 'Perpanjangan berhasil disetujui',
+      data: peminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+const rejectExtension = async (req, res) => {
+  try {
+    const { alasanPenolakan } = req.body;
+    const peminjaman = await Peminjaman.findById(req.params.id).populate('barangId userId');
+
+    if (!peminjaman) {
+      return res.status(404).json({
+        success: false,
+        message: 'Peminjaman tidak ditemukan'
+      });
+    }
+
+    if (!peminjaman.isExtensionRequested || peminjaman.extensionStatus !== 'Menunggu') {
+      return res.status(400).json({
+        success: false,
+        message: 'Tidak ada permintaan perpanjangan yang aktif'
+      });
+    }
+
+    peminjaman.extensionStatus = 'Ditolak';
+    peminjaman.isExtensionRequested = false; // Reset request flag
+    if (alasanPenolakan) peminjaman.alasanPenolakan = alasanPenolakan;
+
+    await peminjaman.save();
+
+    // Notifikasi untuk user
+    await Notifikasi.create({
+      userId: peminjaman.userId._id,
+      peminjamanId: peminjaman._id,
+      judul: 'Perpanjangan Ditolak',
+      pesan: `Permintaan perpanjangan ${peminjaman.barangId.namaBarang} Anda telah ditolak.`,
+      tipe: 'error'
+    });
+
+    res.json({
+      success: true,
+      message: 'Perpanjangan berhasil ditolak',
+      data: peminjaman
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 const bulkDeletePeminjaman = async (req, res) => {
   try {
     const { ids } = req.body;
@@ -423,5 +626,8 @@ export {
   approvePeminjaman,
   rejectPeminjaman,
   markAsReturned,
-  bulkDeletePeminjaman
+  bulkDeletePeminjaman,
+  requestExtension,
+  approveExtension,
+  rejectExtension
 };

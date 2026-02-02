@@ -115,7 +115,7 @@ const verifikasiPengembalian = async (req, res) => {
 
     await pengembalian.save();
 
-    const peminjaman = await Peminjaman.findById(pengembalian.peminjamanId).populate('barangId userId');
+    const peminjaman = await Peminjaman.findById(pengembalian.peminjamanId).populate('barangId').populate({ path: 'userId', select: 'nama email kelas' });
 
     if (statusVerifikasi === 'Diterima') {
       // Update status di peminjaman
@@ -189,10 +189,10 @@ const getAllPengembalian = async (req, res) => {
         path: 'peminjamanId',
         populate: {
           path: 'barangId userId',
-          select: 'namaBarang nama email'
+          select: 'namaBarang nama email kelas'
         }
       })
-      .populate('dikembalikanOleh', 'nama email')
+      .populate('dikembalikanOleh', 'nama email kelas')
       .populate('diverifikasiOleh', 'nama email')
       .sort({ createdAt: -1 })
       .limit(limit * 1)

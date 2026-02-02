@@ -28,6 +28,10 @@ const peminjamanSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Waktu pinjam harus diisi']
   },
+  waktuKembali: {
+    type: String,
+    required: [true, 'Waktu kembali harus diisi']
+  },
   alasanPeminjaman: {
     type: String,
     required: [true, 'Alasan peminjaman harus diisi'],
@@ -62,6 +66,30 @@ const peminjamanSchema = new mongoose.Schema({
   },
   tanggalDisetujui: {
     type: Date
+  },
+  // Field untuk perpanjangan (extension)
+  isExtensionRequested: {
+    type: Boolean,
+    default: false
+  },
+  newTanggalKembali: {
+    type: Date
+  },
+  alasanExtension: {
+    type: String,
+    trim: true
+  },
+  extensionStatus: {
+    type: String,
+    enum: ['Menunggu', 'Disetujui', 'Ditolak'],
+    default: null
+  },
+  tanggalExtensionDisetujui: {
+    type: Date
+  },
+  extensionCount: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true,
