@@ -40,7 +40,7 @@ const registerUser = async (req, res) => {
     if (user) {
       res.status(201).json({
         success: true,
-        message: "Registrasi berhasil",
+        message: "Registrasi berhasil! Akun Anda sedang menunggu aktivasi oleh admin.",
         data: {
           id: user._id,
           nama: user.nama,
@@ -49,8 +49,7 @@ const registerUser = async (req, res) => {
           kelas: user.kelas,
           noTelepon: user.noTelepon,
           foto: user.foto,
-          role: user.role,
-          token: generateToken(user._id),
+          role: user.role
         },
       });
     }

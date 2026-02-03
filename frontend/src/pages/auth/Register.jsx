@@ -63,7 +63,7 @@ const Register = () => {
       const response = await api.post("/auth/register", registerData);
 
       if (response.data.success) {
-        Toast.success("Registrasi berhasil! Silakan login dengan akun Anda.");
+        Toast.success("Registrasi berhasil! Akun Anda akan aktif setelah disetujui oleh admin.");
         navigate("/login");
       }
     } catch (err) {
