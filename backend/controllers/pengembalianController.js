@@ -294,11 +294,87 @@ const getPengembalianByPeminjamanId = async (req, res) => {
   }
 };
 
+// Hapus pengembalian (Admin)
+const deletePengembalian = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pengembalian = await Pengembalian.findById(id);
+
+    if (!pengembalian) {
+      return res.status(404).json({
+        success: false,
+        message: 'Data pengembalian tidak ditemukan'
+      });
+    }
+
+    // Jika status masih Menunggu Verifikasi, kembalikan status peminjaman
+    if (pengembalian.statusVerifikasi === 'Menunggu Verifikasi') {
+      const peminjaman = await Peminjaman.findById(pengembalian.peminjamanId);
+      if (peminjaman) {
+        peminjaman.statusPengembalian = 'Belum Dikembalikan';
+        await peminjaman.save();
+      }
+    }
+
+    await Pengembalian.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Data pengembalian berhasil dihapus'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// Bulk Delete Pengembalian (Admin)
+const bulkDeletePengembalian = async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tidak ada ID yang dipilih'
+      });
+    }
+
+    // Loop untuk mengembalikan status peminjaman jika diperlukan
+    for (const id of ids) {
+      const pengembalian = await Pengembalian.findById(id);
+      if (pengembalian && pengembalian.statusVerifikasi === 'Menunggu Verifikasi') {
+        const peminjaman = await Peminjaman.findById(pengembalian.peminjamanId);
+        if (peminjaman) {
+          peminjaman.statusPengembalian = 'Belum Dikembalikan';
+          await peminjaman.save();
+        }
+      }
+    }
+
+    await Pengembalian.deleteMany({ _id: { $in: ids } });
+
+    res.json({
+      success: true,
+      message: `${ids.length} data pengembalian berhasil dihapus`
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 export {
   createPengembalian,
   verifikasiPengembalian,
   getAllPengembalian,
   getPengembalianByUser,
   getPengembalianById,
-  getPengembalianByPeminjamanId
+  getPengembalianByPeminjamanId,
+  deletePengembalian,
+  bulkDeletePengembalian
 };

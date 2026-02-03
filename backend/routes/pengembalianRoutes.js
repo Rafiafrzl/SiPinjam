@@ -14,5 +14,7 @@ router.get('/peminjaman/:peminjamanId', verifikasiToken, pengembalianController.
 // Admin routes - harus login dan role admin
 router.get('/', verifikasiToken, checkAdmin, pengembalianController.getAllPengembalian);
 router.put('/:id/verifikasi', verifikasiToken, checkAdmin, pengembalianController.verifikasiPengembalian);
+router.delete('/:id', verifikasiToken, checkAdmin, pengembalianController.deletePengembalian);
+router.post('/bulk-delete', verifikasiToken, checkAdmin, pengembalianController.bulkDeletePengembalian);
 
 export default router;

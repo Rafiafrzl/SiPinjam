@@ -126,6 +126,19 @@ const Pengembalian = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    const isConfirmed = await Alert.confirm('Hapus data pengembalian ini?', 'Konfirmasi Hapus', 'Hapus', 'Batal');
+    if (!isConfirmed) return;
+
+    try {
+      await api.delete(`/pengembalian/${id}`);
+      Toast.success('Data pengembalian berhasil dihapus');
+      fetchPengembalian();
+    } catch (err) {
+      Toast.error(err.response?.data?.message || 'Gagal menghapus data');
+    }
+  };
+
   const handleBulkDelete = async () => {
     const isConfirmed = await Alert.confirm(
       `Hapus ${selectedIds.length} data pengembalian yang dipilih?`,
@@ -136,7 +149,7 @@ const Pengembalian = () => {
     if (!isConfirmed) return;
 
     try {
-      await api.delete('/peminjaman/admin/bulk-delete', { data: { ids: selectedIds } });
+      await api.post('/pengembalian/bulk-delete', { ids: selectedIds });
       Toast.success(`Berhasil menghapus ${selectedIds.length} data pengembalian`);
       setSelectedIds([]);
       fetchPengembalian();
@@ -182,7 +195,7 @@ const Pengembalian = () => {
 
         {selectedIds.length > 0 && (
           <Button variant="danger" size="sm" onClick={handleBulkDelete}>
-            <IoTrash size={16} />
+            <IoTrash size={16} className="mr-1" />
             Hapus Massal ({selectedIds.length})
           </Button>
         )}
