@@ -22,8 +22,8 @@ const Barang = () => {
   const [searchParams] = useSearchParams();
   const [barang, setBarang] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || ''); // Input sementara
-  const [search, setSearch] = useState(searchParams.get('search') || ''); // Nilai yang disubmit
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [kategori, setKategori] = useState(searchParams.get('kategori') || '');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
